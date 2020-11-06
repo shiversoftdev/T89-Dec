@@ -19,12 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.CodeDom.Compiler;
-using Newtonsoft.Json;
-using System.Security;
-using System.Diagnostics;
 
 namespace Cerberus.Logic
 {
@@ -33,6 +28,8 @@ namespace Cerberus.Logic
     /// </summary>
     internal class Decompiler : IDisposable
     {
+        private static bool UseTernaryLogging = false, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = true,
+            UseJumpDetectionLogging = false, UseForLoopVerbose = true;
         /// <summary>
         /// Operators by Op Code
         /// </summary>
@@ -224,12 +221,35 @@ namespace Cerberus.Logic
                 Writer.WriteLine("function {0}()", Function.Name);
                 Writer.WriteLine("{");
                 Writer.WriteLine(e.ToString().Trim());
-                Writer.WriteLine("/*{0}*/", s);
+                Writer.WriteLine("/*\r\n{0}\r\n*/", s);
+                DumpFunctionInfo();
                 Writer.WriteLine("}");
             }
 
             Writer.Flush();
             ClearVisitedInstructions();
+        }
+
+        private void DumpFunctionInfo()
+        {
+#if DEBUG
+            Writer.WriteLine("\r\n\t/* ======== */\r\n");
+
+            // Dump stack
+            Writer.WriteLine("/* \r\n\tStack: ");
+            foreach (var v in Stack)
+                Writer.WriteLine("\tStack Entry: " + v);
+
+            Writer.WriteLine("*/\r\n\t/* ======== */\r\n");
+            
+            // Dump Blocks
+            Writer.WriteLine("/* \r\n\tBlocks: ");
+            foreach (var block in Blocks)
+            {
+                Writer.WriteLine($"\t{block.GetType()} at 0x{block.StartOffset:X4}, end at 0x{block.EndOffset:X4}");
+            }
+            Writer.WriteLine("*/\r\n\t/* ======== */\r\n");
+#endif
         }
 
         public string GetWriterOutput()
@@ -303,7 +323,8 @@ namespace Cerberus.Logic
 
                 // Check positive jump
                 if ((int)instruction.Operands[0].Value <= 0) continue;
-                
+
+                VerboseCondition($"[{Function.Name}] Marking a jump at 0x{instruction.OpCodeOffset:X4}", UseJumpDetectionLogging);
                 // Add it as a basic block
                 Blocks.Add(new BasicBlock(
                     instruction.OpCodeOffset + instruction.OpCodeSize,
@@ -344,15 +365,21 @@ namespace Cerberus.Logic
                 if (jmp.Metadata.OpCode != ScriptOpCode.Jump) //all ternaries have a conditional skip
                     continue;
 
+                if (Function.Operations[jindex - 1].Metadata.OpType == ScriptOpType.JumpCondition)
+                    continue; //empty stack
+
                 int jcstartindex = FindStartIndexEx(jindex - 1);
-                if (jcstartindex - 1 != i || !IsStackOperation(Function.Operations[jcstartindex])) // full stack between jc and jmp ?
+                if (jcstartindex - 1 != i) // full stack between jc and jmp ?
                     continue;
 
                 var jeloc = Script.GetJumpLocation(jmp.OpCodeOffset + jmp.OpCodeSize, (int)jmp.Operands[0].Value);
                 int jePrevIndex = GetInstructionAt(jeloc) - 1;
 
+                if (Function.Operations[jePrevIndex].Metadata.OpType == ScriptOpType.Jump)
+                    continue; //empty stack
+
                 int jeStartIndex = FindStartIndexEx(jePrevIndex);
-                if (jeStartIndex - 1 != jindex || !IsStackOperation(Function.Operations[jeStartIndex])) // full stack between jmp and jump end
+                if (jeStartIndex - 1 != jindex) // full stack between jmp and jump end
                     continue;
 
                 var startIndex = FindStartIndexTernary(i - 1);
@@ -482,7 +509,11 @@ namespace Cerberus.Logic
                                 op.OpCodeOffset + op.OpCodeSize,
                                 (int)op.Operands[0].Value);
 
-                        if (!IsContinue(op.OpCodeOffset, jumpLocation) && !IsBreak(op.OpCodeOffset, jumpLocation))
+                        bool isBreak = IsBreak(op.OpCodeOffset, jumpLocation);
+                        bool isContinue = IsContinue(op.OpCodeOffset, jumpLocation);
+
+                        VerboseCondition($"[{Function.Name}] Determining Jump Role: IsBreak(0x{op.OpCodeOffset:X4}, 0x{jumpLocation:X4}):{isBreak}, IsContinue:{isContinue}", UseElseDetectionLogging);
+                        if (!isContinue && !isBreak)
                         {
                             Function.Operations[index - 1].Visited = true;
 
@@ -525,9 +556,10 @@ namespace Cerberus.Logic
                 if (op.Visited || (int)op.Operands[0].Value >= 0) continue;
                 
                 op.Visited = true;
-                Blocks.Add(new DoWhileLoop(Script.GetJumpLocation(op.OpCodeOffset + op.OpCodeSize, (int)op.Operands[0].Value), op.OpCodeOffset)
+                Blocks.Add(new DoWhileLoop(Script.GetJumpLocation(op.OpCodeOffset + op.OpCodeSize, (int)op.Operands[0].Value), op.OpCodeOffset + op.OpCodeSize)
                 {
-                    Comparison = BuildCondition(FindStartIndexEx(i - 1), true)
+                    Comparison = BuildCondition(FindStartIndexEx(i - 1), true),
+                    BreakOffset = op.OpCodeOffset + op.OpCodeSize
                 });
             }
         }
@@ -542,6 +574,7 @@ namespace Cerberus.Logic
                         Script.GetJumpLocation(
                             operation.OpCodeOffset + operation.OpCodeSize, 
                             (int)operation.Operands[0].Value));
+                    
                     Blocks.Add(switchBlock);
 
                     Script.Reader.BaseStream.Position = switchBlock.EndOffset;
@@ -570,7 +603,7 @@ namespace Cerberus.Logic
                         Blocks.Add(caseBlock);
                     }
 
-                    switchBlock.BreakOffset = switchBlock.EndOffset + (cases.Count * 8) + 4;
+                    switchBlock.BreakOffset = Utility.AlignValue(switchBlock.EndOffset + 4, 8) + (cases.Count * 16);
                 }
             }
         }
@@ -689,16 +722,36 @@ namespace Cerberus.Logic
 
         private bool IsContinue(int ip, int jumpOffset)
         {
-            return Blocks.FindIndex(block => (block.StartOffset >= jumpOffset && block.EndOffset < jumpOffset) && block.ContinueOffset == jumpOffset && (block.StartOffset >= ip && block.EndOffset < ip)) >= 0;
+            if (Blocks.FindIndex(block =>
+             (block.StartOffset >= jumpOffset && block.EndOffset > jumpOffset) &&
+             block.ContinueOffset == jumpOffset &&
+             (block.StartOffset < ip && block.EndOffset >= ip)) >= 0)
+                return true; //standard continue
+
+            //for loop continue
+            if (Blocks.FindIndex(block => (block is ForLoopBlock || block is ForEach) &&
+             (block.StartOffset <= jumpOffset && block.EndOffset > jumpOffset) &&
+             block.ContinueOffset == jumpOffset &&
+             (block.StartOffset < ip && block.EndOffset >= ip)) >= 0)
+                return true;
+
+            //forever loop
+            return Blocks.FindIndex(block => block is ForEver fblk &&
+             (fblk.StartOffset <= jumpOffset && fblk.EndOffset >= jumpOffset) &&
+             block.ContinueOffset == jumpOffset &&
+             (block.StartOffset < ip && block.EndOffset >= ip)) >= 0;
         }
 
         private bool IsBreak(int ip, int jumpOffset)
         {
-            return Blocks.FindIndex(block => (block.StartOffset >= jumpOffset && block.EndOffset < jumpOffset) && block.BreakOffset == jumpOffset && (block.StartOffset >= ip && block.EndOffset < ip)) >= 0;
+            return Blocks.FindIndex(block => 
+            (block.StartOffset < jumpOffset && block.EndOffset <= jumpOffset) && 
+            block.BreakOffset == jumpOffset && (block.StartOffset <= ip && block.EndOffset > ip)) >= 0;
         }
 
         private void DecompileBlock(DecompilerBlock decompilerBlock, int tabs)
         {
+            Verbose($"[{Function.Name}] is decompiling {decompilerBlock.GetType()} at 0x{decompilerBlock.StartOffset:X4}, end at 0x{decompilerBlock.EndOffset:X4}");
             if(decompilerBlock is SwitchBlock switchBlock)
             {
                 switchBlock.Value = Stack.Pop();
@@ -811,17 +864,19 @@ namespace Cerberus.Logic
                             // Check for a negative jumps, is almost always a loop
                             if(!Function.Operations[i].Visited && (int)Function.Operations[i].Operands[0].Value < 0)
                             {
+                                VerboseCondition($"[{Function.Name}] thinks 0x{Function.Operations[i].OpCodeOffset:X4} is probably a while loop.", UseWhileLoopDetectionLogging);
                                 // Compute the jump location based as some games align the value
                                 var offset = Script.GetJumpLocation(
                                     Function.Operations[i].OpCodeOffset + Function.Operations[i].OpCodeSize, 
                                     (int)Function.Operations[i].Operands[0].Value);
 
+                                VerboseCondition($"[{Function.Name}] !IsContinue({Function.Operations[i].OpCodeOffset:X4}, {offset:X4})", UseWhileLoopDetectionLogging);
                                 // Attempt to locate the block at the current location, if we fail we're
                                 // creating a new loop, otherwise this is probably continue statement
-                                if(!IsContinue(Function.Operations[i].OpCodeOffset, offset))
+                                if (!IsContinue(Function.Operations[i].OpCodeOffset, offset))
                                 {
                                     Function.Operations[i].Visited = true;
-
+                                    VerboseCondition($"[{Function.Name}] confirmed 0x{Function.Operations[i].OpCodeOffset:X4} is not a continue.", UseWhileLoopDetectionLogging);
                                     // Attempt to resolve is this a for(;;) or a while(...)
                                     bool hasCondition = false;
                                     var end = Function.Operations[i].OpCodeOffset;
@@ -851,11 +906,12 @@ namespace Cerberus.Logic
 
                                     if (hasCondition)
                                     {
+                                        VerboseCondition($"[{Function.Name}] marking [0x{offset:X4}:0x{end:X4}] as a while loop, condition start at 0x{Function.Operations[conditionStart].OpCodeOffset:X4}", UseWhileLoopDetectionLogging);
                                         // We have a condition, add as a while
                                         var whileLoop = new WhileLoop(offset, end)
                                         {
                                             Comparison = BuildCondition(conditionStart),
-                                            ContinueOffset = offset,
+                                            ContinueOffset = Function.Operations[conditionStart].OpCodeOffset,
                                             BreakOffset = end + Function.Operations[i].OpCodeSize
                                         };
 
@@ -866,8 +922,10 @@ namespace Cerberus.Logic
                                         // We're an infinite for(;;)
                                         Blocks.Add(new ForEver(offset, end)
                                         {
+                                            BreakOffset = end + Function.Operations[i].OpCodeSize,
                                             ContinueOffset = end
                                         });
+                                        VerboseCondition($"[{Function.Name}] marking [0x{offset:X4}:0x{end:X4}:0x{(end + Function.Operations[i].OpCodeSize):X4}] as a forever loop", UseWhileLoopDetectionLogging);
                                     }
                                 }
                             }
@@ -1294,7 +1352,7 @@ namespace Cerberus.Logic
                                 }
 
                                 forLoop.ContinueOffset = Function.Operations[modifierStart].OpCodeOffset;
-
+                                VerboseCondition($"[{Function.Name}] Marking for loop [Continue:0x{forLoop.ContinueOffset:X4},Start:0x{forLoop.StartOffset:X4},End:0x{forLoop.EndOffset:X4}]", UseForLoopVerbose);
                                 for (int j = modifierStart; j < Function.Operations.Count && Function.Operations[j].OpCodeOffset < whileLoop.EndOffset; j++)
                                 {
                                     // We've now visited/processed this
@@ -1387,12 +1445,14 @@ namespace Cerberus.Logic
 
         private int FindStartIndexTernary(int index)
         {
+            VerboseCondition($"[{Function.Name}]: Looking at Ternary, Possible Start 0x{Function.Operations[index].OpCodeOffset:X4}", UseTernaryLogging);
             int j = index;
             int StackSizeCached = Stack.Count; // cache the stack size
             Dictionary<int, int> StackBaseMap = new Dictionary<int, int>();
             for (; j >= 0; j--)
             {
                 var op = Function.Operations[j];
+                if (op.IsTernary || op.Visited) break; // ugh
                 if (IsStackOperation(op) || op.Metadata.OpType == ScriptOpType.JumpExpression) continue;
                 break;
             }
@@ -1405,6 +1465,7 @@ namespace Cerberus.Logic
             {
                 var op = Function.Operations[i];
                 ProcessInstruction(op);
+                VerboseCondition($"{op.Metadata.OpCode} Stack Size: {Stack.Count}", UseTernaryLogging);
                 StackBaseMap[i] = Stack.Count; // log the stack size at this instruction
             }
 
@@ -1431,7 +1492,7 @@ namespace Cerberus.Logic
                         break;
                     if(Function.Operations[k].Metadata.OpType == ScriptOpType.JumpExpression)
                     {
-                        tval--;
+                        tval = StackBaseMap[k];
                         continue;
                     }
                 }
@@ -1445,6 +1506,8 @@ namespace Cerberus.Logic
             // and cleanup
             while (Stack.Count > StackSizeCached)
                 Stack.Pop();
+
+            VerboseCondition($"End Ternary, expecting opcode: {(j >= 0 ? Function.Operations[j].OpCodeOffset.ToString("X4") : "No Operation")}", UseTernaryLogging);
             return j;
         }
 
@@ -1649,9 +1712,15 @@ namespace Cerberus.Logic
                         {
                             Writer?.WriteLine("break;");
                         }
-                        else
+                        else if(IsContinue(operation.OpCodeOffset, jumpLoc))
                         {
                             Writer?.WriteLine("continue;");
+                        }
+                        else
+                        {
+                            Verbose($"[{Function.Name}] found a jump condition [0x{operation.OpCodeOffset:X4}:0x{jumpLoc:X4}] which does not suit the conditions of break or continue");
+                            DumpFunctionInfo();
+                            Writer?.WriteLine("jump 0x{0};", jumpLoc.ToString("X4"));
                         }
 
                         return false;
@@ -2207,6 +2276,19 @@ namespace Cerberus.Logic
         {
             InternalWriter?.Dispose();
             Writer?.Dispose();
+        }
+
+        private void Verbose(object value)
+        {
+#if DEBUG
+            Script?.VLog?.Invoke(value);
+#endif
+        }
+
+        private void VerboseCondition(object value, bool condition)
+        {
+            if (!condition) return;
+            Verbose(value);
         }
     }
 }

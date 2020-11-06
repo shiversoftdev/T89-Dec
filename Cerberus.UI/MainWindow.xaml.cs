@@ -101,6 +101,8 @@ namespace Cerberus.UI
                 if (item.Content is ScriptBase script)
                 {
                     LogIt("Parsing " + script.FileName);
+                    script.VLog = LogIt;
+
                     Disassembly.ScrollToLine(0);
                     Decompiler.ScrollToLine(0);
 
@@ -236,12 +238,27 @@ namespace Cerberus.UI
             foreach (var file in files)
             {
                 SetProgressMessage("Loading " + file);
+             
                 LogIt("Loading " + file);
                 // Wrap in a Try/Catch because we need control of it after
                 var reader = new BinaryReader(new MemoryStream(File.ReadAllBytes(file)));
 
 #if DEBUG
-                ScriptFiles.Add(ScriptBase.LoadScript(reader, HashTables));
+                var script = ScriptBase.LoadScript(reader, HashTables);
+                script.LoadHeader();
+
+                bool skip = false;
+                foreach (var sf in ScriptFiles)
+                {
+                    if (sf.FilePath == script.FilePath)
+                    {
+                        LogIt($"Skipping '{script.FilePath}' because it is already loaded");
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) continue;
+                ScriptFiles.Add(script);
 #else
                 try
                 {
@@ -312,22 +329,22 @@ namespace Cerberus.UI
         {
             // Ensure we clear whatever we have loaded
             LogIt("Clearing Scripts");
-            ActiveScript?.Dispose();
 
-            // Manually dispose
-            foreach(var script in ScriptFiles)
-            {
-                script?.Dispose();
-            }
+            //ActiveScript?.Dispose();
+            //// Manually dispose
+            //foreach (var script in ScriptFiles)
+            //{
+            //    script?.Dispose();
+            //}
 
-            ScriptFiles.Clear();
+            //ScriptFiles.Clear();
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                ScriptList.ItemsSource   = null;
+                ScriptList.ItemsSource = null;
                 FunctionList.ItemsSource = null;
-                StringList.ItemsSource   = null;
-                ImportList.ItemsSource   = null;
-                IncludeList.ItemsSource  = null;
+                StringList.ItemsSource = null;
+                ImportList.ItemsSource = null;
+                IncludeList.ItemsSource = null;
                 Disassembly.Text = "";
                 Decompiler.Text = "";
             }));

@@ -12,6 +12,8 @@ namespace Cerberus.Logic
     /// </summary>
     public abstract class ScriptBase : IDisposable
     {
+        public delegate void VerboseLogging(object value);
+        public VerboseLogging VLog;
         /// <summary>
         /// Gets or Sets the Script File Path
         /// </summary>
@@ -405,6 +407,8 @@ namespace Cerberus.Logic
             Reader.Dispose();
         }
 
+        private static Dictionary<uint, string> t8_dword;
+        private static Dictionary<ulong, string> t8_qword;
         /// <summary>
         /// Loads the given script using the respective game class
         /// </summary>
@@ -415,17 +419,19 @@ namespace Cerberus.Logic
             switch(reader.ReadUInt64())
             {
                 case 0x36000A0D43534780:
-                    ParseHashTables("t8_hash.map", out var t8_dword, out var t8_qword);
+                    ParseHashTables("t8_hash.map");
                     return new BlackOps4Script(reader, t8_dword, t8_qword);
                 default:
                     throw new ArgumentException("Invalid Script Magic Number.", "Magic");
             }
         }
 
-        private static void ParseHashTables(string filePath, out Dictionary<uint, string> dword, out Dictionary<ulong, string> qword)
+        private static void ParseHashTables(string filePath)
         {
-            dword = new Dictionary<uint, string>();
-            qword = new Dictionary<ulong, string>();
+            if (t8_dword != null)
+                return;
+            t8_dword = new Dictionary<uint, string>();
+            t8_qword = new Dictionary<ulong, string>();
             if (!File.Exists(filePath))
                 return;
 
@@ -440,8 +446,8 @@ namespace Cerberus.Logic
                 byte strlen = hashData[i];
                 string rawString = Encoding.ASCII.GetString(hashData, i + 1, strlen);
                 i += 1 + strlen;
-                dword[dwordValue] = rawString;
-                qword[qwordValue] = rawString;
+                t8_dword[dwordValue] = rawString;
+                t8_qword[qwordValue] = rawString;
             }
         }
     }
