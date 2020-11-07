@@ -58,7 +58,7 @@ namespace Cerberus.Logic
             */
             #endregion
             Header.SourceChecksum = (uint)Reader.ReadUInt64(); //0x8
-            FilePath = $"0x{Reader.ReadUInt64():X8}"; //0x10
+            FilePath = GetHashValue(Reader.ReadUInt64(), "script_"); //0x10
             Header.IncludeTableOffset = Reader.ReadInt32(); //0x18
             Header.StringCount = Reader.ReadInt16(); //0x1C
             Header.ExportsCount = Reader.ReadInt16(); //0x1E
@@ -195,7 +195,7 @@ namespace Cerberus.Logic
 
             for (int i = 0; i < Header.IncludeCount; i++)
             {
-                Includes.Add(new ScriptInclude("0x" + Reader.ReadInt64().ToString("X8")));
+                Includes.Add(new ScriptInclude(GetHashValue(Reader.ReadUInt64(), "script_")));
             }
 
             Includes.Sort();

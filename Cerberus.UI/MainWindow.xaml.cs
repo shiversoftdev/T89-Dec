@@ -23,6 +23,7 @@ using Microsoft.Win32;
 using System.Globalization;
 using System.Threading;
 using System.Diagnostics;
+using ICSharpCode.AvalonEdit.Search;
 
 namespace Cerberus.UI
 {
@@ -73,6 +74,8 @@ namespace Cerberus.UI
                     Disassembly.SyntaxHighlighting = Decompiler.SyntaxHighlighting;
                     Disassembly.IsReadOnly = true;
                     Decompiler.IsReadOnly = true;
+                    SearchPanel.Install(Decompiler);
+                    SearchPanel.Install(Disassembly);
                 }
             }
 
@@ -88,7 +91,7 @@ namespace Cerberus.UI
             //}).Start();
 
             ScriptList.ItemsSource = ScriptFiles;
-            LoadHashTables();
+            //LoadHashTables();
         }
 
         /// <summary>

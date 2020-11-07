@@ -391,12 +391,19 @@ namespace Cerberus.Logic
             return Strings.Where(x => x.References.Contains(ptr)).FirstOrDefault();
         }
 
+        private static ScriptImport default_import = new ScriptImport()
+        {
+            Name = "nullsub",
+            Namespace = "null",
+            ParameterCount = 0,
+            References = new List<int>()
+        };
         /// <summary>
         /// Gets the import by pointer reference
         /// </summary>
         public ScriptImport GetImport(int ptr)
         {
-            return Imports.Where(x => x.References.Contains(ptr)).FirstOrDefault();
+            return Imports.Where(x => x.References.Contains(ptr)).FirstOrDefault() ?? default_import;
         }
 
         /// <summary>
@@ -419,14 +426,14 @@ namespace Cerberus.Logic
             switch(reader.ReadUInt64())
             {
                 case 0x36000A0D43534780:
-                    ParseHashTables("t8_hash.map");
+                    ParseHashTables("t8_hash.map", "includes.map");
                     return new BlackOps4Script(reader, t8_dword, t8_qword);
                 default:
                     throw new ArgumentException("Invalid Script Magic Number.", "Magic");
             }
         }
 
-        private static void ParseHashTables(string filePath)
+        private static void ParseHashTables(string filePath, string include_map)
         {
             if (t8_dword != null)
                 return;
@@ -448,6 +455,18 @@ namespace Cerberus.Logic
                 i += 1 + strlen;
                 t8_dword[dwordValue] = rawString;
                 t8_qword[qwordValue] = rawString;
+            }
+
+            hashData = File.ReadAllBytes(include_map);
+            i = 0;
+            while(i < hashData.Length)
+            {
+                ulong include_id = BitConverter.ToUInt64(hashData, i);
+                i += 8;
+                byte strlen = hashData[i];
+                string rawString = Encoding.ASCII.GetString(hashData, i + 1, strlen);
+                i += 1 + strlen;
+                t8_qword[include_id] = rawString;
             }
         }
     }

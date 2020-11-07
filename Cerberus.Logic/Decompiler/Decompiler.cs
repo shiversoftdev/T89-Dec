@@ -208,7 +208,7 @@ namespace Cerberus.Logic
                 InternalWriter = new StringWriter();
                 Writer = new IndentedTextWriter(InternalWriter, "\t");
 
-                Writer.WriteLine(BuildFunctionDefinition());
+                Writer?.WriteLine(BuildFunctionDefinition());
                 DecompileBlock(Blocks[0], 1);
             }
             catch(Exception e)
@@ -218,37 +218,37 @@ namespace Cerberus.Logic
                 InternalWriter = new StringWriter();
                 Writer?.Dispose();
                 Writer = new IndentedTextWriter(InternalWriter, "\t");
-                Writer.WriteLine("function {0}()", Function.Name);
-                Writer.WriteLine("{");
-                Writer.WriteLine(e.ToString().Trim());
-                Writer.WriteLine("/*\r\n{0}\r\n*/", s);
+                Writer?.WriteLine("function {0}()", Function.Name);
+                Writer?.WriteLine("{");
+                Writer?.WriteLine(e.ToString().Trim());
+                Writer?.WriteLine("/*\r\n{0}\r\n*/", s);
                 DumpFunctionInfo();
-                Writer.WriteLine("}");
+                Writer?.WriteLine("}");
             }
 
-            Writer.Flush();
+            Writer?.Flush();
             ClearVisitedInstructions();
         }
 
         private void DumpFunctionInfo()
         {
 #if DEBUG
-            Writer.WriteLine("\r\n\t/* ======== */\r\n");
+            Writer?.WriteLine("\r\n\t/* ======== */\r\n");
 
             // Dump stack
-            Writer.WriteLine("/* \r\n\tStack: ");
+            Writer?.WriteLine("/* \r\n\tStack: ");
             foreach (var v in Stack)
-                Writer.WriteLine("\tStack Entry: " + v);
+                Writer?.WriteLine("\tStack Entry: " + v);
 
-            Writer.WriteLine("*/\r\n\t/* ======== */\r\n");
+            Writer?.WriteLine("*/\r\n\t/* ======== */\r\n");
             
             // Dump Blocks
-            Writer.WriteLine("/* \r\n\tBlocks: ");
+            Writer?.WriteLine("/* \r\n\tBlocks: ");
             foreach (var block in Blocks)
             {
-                Writer.WriteLine($"\t{block.GetType()} at 0x{block.StartOffset:X4}, end at 0x{block.EndOffset:X4}");
+                Writer?.WriteLine($"\t{block.GetType()} at 0x{block.StartOffset:X4}, end at 0x{block.EndOffset:X4}");
             }
-            Writer.WriteLine("*/\r\n\t/* ======== */\r\n");
+            Writer?.WriteLine("*/\r\n\t/* ======== */\r\n");
 #endif
         }
 
@@ -2068,22 +2068,22 @@ namespace Cerberus.Logic
                                     if(Stack.Contains("BeginNotifyObject"))
                                     {
                                         HasNotifyObject = true;
-                                        Writer.Write($", {{{Stack.Pop()}");
+                                        Writer?.Write($", {{{Stack.Pop()}");
                                     }
 
                                     while (Stack.Contains("BeginNotifyObject"))
                                     {
                                         string rval = Stack.Pop();
                                         if (rval == "BeginNotifyObject") break;
-                                        Writer.Write(", {0}", rval);
+                                        Writer?.Write(", {0}", rval);
                                     }
 
                                     if(HasNotifyObject)
                                     {
-                                        Writer.Write('}');
+                                        Writer?.Write('}');
                                     }
 
-                                    Writer.WriteLine(");");
+                                    Writer?.WriteLine(");");
 
                                     break;
                                 }
@@ -2150,7 +2150,7 @@ namespace Cerberus.Logic
                                 }
                             case ScriptOpCode.WaitTillFrameEnd:
                                 {
-                                    Writer.WriteLine("waittillframeend;");
+                                    Writer?.WriteLine("waittillframeend;");
                                     break;
                                 }
                         }
