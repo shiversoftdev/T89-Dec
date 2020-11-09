@@ -420,7 +420,7 @@ namespace Cerberus.Logic
         /// Loads the given script using the respective game class
         /// </summary>
         /// <param name="reader">Reader/Stream</param>
-        public static ScriptBase LoadScript(BinaryReader reader, Dictionary<string, Dictionary<uint, string>> hashTables)
+        public static ScriptBase LoadScript(BinaryReader reader, Dictionary<string, Dictionary<uint, string>> hashTables = null)
         {
             // We can use the magic to determine game
             switch(reader.ReadUInt64())

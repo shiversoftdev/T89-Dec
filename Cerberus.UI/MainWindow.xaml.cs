@@ -202,15 +202,14 @@ namespace Cerberus.UI
                 try
                 {
                     var outputPath = System.IO.Path.Combine("ProcessedScripts", script.Game, script.FilePath);
+                    if (System.IO.Path.GetExtension(outputPath) == "") outputPath += ".gsc";
                     Directory.CreateDirectory(System.IO.Path.GetDirectoryName(outputPath));
 
                     // Dump it
                     LogIt("Disassembling script..");
-                    File.WriteAllText(outputPath + ".script_asm" + System.IO.Path.GetExtension(outputPath), script.Disassemble());
+                    File.WriteAllText(outputPath + ".gasm", script.Disassemble());
                     LogIt("Decompiling script..");
-                    File.WriteAllText(outputPath + ".decompiled" + System.IO.Path.GetExtension(outputPath), script.Decompile());
-                    LogIt("Dumping Hash Table..");
-                    File.WriteAllText(outputPath + ".unnamed_hashed" + System.IO.Path.GetExtension(outputPath), script.ExportHashTable());
+                    File.WriteAllText(outputPath, script.Decompile());
                 }
                 catch (Exception e)
                 {

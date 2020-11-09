@@ -89,11 +89,13 @@ namespace Cerberus.Logic
 
         static readonly Dictionary<byte, string> GlobalObjectTable = new Dictionary<byte, string>()
         {
-            {0, "anim" },
-            {1, "world" },
+            {0, "world" },
+            {1, "mission" },
             {2, "level"},
             {3, "game"},
-            {5, "classes"}
+            {4, "anim" },
+            {5, "classes"},
+            {6, "structs" }
         };
 
         /// <summary>
@@ -1595,6 +1597,11 @@ namespace Cerberus.Logic
                     return "level." + (string)op.Operands[0].Value;
                 case ScriptOpCode.EvalLocalVariableDefined:
                     return $"isdefined({LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value]})";
+                case ScriptOpCode.EvalGlobalObjectFieldVariable:
+                    byte igobj = byte.Parse(op.Operands[0].Value.ToString());
+                    if (!GlobalObjectTable.ContainsKey(igobj))
+                        throw new NotImplementedException($"Global object '{igobj}' unimplemented.");
+                    return $"{GlobalObjectTable[igobj]}.{op.Operands[1].Value}";
                 default:
                     throw new ArgumentException($"Invalid Op Code for GetVariableName '{op.Metadata.OpCode}'");
             }
@@ -1776,8 +1783,8 @@ namespace Cerberus.Logic
                                 case ScriptOpCode.Vector:
                                     Stack.Push(string.Format("({0}, {1}, {2})", Stack.Pop(), Stack.Pop(), Stack.Pop()));
                                     break;
-                                case ScriptOpCode.BeginNotifyObject:
-                                    Stack.Push("BeginNotifyObject");
+                                case ScriptOpCode.CreateStruct:
+                                    Stack.Push("CreateStruct");
                                     break;
                             }
                         }
@@ -2065,16 +2072,16 @@ namespace Cerberus.Logic
                                     Writer?.Write("{0} notify({1}", Stack.Pop(), Stack.Pop());
 
                                     bool HasNotifyObject = false;
-                                    if(Stack.Contains("BeginNotifyObject"))
+                                    if(Stack.Contains("CreateStruct"))
                                     {
                                         HasNotifyObject = true;
                                         Writer?.Write($", {{{Stack.Pop()}");
                                     }
 
-                                    while (Stack.Contains("BeginNotifyObject"))
+                                    while (Stack.Contains("CreateStruct"))
                                     {
                                         string rval = Stack.Pop();
-                                        if (rval == "BeginNotifyObject") break;
+                                        if (rval == "CreateStruct") break;
                                         Writer?.Write(", {0}", rval);
                                     }
 
@@ -2093,16 +2100,16 @@ namespace Cerberus.Logic
                                     pushOp += $"{Stack.Pop()} waittill_match(";
 
                                     bool HasNotifyObject = false;
-                                    if (Stack.Contains("BeginNotifyObject"))
+                                    if (Stack.Contains("CreateStruct"))
                                     {
                                         HasNotifyObject = true;
                                         pushOp += $"{{{Stack.Pop()}";
                                     }
 
-                                    while (Stack.Contains("BeginNotifyObject"))
+                                    while (Stack.Contains("CreateStruct"))
                                     {
                                         string rval = Stack.Pop();
-                                        if (rval == "BeginNotifyObject") break;
+                                        if (rval == "CreateStruct") break;
                                         pushOp += $", {rval}";
                                     }
 
@@ -2250,7 +2257,7 @@ namespace Cerberus.Logic
                             Writer?.WriteLine("{0} = {1};", $"{CurrentReference}.{operation.Operands[0].Value}", Stack.Pop());
                             break;
                         }
-                        else if (operation.Metadata.OpCode == ScriptOpCode.NotifySetFieldVariable)
+                        else if (operation.Metadata.OpCode == ScriptOpCode.AddToStruct)
                         {
                             Stack.Push($"{Stack.Pop().Replace("\"", "")}:{Stack.Pop()}");
                             break;

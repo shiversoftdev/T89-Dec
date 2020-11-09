@@ -170,6 +170,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Cerberus.CLI\Cerberus.CLI.csproj">
+      <Project>{bd3937bd-742d-419e-b5f0-1f05f0b77a17}</Project>
+      <Name>Cerberus.CLI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Cerberus.Logic\Cerberus.Logic.csproj">
       <Project>{3655f8f1-fd9b-488f-b2b4-c3e0bd0891cb}</Project>
       <Name>Cerberus.Logic</Name>

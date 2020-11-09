@@ -35,14 +35,6 @@ namespace Cerberus.CLI
         /// </summary>
         static CliOptions Options { get; set; }
 
-        /// <summary>
-        /// Supported Hash Tables
-        /// </summary>
-        static readonly Dictionary<string, Dictionary<uint, string>> HashTables = new Dictionary<string, Dictionary<uint, string>>()
-        {
-            { "BlackOps2", new Dictionary<uint, string>() },
-            { "BlackOps3", new Dictionary<uint, string>() },
-        };
 
         /// <summary>
         /// Class to hold CLI options
@@ -57,52 +49,6 @@ namespace Cerberus.CLI
             public bool Close { get; set; }
             [Option('h', "help", Required = false, HelpText = "Prints this message.")]
             public bool Help { get; set; }
-        }
-
-        /// <summary>
-        /// Loads in required hash tables
-        /// </summary>
-        static void LoadHashTables()
-        {
-            PrintVerbose(": Loading hash tables...");
-            foreach (var hashTable in HashTables)
-            {
-                try
-                {
-                    string[] lines = File.ReadAllLines(Path.Combine(Directory.GetCurrentDirectory(), hashTable.Key + ".txt"));
-                    PrintVerbose(": Loading " + hashTable.Key + ".txt");
-                    foreach (string line in lines)
-                    {
-                        try
-                        {
-                            string lineTrim = line.Trim();
-
-                            // Ignore comment lines
-                            if (!lineTrim.StartsWith("#"))
-                            {
-                                string[] lineSplit = lineTrim.Split(',');
-
-                                if (lineSplit.Length > 1)
-                                {
-                                    // Parse as hex, without 0x
-                                    if (uint.TryParse(lineSplit[0].TrimStart('0', 'x'), NumberStyles.HexNumber, CultureInfo.CurrentCulture, out var hash))
-                                    {
-                                        hashTable.Value[hash] = lineSplit[1];
-                                    }
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            continue;
-                        }
-                    }
-                }
-                catch
-                {
-                    continue;
-                }
-            }
         }
 
         /// <summary>
@@ -148,21 +94,22 @@ namespace Cerberus.CLI
         {
             using(var reader = new BinaryReader(File.OpenRead(filePath)))
             {
-                using (var script = ScriptBase.LoadScript(reader, HashTables))
+                using (var script = ScriptBase.LoadScript(reader))
                 {
                     PrintVerbose(string.Format(": Processing {0} script.", script.Game));
                     var outputPath = Path.Combine(ProcessDirectory, script.Game, script.FilePath);
+                    if (Path.GetExtension(outputPath) == "") outputPath += ".gsc";
                     Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
                     PrintVerbose(string.Format(": Outputting to {0}", outputPath));
 
                     if (Options.Disassemble)
                     {
                         PrintVerbose(": Disassembling script..");
-                        File.WriteAllText(outputPath + ".script_asm" + Path.GetExtension(outputPath), script.Disassemble());
+                        File.WriteAllText(outputPath + ".gasm", script.Disassemble());
                     }
 
                     PrintVerbose(": Decompiling script..");
-                    File.WriteAllText(outputPath + ".decompiled" + Path.GetExtension(outputPath), script.Decompile());
+                    File.WriteAllText(outputPath, script.Decompile());
                 }
             }
         }
@@ -188,7 +135,7 @@ namespace Cerberus.CLI
 
             Console.WriteLine(": Exporting to: {0}", Directory.GetCurrentDirectory());
 
-            LoadHashTables();
+            //LoadHashTables();
 
             var files = Directory.GetFiles(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "*.*", SearchOption.AllDirectories);
 
@@ -228,7 +175,7 @@ namespace Cerberus.CLI
             //    }
             //}
 
-            foreach (var arg in args)
+            foreach (var arg in files)
             {
                 try
                 {

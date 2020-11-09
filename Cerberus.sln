@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cerberus.UI", "Cerberus.UI\Cerberus.UI.csproj", "{C2060E17-C072-42B3-AF9C-884827218DCE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BD3937BD-742D-419E-B5F0-1F05F0B77A17} = {BD3937BD-742D-419E-B5F0-1F05F0B77A17}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cerberus.Logic", "Cerberus.Logic\Cerberus.Logic.csproj", "{3655F8F1-FD9B-488F-B2B4-C3E0BD0891CB}"
 EndProject
