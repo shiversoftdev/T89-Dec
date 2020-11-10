@@ -28,8 +28,8 @@ namespace Cerberus.Logic
     /// </summary>
     internal class Decompiler : IDisposable
     {
-        private static bool UseTernaryLogging = false, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = true,
-            UseJumpDetectionLogging = false, UseForLoopVerbose = true;
+        private static bool UseTernaryLogging = true, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = false,
+            UseJumpDetectionLogging = false, UseForLoopVerbose = true, UseIfStatementLogging = true;
         /// <summary>
         /// Operators by Op Code
         /// </summary>
@@ -84,7 +84,7 @@ namespace Cerberus.Logic
             { ScriptOpCode.GetDvarColorGreen,               new Tuple<string, int>("getdvarcolorgreen",     1) },
             { ScriptOpCode.GetDvarColorBlue,                new Tuple<string, int>("getdvarcolorblue",      1) },
             { ScriptOpCode.GetDvarColorAlpha,               new Tuple<string, int>("getdvarcoloralpha",     1) },
-            { ScriptOpCode.WaitFrame,                       new Tuple<string, int>("waitframe",             1) },
+            { ScriptOpCode.WaitFrame,                       new Tuple<string, int>("waitframe",             1) }
         };
 
         static readonly Dictionary<byte, string> GlobalObjectTable = new Dictionary<byte, string>()
@@ -192,7 +192,7 @@ namespace Cerberus.Logic
                 // so this is the best way to ensure that
                 FindSwitchCase();
                 FindDevBlocks();
-                FindTernaries();
+                FindTernaries(0, Function.Operations.Count);
                 FindWhileLoops();
                 FindDoWhileLoops();
                 FindIfStatements();
@@ -342,13 +342,17 @@ namespace Cerberus.Logic
             var results = Blocks.Where((x) => x.StartOffset == offset);
             foreach (var block in results)
                 if (block is TernaryBlock t)
+                {
+                    while (t.ParentBlock != null) t = t.ParentBlock;
                     return t;
+                }
             return null;
         }
 
-        private void FindTernaries()
+        private void FindTernaries(int startIndex, int endIndex)
         {
-            for (int i = 0; i < Function.Operations.Count; i++)
+            //List<TernaryBlock> collected = new List<TernaryBlock>();
+            for (int i = startIndex; i < endIndex; i++)
             {
                 var op = Function.Operations[i];
 
@@ -370,8 +374,9 @@ namespace Cerberus.Logic
                 if (Function.Operations[jindex - 1].Metadata.OpType == ScriptOpType.JumpCondition)
                     continue; //empty stack
 
+                FindTernaries(i + 1, jindex);
                 int jcstartindex = FindStartIndexEx(jindex - 1);
-                if (jcstartindex - 1 != i) // full stack between jc and jmp ?
+                if (jcstartindex - 1 != i) // full stack between jump condition and jmp ?
                     continue;
 
                 var jeloc = Script.GetJumpLocation(jmp.OpCodeOffset + jmp.OpCodeSize, (int)jmp.Operands[0].Value);
@@ -380,17 +385,27 @@ namespace Cerberus.Logic
                 if (Function.Operations[jePrevIndex].Metadata.OpType == ScriptOpType.Jump)
                     continue; //empty stack
 
+                FindTernaries(jindex + 1, jePrevIndex + 1);
                 int jeStartIndex = FindStartIndexEx(jePrevIndex);
                 if (jeStartIndex - 1 != jindex) // full stack between jmp and jump end
                     continue;
 
-                var startIndex = FindStartIndexTernary(i - 1);
-                Blocks.Add(new TernaryBlock(Function.Operations[startIndex].OpCodeOffset, jeloc)
+                bool IsTwoOperandExpression = op.Metadata.OpCode == ScriptOpCode.JumpOnGreaterThan || op.Metadata.OpCode == ScriptOpCode.JumpOnLessThan;
+                var _startIndex = FindStartIndexTernary(i - 1, jeloc, IsTwoOperandExpression);
+                TernaryBlock parent;
+                List<TernaryBlock> children = new List<TernaryBlock>();
+
+                VerboseCondition($"[{Function.Name}]: Ternary Block -- {_startIndex:X4}, {i:X4}, {jindex:X4}, {(jePrevIndex + 1):X4}", UseTernaryLogging);
+                Blocks.Add(parent = new TernaryBlock(Function.Operations[_startIndex].OpCodeOffset, jeloc)
                 {
-                    Comparison = BuildStackEmission(startIndex, i),
-                    TrueCondition = BuildStackEmission(i + 1, jindex),
-                    FalseCondition = BuildStackEmission(jindex + 1, jePrevIndex + 1),
+                    Comparison = BuildStackEmission(_startIndex, i, children, op.Metadata.OpCode),
+                    TrueCondition = BuildStackEmission(i + 1, jindex, children),
+                    FalseCondition = BuildStackEmission(jindex + 1, jePrevIndex + 1, children),
                 });
+                
+                foreach (var child in children)
+                    child.ParentBlock = parent;
+
                 jmp.Visited = true;
                 jmp.IsTernary = true;
                 op.IsTernary = true;
@@ -405,12 +420,12 @@ namespace Cerberus.Logic
                 var op = Function.Operations[i];
 
                 if (op.Metadata.OpType != ScriptOpType.JumpCondition) continue;
-                if (op.Visited || (int)op.Operands[0].Value <= 0) continue;
+                if (op.Visited || op.IsTernary || (int)op.Operands[0].Value <= 0) continue;
 
                 op.Visited = true;
 
                 var startIndex = FindStartIndexEx(i - 1);
-
+                VerboseCondition($"[{Function.Name}] Determined an if statement starts at {Function.Operations[startIndex].OpCodeOffset:X4}", UseIfStatementLogging);
                 Blocks.Add(new IfBlock(Function.Operations[startIndex].OpCodeOffset, Script.GetJumpLocation(op.OpCodeOffset + op.OpCodeSize, (int)op.Operands[0].Value))
                 {
                     Comparison = BuildCondition(startIndex)
@@ -419,15 +434,37 @@ namespace Cerberus.Logic
             }
         }
 
-        private string BuildStackEmission(int startIndex, int stopIndex)
+        private string BuildStackEmission(int startIndex, int stopIndex, List<TernaryBlock> children, ScriptOpCode code = ScriptOpCode.Invalid)
         {
+            VerboseCondition($"[{Function.Name}] Begin Stack Emission (range: {startIndex:X3} - {stopIndex:X3})", UseTernaryLogging);
             for (int i = startIndex; i < stopIndex; i++)
             {
                 var op = Function.Operations[i];
+
                 // Check if we hit a non-stack/expression operation
                 if (!IsStackOperation(op))
                 {
-                    throw new Exception("Found a non stack operation in BuildStackEmission when non stack operations should have been purged");
+                    throw new Exception($"Found a non stack operation ({op.Metadata.OpCode}, 0x{op.OpCodeOffset:X4}) in BuildStackEmission when non stack operations should have been purged");
+                }
+
+                if (op.IsTernary)
+                {
+                    var t = FindTernaryAt(op.OpCodeOffset);
+
+                    if (t == null)
+                    {
+                        throw new Exception($"Ternary start index OOB {op.OpCodeOffset:X4}");
+                    } 
+
+                    if (!t.Visited)
+                    {
+                        Stack.Push(t.GetHeader());
+                        t.Visited = true;
+                        children.Add(t);
+                    }
+
+                    i = GetInstructionAt(t.EndOffset) - 1;
+                    continue;
                 }
 
                 ProcessInstruction(op);
@@ -435,6 +472,13 @@ namespace Cerberus.Logic
                 op.IsTernary = true;
             }
 
+            if (code == ScriptOpCode.JumpOnLessThan || code == ScriptOpCode.JumpOnGreaterThan)
+            {
+                string second = Stack.Pop();
+                string first = Stack.Pop();
+                return code == ScriptOpCode.JumpOnLessThan ? $"{first} > {second}" : $"{first} < {second}";
+            }
+                
             return Stack.Pop();
         }
 
@@ -790,7 +834,7 @@ namespace Cerberus.Logic
                     var t = FindTernaryAt(operation.OpCodeOffset);
 
                     if (t == null)
-                        throw new Exception("Operation is ternary, but the block decompiler is a 5head");
+                        throw new Exception($"Operation is ternary, but the block decompiler couldn't locate one at 0x{operation.OpCodeOffset:X6}");
 
                     if (!t.Visited)
                     {
@@ -953,7 +997,6 @@ namespace Cerberus.Logic
             for (int j = startIndex; j < endIndex; j++)
             {
                 var op = Function.Operations[j];
-
                 // Check if we hit a non-stack/expression operation
                 if (!IsStackOperation(op))
                 {
@@ -1013,8 +1056,11 @@ namespace Cerberus.Logic
                     if (t == null)
                         throw new Exception("Operation is ternary, but some shit happened and its not the start of the block for build condition");
                     
-                    t.Visited = true;
-                    Stack.Push(t.GetHeader());
+                    if(!t.Visited)
+                    {
+                        t.Visited = true;
+                        Stack.Push(t.GetHeader());
+                    }
                     j = GetInstructionAt(t.EndOffset) - 1;
                     continue;
                 }
@@ -1106,13 +1152,13 @@ namespace Cerberus.Logic
 
                 int continueOffset;
                 var variableBeginIndex = FindStartIndex(i - 2);
-
                 // Process so we can obtain the real variable name
                 for (int j = variableBeginIndex; j < i - 1; j++)
                 {
                     ProcessInstruction(Function.Operations[j]);
                     Function.Operations[j].Visited = true;
                 }
+                var ArrayName = Stack.Pop();
 
                 Function.Operations[i - 1].Visited = true; // OP_SetLocalVariableCached
                 Function.Operations[i + 0].Visited = true; // OP_FirstArrayKeyCached
@@ -1130,6 +1176,29 @@ namespace Cerberus.Logic
                 // Clear the instructions at the end
                 var opIndex = GetInstructionAt(loop.EndOffset);
 
+                var KeyVar = Function.Operations[i + 1];
+
+                // iterate the foreach body, and try to find some reference to our key
+                // if we find a key ref, its a double foreach
+                bool UseKey = false;
+                for (int j = i + 11; j < opIndex - 2; j++)
+                {
+                    switch(Function.Operations[j].Metadata.OpCode)
+                    {
+                        case ScriptOpCode.EvalLocalVariableDefined:
+                        case ScriptOpCode.SetLocalVariableCached:
+                        case ScriptOpCode.SetNextArrayKeyCached:
+                        case ScriptOpCode.EvalLocalVariableCached:
+                        case ScriptOpCode.EvalLocalVariableRefCached:
+                        case ScriptOpCode.EvalLocalArrayRefCached:
+                            if(int.Parse(Function.Operations[j].Operands[0].Value.ToString()) == 
+                                int.Parse(KeyVar.Operands[0].Value.ToString())) UseKey = true;
+                            break;
+                    }
+
+                    if (UseKey) break;
+                }
+
                 // Now that we've determined it's a foreach, we need to remove the necessary
                 // operations, along with determining the continue location
 
@@ -1139,7 +1208,8 @@ namespace Cerberus.Logic
 
                 Blocks[index] = new ForEach(loop.StartOffset, loop.EndOffset)
                 {
-                    ArrayName = Stack.Pop(),
+                    ArrayName = ArrayName,
+                    KeyName = UseKey ? GetVariableName(KeyVar) : null,
                     IteratorName = GetVariableName(Function.Operations[i + 7]),
                     ContinueOffset = continueOffset,
                     BreakOffset = loop.BreakOffset
@@ -1445,7 +1515,7 @@ namespace Cerberus.Logic
             return -1;
         }
 
-        private int FindStartIndexTernary(int index)
+        private int FindStartIndexTernary(int index, int EndExpression, bool IsTwoOperandExpression)
         {
             VerboseCondition($"[{Function.Name}]: Looking at Ternary, Possible Start 0x{Function.Operations[index].OpCodeOffset:X4}", UseTernaryLogging);
             int j = index;
@@ -1454,8 +1524,17 @@ namespace Cerberus.Logic
             for (; j >= 0; j--)
             {
                 var op = Function.Operations[j];
-                if (op.IsTernary || op.Visited) break; // ugh
-                if (IsStackOperation(op) || op.Metadata.OpType == ScriptOpType.JumpExpression) continue;
+                if(op.IsTernary) continue; // walk to start of previous ternary
+                if (op.Visited) break;
+                if(op.Metadata.OpType == ScriptOpType.JumpExpression)
+                {
+                    int targetSpot = Script.GetJumpLocation(
+                            op.OpCodeOffset + op.OpCodeSize,
+                            (int)op.Operands[0].Value);
+                    if (targetSpot >= EndExpression)
+                        break;
+                }
+                if (IsStackOperation(op)) continue;
                 break;
             }
 
@@ -1466,6 +1545,25 @@ namespace Cerberus.Logic
             for (int i = j; i <= index; i++)
             {
                 var op = Function.Operations[i];
+
+                if (op.IsTernary)
+                {
+                    var t = FindTernaryAt(op.OpCodeOffset);
+
+                    if (t == null)
+                        throw new Exception("Operation is ternary, but the nested ternary start index decompiler is a 5head");
+
+                    if (!t.Visited)
+                    {
+                        Stack.Push(t.GetHeader());
+                    }
+
+                    VerboseCondition($"<Nested Ternary:{t.StartOffset:X4} - {t.EndOffset:X4}> Stack Size: {Stack.Count}", UseTernaryLogging);
+                    StackBaseMap[i] = Stack.Count; // log the stack size at this instruction
+                    i = GetInstructionAt(t.EndOffset) - 1;
+                    continue;
+                }
+
                 ProcessInstruction(op);
                 VerboseCondition($"{op.Metadata.OpCode} Stack Size: {Stack.Count}", UseTernaryLogging);
                 StackBaseMap[i] = Stack.Count; // log the stack size at this instruction
@@ -1476,33 +1574,34 @@ namespace Cerberus.Logic
                 Function.Operations[i].Visited = false;
 
             // now we need to check for excess stack
-            if (Stack.Count > StackSizeCached + 1)
+            int k = FindLowMatchStackBaseIndex(StackBaseMap, index);
+            int tval = StackBaseMap[k];
+
+            if (IsTwoOperandExpression) tval--;
+
+            var next = FindLowMatchStackBaseIndex(StackBaseMap, k - 1);
+            VerboseCondition($"Start Stack Inspection: {next:X3}, tval: {tval}", UseTernaryLogging);
+            if (next == -1 || StackBaseMap[k] < tval) // determine where the stack needs to end
             {
-                int k = index;
-                int tval = StackBaseMap[k];
-                if(!StackBaseMap.ContainsKey(k - 1) || StackBaseMap[k] < tval) // determine where the stack needs to end
-                {
-                    j = k;
-                    goto cleanup;
-                }
-
-                k--;
-                while (StackBaseMap.ContainsKey(k) && StackBaseMap[k] >= tval)
-                {
-                    k--;
-                    if (!StackBaseMap.ContainsKey(k))
-                        break;
-                    if(Function.Operations[k].Metadata.OpType == ScriptOpType.JumpExpression)
-                    {
-                        tval = StackBaseMap[k];
-                        continue;
-                    }
-                }
-                    
-                k++;
-
                 j = k;
+                goto cleanup;
             }
+
+            k--;
+
+            while (((next = FindLowMatchStackBaseIndex(StackBaseMap, k)) != -1) && StackBaseMap[k = next] >= tval)
+            {
+                k--;
+                if (((next = FindLowMatchStackBaseIndex(StackBaseMap, k)) == -1))
+                    break;
+                if(Function.Operations[k = next].Metadata.OpType == ScriptOpType.JumpExpression && !Function.Operations[k = next].IsTernary)
+                {
+                    tval = StackBaseMap[k];
+                    continue;
+                }
+            }
+
+            j = k = FindHighMatchStackBaseIndex(StackBaseMap, k + 1);
 
             cleanup:
             // and cleanup
@@ -1511,6 +1610,56 @@ namespace Cerberus.Logic
 
             VerboseCondition($"End Ternary, expecting opcode: {(j >= 0 ? Function.Operations[j].OpCodeOffset.ToString("X4") : "No Operation")}", UseTernaryLogging);
             return j;
+        }
+
+        /// <summary>
+        /// given k, finds either k or the next lowest value in the base map
+        /// </summary>
+        /// <param name="StackBaseMap"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        private int FindLowMatchStackBaseIndex(Dictionary<int, int> StackBaseMap, int k)
+        {
+            if (StackBaseMap.ContainsKey(k))
+                return k;
+
+            var results = StackBaseMap.Where((x) => x.Key < k).ToArray();
+            
+            if (results.Length < 1)
+                return -1;
+
+            int Highest = -1;
+
+            foreach (var result in results)
+                if (result.Key > Highest)
+                    Highest = result.Key;
+
+            return Highest;
+        }
+
+        /// <summary>
+        /// given k, finds either k or the next highest value in the base map
+        /// </summary>
+        /// <param name="StackBaseMap"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        private int FindHighMatchStackBaseIndex(Dictionary<int, int> StackBaseMap, int k)
+        {
+            if (StackBaseMap.ContainsKey(k))
+                return k;
+
+            var results = StackBaseMap.Where((x) => x.Key > k).ToArray();
+
+            if (results.Length < 1)
+                return -1;
+
+            int Lowest = 0x7FFFFFFF;
+
+            foreach (var result in results)
+                if (result.Key < Lowest)
+                    Lowest = result.Key;
+
+            return Lowest;
         }
 
         /// <summary>
@@ -1584,7 +1733,7 @@ namespace Cerberus.Logic
                 case ScriptOpCode.SetNextArrayKeyCached:
                 case ScriptOpCode.EvalLocalVariableCached:
                 case ScriptOpCode.EvalLocalVariableRefCached:
-                case ScriptOpCode.SetWaittillVariableFieldCached:
+                case ScriptOpCode.EvalLocalArrayRefCached:
                     return GetLocalVariable((int)op.Operands[0].Value);
                 case ScriptOpCode.EvalFieldVariable:
                 case ScriptOpCode.EvalFieldVariableRef:
@@ -1602,6 +1751,10 @@ namespace Cerberus.Logic
                     if (!GlobalObjectTable.ContainsKey(igobj))
                         throw new NotImplementedException($"Global object '{igobj}' unimplemented.");
                     return $"{GlobalObjectTable[igobj]}.{op.Operands[1].Value}";
+                case ScriptOpCode.CastAndEvalFieldVariable:
+                    if (Stack.Count < 1)
+                        return $"?.{op.Operands[0].Value}";
+                    return $"{Stack.Peek()}.{op.Operands[0].Value}";
                 default:
                     throw new ArgumentException($"Invalid Op Code for GetVariableName '{op.Metadata.OpCode}'");
             }
@@ -1784,7 +1937,28 @@ namespace Cerberus.Logic
                                     Stack.Push(string.Format("({0}, {1}, {2})", Stack.Pop(), Stack.Pop(), Stack.Pop()));
                                     break;
                                 case ScriptOpCode.CreateStruct:
-                                    Stack.Push("CreateStruct");
+                                    Stack.Push("{}");
+                                    break;
+                                case ScriptOpCode.AddToArray:
+                                    string toPush = "";
+                                    string indexer = Stack.Pop();
+                                    string val = Stack.Pop();
+                                    string arrVal = Stack.Pop();
+                                    if(arrVal[arrVal.Length - 1] != ']')
+                                    {
+                                        toPush = $"{arrVal}[{indexer}:{val}]";
+                                    }
+                                    else
+                                    {
+                                        if (arrVal[arrVal.Length - 2] == '[')
+                                            toPush = $"[{indexer}:{val}]";
+                                        else
+                                        {
+                                            toPush = $"{arrVal.Substring(0, arrVal.Length - 1)}, {indexer}:{val}]";
+                                        }
+                                    }
+
+                                    Stack.Push(toPush);
                                     break;
                             }
                         }
@@ -1961,6 +2135,8 @@ namespace Cerberus.Logic
                             case ScriptOpCode.ScriptMethodCallPointer:
                             case ScriptOpCode.ScriptThreadCallPointer:
                             case ScriptOpCode.ScriptMethodThreadCallPointer:
+                            case ScriptOpCode.ScriptThreadCallPointer2:
+                            case ScriptOpCode.ScriptMethodThreadCallPointer2:
                                 {
                                     // Pointers are wrapped
                                     functionName = "[[" + Stack.Pop() + "]]";
@@ -1969,7 +2145,9 @@ namespace Cerberus.Logic
                                     // Check for thread calls
                                     if (
                                         operation.Metadata.OpCode == ScriptOpCode.ScriptThreadCallPointer ||
-                                        operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCallPointer)
+                                        operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCallPointer ||
+                                        operation.Metadata.OpCode == ScriptOpCode.ScriptThreadCallPointer2 ||
+                                        operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCallPointer2)
                                     {
                                         threaded = true;
                                     }
@@ -1977,7 +2155,8 @@ namespace Cerberus.Logic
                                     // Check for method calls
                                     if (
                                     operation.Metadata.OpCode == ScriptOpCode.ScriptMethodCallPointer ||
-                                    operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCallPointer)
+                                    operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCallPointer ||
+                                    operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCallPointer2)
                                     {
                                         method = true;
                                     }
@@ -1985,6 +2164,8 @@ namespace Cerberus.Logic
                                 }
                             case ScriptOpCode.ScriptFunctionCall:
                             case ScriptOpCode.ScriptMethodCall:
+                            case ScriptOpCode.ScriptMethodThreadCall2:
+                            case ScriptOpCode.ScriptThreadCall2:
                             case ScriptOpCode.ScriptMethodThreadCall:
                             case ScriptOpCode.ScriptThreadCall:
                                 {
@@ -2002,7 +2183,9 @@ namespace Cerberus.Logic
                                     // Check for thread calls
                                     if (
                                         operation.Metadata.OpCode == ScriptOpCode.ScriptThreadCall ||
-                                        operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall)
+                                        operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall ||
+                                        operation.Metadata.OpCode == ScriptOpCode.ScriptThreadCall2 ||
+                                        operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall2)
                                     {
                                         threaded = true;
                                     }
@@ -2010,12 +2193,15 @@ namespace Cerberus.Logic
                                     // Check for method calls
                                     if (
                                     operation.Metadata.OpCode == ScriptOpCode.ScriptMethodCall ||
-                                    operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall)
+                                    operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall || 
+                                    operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall2)
                                     {
                                         method = true;
                                     }
                                     break;
                                 }
+                            case ScriptOpCode.ClassFunctionThreadCall:
+                            case ScriptOpCode.ClassFunctionThreadCall2:
                             case ScriptOpCode.ClassFunctionCall:
                                 {
                                     functionName = (string)operation.Operands[0].Value;
@@ -2032,6 +2218,8 @@ namespace Cerberus.Logic
                                 }
                         }
 
+                        paramCount = Math.Min(paramCount, Stack.Count);
+                        Verbose($"[{Function.Name}] log call at 0x{operation.OpCodeOffset:X6} with {paramCount} params, stack size: {Stack.Count}");
                         // Push the call as it's basically a stack item
                         // wait is not pushed, it's technically not a call
                         if (operation.Metadata.OpCode == ScriptOpCode.Wait || operation.Metadata.OpCode == ScriptOpCode.WaitRealTime || operation.Metadata.OpCode == ScriptOpCode.WaitFrame)
@@ -2044,6 +2232,12 @@ namespace Cerberus.Logic
                             string front_half = GenerateFunctionCall(functionName, paramCount, threaded, method);
                             Stack.Push($"[[ {caller} ]]->{front_half}");
                         }
+                        else if(operation.Metadata.OpCode == ScriptOpCode.ClassFunctionThreadCall || operation.Metadata.OpCode == ScriptOpCode.ClassFunctionThreadCall2)
+                        {
+                            string caller = Stack.Pop();
+                            string front_half = GenerateFunctionCall(functionName, paramCount, threaded, method);
+                            Stack.Push($"thread [[ {caller} ]]->{front_half}");
+                        }
                         else
                         {
                             Stack.Push(GenerateFunctionCall(functionName, paramCount, threaded, method));
@@ -2055,9 +2249,10 @@ namespace Cerberus.Logic
                     {
                         switch (operation.Metadata.OpCode)
                         {
+                            case ScriptOpCode.EndOnCallback:
                             case ScriptOpCode.EndOn:
                                 {
-                                    Writer?.Write("{0} endon(", Stack.Pop());
+                                    Writer?.Write($"{Stack.Pop()} {(operation.Metadata.OpCode == ScriptOpCode.EndOn ? "endon" : "endon_callback")}(");
 
                                     List<string> nArgs = new List<string>();
                                     for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++)
@@ -2069,26 +2264,12 @@ namespace Cerberus.Logic
                                 }
                             case ScriptOpCode.Notify:
                                 {
-                                    Writer?.Write("{0} notify({1}", Stack.Pop(), Stack.Pop());
+                                    Writer?.Write("{0} notify(", Stack.Pop());
 
-                                    bool HasNotifyObject = false;
-                                    if(Stack.Contains("CreateStruct"))
-                                    {
-                                        HasNotifyObject = true;
-                                        Writer?.Write($", {{{Stack.Pop()}");
-                                    }
+                                    List<string> nArgs = new List<string>();
+                                    while(Stack.Count > 0) nArgs.Add(Stack.Pop());
 
-                                    while (Stack.Contains("CreateStruct"))
-                                    {
-                                        string rval = Stack.Pop();
-                                        if (rval == "CreateStruct") break;
-                                        Writer?.Write(", {0}", rval);
-                                    }
-
-                                    if(HasNotifyObject)
-                                    {
-                                        Writer?.Write('}');
-                                    }
+                                    Writer?.Write(string.Join(", ", nArgs));
 
                                     Writer?.WriteLine(");");
 
@@ -2099,29 +2280,11 @@ namespace Cerberus.Logic
                                     string pushOp = "";
                                     pushOp += $"{Stack.Pop()} waittill_match(";
 
-                                    bool HasNotifyObject = false;
-                                    if (Stack.Contains("CreateStruct"))
-                                    {
-                                        HasNotifyObject = true;
-                                        pushOp += $"{{{Stack.Pop()}";
-                                    }
+                                    List<string> nArgs = new List<string>();
+                                    for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++)
+                                        nArgs.Add(Stack.Pop());
 
-                                    while (Stack.Contains("CreateStruct"))
-                                    {
-                                        string rval = Stack.Pop();
-                                        if (rval == "CreateStruct") break;
-                                        pushOp += $", {rval}";
-                                    }
-
-                                    if (HasNotifyObject)
-                                    {
-                                        pushOp += '}';
-                                    }
-
-                                    for(int i = 1; i < int.Parse(operation.Operands[0].Value.ToString()); i++)
-                                    {
-                                        pushOp += $", {Stack.Pop()}";
-                                    }
+                                    pushOp += string.Join(", ", nArgs);
 
                                     pushOp += ")";
 
@@ -2129,20 +2292,11 @@ namespace Cerberus.Logic
 
                                     break;
                                 }
+                            case ScriptOpCode.WaittillTimeout:
                             case ScriptOpCode.WaitTill:
                                 {
                                     string pushOp = "";
-                                    pushOp += $"{Stack.Pop()} waittill(";
-
-                                    /*
-                                    // Parse the variables created by a waittill
-                                    var index = GetInstructionAt(operation.OpCodeOffset) + 1;
-                                    while (Function.Operations[index].Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached)
-                                    {
-                                        pushOp += $", {GetVariableName(Function.Operations[index])}";
-                                        index++;
-                                    }
-                                    */
+                                    pushOp += $"{Stack.Pop()} {(operation.Metadata.OpCode == ScriptOpCode.WaitTill ? "waittill" : "waittill_timeout")}(";
 
                                     var nArgs = new List<string>();
                                     for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++)
@@ -2157,7 +2311,7 @@ namespace Cerberus.Logic
                                 }
                             case ScriptOpCode.WaitTillFrameEnd:
                                 {
-                                    Writer?.WriteLine("waittillframeend;");
+                                    Writer?.WriteLine("waittillframeend();");
                                     break;
                                 }
                         }
@@ -2202,7 +2356,7 @@ namespace Cerberus.Logic
                                 CurrentReference = Stack.Pop();
                                 Stack.Push(CurrentReference + "." + (string)operation.Operands[0].Value);
                                 break;
-                            case ScriptOpCode.EvalStackFieldVariable:
+                            case ScriptOpCode.EvalFieldVariableOnStack:
                                 Stack.Push($"{CurrentReference}.({Stack.Pop()})");
                                 break;
                         }
@@ -2233,6 +2387,11 @@ namespace Cerberus.Logic
                                     CurrentReference = "self." + (string)operation.Operands[0].Value;
                                     break;
                                 }
+                            case ScriptOpCode.EvalFieldVariableOnStackRef:
+                                {
+                                    CurrentReference = $"{CurrentReference}.({Stack.Pop()})";
+                                    break;
+                                }
                         }
                         break;
                     }
@@ -2259,7 +2418,13 @@ namespace Cerberus.Logic
                         }
                         else if (operation.Metadata.OpCode == ScriptOpCode.AddToStruct)
                         {
-                            Stack.Push($"{Stack.Pop().Replace("\"", "")}:{Stack.Pop()}");
+                            string skey = Stack.Pop();
+                            string sval = Stack.Pop();
+                            string original_struct = Stack.Pop();
+                            original_struct = original_struct.Substring(0, original_struct.Length - 1);
+                            if (original_struct[original_struct.Length - 1] != '{')
+                                original_struct += ", ";
+                            Stack.Push($"{original_struct}{skey.Replace("\"", "")}:{sval}}}");
                             break;
                         }
                         else if(operation.Metadata.OpCode == ScriptOpCode.SetNextArrayKeyCached)

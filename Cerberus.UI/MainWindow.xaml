@@ -60,6 +60,7 @@
                                 <GridViewColumn Header="Name" Width="192" DisplayMemberBinding="{Binding Name}"/>
                                 <GridViewColumn Header="Namespace" Width="192" DisplayMemberBinding="{Binding Namespace}"/>
                                 <GridViewColumn Header="References" Width="96" DisplayMemberBinding="{Binding References.Count}"/>
+                                <GridViewColumn Header="Parameters" Width="96" DisplayMemberBinding="{Binding ParameterCount}"/>
                             </GridView>
                         </ListView.View>
                     </ListView>

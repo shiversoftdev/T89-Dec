@@ -373,7 +373,7 @@ namespace Cerberus.Logic
                     }
                 case ScriptOperandType.Call:
                     {
-                        if (operation.Metadata.OpCode == ScriptOpCode.ClassFunctionCall)
+                        if (operation.Metadata.OpCode == ScriptOpCode.ClassFunctionCall || operation.Metadata.OpCode == ScriptOpCode.ClassFunctionThreadCall || operation.Metadata.OpCode == ScriptOpCode.ClassFunctionThreadCall2)
                         {
                             var paramterCount = Reader.ReadByte();
                             Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);

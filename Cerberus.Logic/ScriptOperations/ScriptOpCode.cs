@@ -171,7 +171,17 @@ namespace Cerberus.Logic
         GetAPIFunction,
         GetUnsignedInteger,
         CastVariableName,
-        EvalStackFieldVariable,
+        EvalFieldVariableOnStack,
+        EvalFieldVariableOnStackRef,
+        EndOnCallback,
+        WaittillTimeout,
+        AddToArray,
+        ClassFunctionThreadCall,
+        ScriptThreadCall2,
+        ScriptThreadCallPointer2,
+        ScriptMethodThreadCall2,
+        ScriptMethodThreadCallPointer2,
+        ClassFunctionThreadCall2,
         Invalid                               = 0xFF,
     }
 }

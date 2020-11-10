@@ -116,39 +116,57 @@ namespace Cerberus.Logic
 
         public void LoadFunction(ScriptExport function)
         {
-            var offset = function.ByteCodeOffset;
+            var eip = function.ByteCodeOffset;
             var endOffset = function.ByteCodeOffset + function.ByteCodeSize;
+            Stack<int> OperationOffsets = new Stack<int>();
 
             while (function.ByteCodeSize == 0 // on black ops 3+ the end of the function is garbage filled when dumped.
-                || offset <= endOffset) 
+                || OperationOffsets.Count > 0) 
             {
-                ScriptOp operation = null;
+                ScriptOp op;
                 try
                 {
-                    operation = LoadOperation(offset);
+                    op = LoadOperation(eip);
+                    if (op == null) break;
+                    function.Operations.Add(op);
+
+                    if (op.Metadata.OpType == ScriptOpType.Jump || 
+                        op.Metadata.OpType == ScriptOpType.JumpCondition ||
+                        op.Metadata.OpType == ScriptOpType.JumpExpression)
+                    {
+                        OperationOffsets.Push(GetJumpLocation(op.OpCodeOffset + op.OpCodeSize, int.Parse(op.Operands[0].Value.ToString())));
+                    }
+                    if(op.Metadata.OpType == ScriptOpType.Return)
+                    {
+                        endOffset = Math.Max(endOffset, eip + op.OpCodeSize);
+                        while (GetInstructionAt(function, eip) != -1 && OperationOffsets.Count > 0)
+                            eip = OperationOffsets.Pop();
+                        
+                        if (GetInstructionAt(function, eip) != -1)
+                            break;
+
+                        continue;
+                    }
+                    eip += op.OpCodeSize;
                 }
                 catch(ArgumentException e)
                 {
-                    function.DirtyMessage = $"{e.Message} at {offset:X4}";
-
+                    function.DirtyMessage = $"{e.Message} at {eip:X4}";
                     break;
                 }
-
-                if (operation == null)
-                {
-                    //function.Operations.Add(new ScriptOp()
-                    //{
-                    //    Metadata = new ScriptOpMetadata(ScriptOpCode.Invalid, ScriptOpType.None, ScriptOperandType.None),
-                    //    OpCodeOffset = offset
-                    //});
-                    break;
-                }
-
-                offset += operation.OpCodeSize;
-                function.Operations.Add(operation);
             }
 
-            function.ByteCodeSize = offset - function.ByteCodeOffset;
+            function.ByteCodeSize = endOffset - function.ByteCodeOffset;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
+        private int GetInstructionAt(ScriptExport function, int offset)
+        {
+            return function.Operations.FindIndex(x => x.OpCodeOffset == offset);
         }
 
         /// <summary>
@@ -201,21 +219,31 @@ namespace Cerberus.Logic
                     output.AppendLine("{");
                     lineNumber += 2;
 
+                    int index = 0;
                     foreach(var operation in function.Operations)
                     {
                         // Add IP and Size Info
-                        output.AppendFormat("\t/* IP: 0x{0} - Size 0x{1} */\t\t\tOP_{2}(",
-                            operation.OpCodeOffset.ToString("X8"),
-                            operation.OpCodeSize.ToString("X8"),
+                        output.AppendFormat("\t/* IP: 0x{0} - Size 0x{1} Index: {2} */\t\t\tOP_{3}(",
+                            operation.OpCodeOffset.ToString("X6"),
+                            operation.OpCodeSize.ToString("X4"),
+                            index.ToString("X3"),
                             operation.Metadata.OpCode);
 
                         for (int i = 0; i < operation.Operands.Count; i++)
                         {
-                            output.AppendFormat("{0}{1}", operation.Operands[i].Value, i == operation.Operands.Count - 1 ? "" : ", ");
+                            if(operation.Metadata.OpType == ScriptOpType.Jump || operation.Metadata.OpType == ScriptOpType.JumpCondition || operation.Metadata.OpType == ScriptOpType.JumpExpression)
+                            {
+                                output.AppendFormat("{0}{1}", "0x" + (operation.OpCodeSize + operation.OpCodeOffset + int.Parse(operation.Operands[i].Value.ToString())).ToString("X"), i == operation.Operands.Count - 1 ? "" : ", ");
+                            }
+                            else
+                            {
+                                output.AppendFormat("{0}{1}", operation.Operands[i].Value, i == operation.Operands.Count - 1 ? "" : ", ");
+                            }
+                            
                         }
 
                         output.AppendLine(");");
-
+                        index++;
                         lineNumber++;
                     }
 

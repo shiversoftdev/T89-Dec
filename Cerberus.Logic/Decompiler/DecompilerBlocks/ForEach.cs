@@ -15,10 +15,15 @@ namespace Cerberus.Logic
 
         public string IteratorName { get; set; }
 
+        public string KeyName { get; set; }
+
         public ForEach(int startOffset, int endOffset) : base(startOffset, endOffset) { }
 
         public override string GetHeader()
         {
+            if(KeyName != null)
+                return string.Format("foreach({0}, {1} in {2})", KeyName, IteratorName, ArrayName);
+
             return string.Format("foreach({0} in {1})", IteratorName, ArrayName);
         }
 

@@ -163,7 +163,7 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.EvalLocalVariableDefined,         ScriptOpType.Variable,          ScriptOperandType.UInt8),
             new ScriptOpMetadata(ScriptOpCode.JumpOnGreaterThan,                ScriptOpType.JumpCondition,     ScriptOperandType.Int16),
             new ScriptOpMetadata(ScriptOpCode.SetVariableFieldRef,              ScriptOpType.SetVariable,       ScriptOperandType.VariableName),
-            new ScriptOpMetadata(ScriptOpCode.CreateStruct,                     ScriptOpType.StackPush,              ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.CreateStruct,                     ScriptOpType.StackPush,         ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.AddToStruct,                      ScriptOpType.SetVariable,       ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.GetGlobalObject,                  ScriptOpType.StackPush,         ScriptOperandType.UInt8),
             new ScriptOpMetadata(ScriptOpCode.JumpOnLessThan,                   ScriptOpType.JumpCondition,     ScriptOperandType.Int16),
@@ -176,7 +176,17 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.GetAPIFunction,                   ScriptOpType.StackPush,         ScriptOperandType.FunctionPointer),
             new ScriptOpMetadata(ScriptOpCode.GetUnsignedInteger,               ScriptOpType.StackPush,         ScriptOperandType.UInt32),
             new ScriptOpMetadata(ScriptOpCode.CastVariableName,                 ScriptOpType.Cast,              ScriptOperandType.None),
-            new ScriptOpMetadata(ScriptOpCode.EvalStackFieldVariable,           ScriptOpType.Variable,          ScriptOperandType.None), //EvalFieldVariableOnStack, EvalFieldVariableOnStackRef, ClearFieldVariableOnStack
+            new ScriptOpMetadata(ScriptOpCode.EvalFieldVariableOnStack,         ScriptOpType.Variable,          ScriptOperandType.None), //Missing ClearFieldVariableOnStack, ShiftRight
+            new ScriptOpMetadata(ScriptOpCode.EvalFieldVariableOnStackRef,      ScriptOpType.VariableReference, ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.EndOnCallback,                    ScriptOpType.Notification,      ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.WaittillTimeout,                  ScriptOpType.Notification,      ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.AddToArray,                       ScriptOpType.StackPush,         ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.ClassFunctionThreadCall,          ScriptOpType.Call,              ScriptOperandType.Call),
+            new ScriptOpMetadata(ScriptOpCode.ScriptThreadCall2,                ScriptOpType.Call,              ScriptOperandType.Call),
+            new ScriptOpMetadata(ScriptOpCode.ScriptThreadCallPointer2,         ScriptOpType.Call,              ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.ScriptMethodThreadCall2,          ScriptOpType.Call,              ScriptOperandType.Call),
+            new ScriptOpMetadata(ScriptOpCode.ScriptMethodThreadCallPointer2,   ScriptOpType.Call,              ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.ClassFunctionThreadCall2,         ScriptOpType.Call,              ScriptOperandType.Call),
         };
 
         /// <summary>

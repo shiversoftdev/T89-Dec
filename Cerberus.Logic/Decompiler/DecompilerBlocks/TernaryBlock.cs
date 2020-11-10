@@ -20,7 +20,9 @@ namespace Cerberus.Logic
 
         public string FalseCondition { get; set; }
 
-        public bool IsJumpOnTrue { get; set; }
+        public ScriptOpCode JumpCode { get; set; }
+
+        public TernaryBlock ParentBlock { get; set; } // 3arc makes me want to pepekms sometimes
 
         /// <summary>
         /// Initializes an if Block
@@ -30,7 +32,18 @@ namespace Cerberus.Logic
         /// <summary>
         /// Gets the header
         /// </summary>
-        public override string GetHeader() => string.Format(IsJumpOnTrue ? "({0} ? {2} : {1})" : "({0} ? {1} : {2})", Comparison, TrueCondition, FalseCondition);
+        public override string GetHeader() 
+        { 
+            switch(JumpCode)
+            {
+                case ScriptOpCode.JumpOnTrue:
+                    return string.Format("({0} ? {2} : {1})", Comparison, TrueCondition, FalseCondition);
+                case ScriptOpCode.JumpOnFalse:
+                    return string.Format("({0} ? {1} : {2})", Comparison, TrueCondition, FalseCondition);
+                default:
+                    return string.Format("({0} ? {1} : {2})", Comparison, TrueCondition, FalseCondition);
+            }
+        }
 
         /// <summary>
         /// Gets the footer

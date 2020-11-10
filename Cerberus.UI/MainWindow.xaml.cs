@@ -76,6 +76,7 @@ namespace Cerberus.UI
                     Decompiler.IsReadOnly = true;
                     SearchPanel.Install(Decompiler);
                     SearchPanel.Install(Disassembly);
+                    SearchPanel.Install(Log);
                 }
             }
 
