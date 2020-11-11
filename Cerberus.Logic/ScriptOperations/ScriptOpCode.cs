@@ -182,6 +182,11 @@ namespace Cerberus.Logic
         ScriptMethodThreadCall2,
         ScriptMethodThreadCallPointer2,
         ClassFunctionThreadCall2,
+        SetGlobalObjectFieldVariable, //t9
+        EvalGlobalObjectFieldVariableRef, //t9
+        EvalLocalVariablesCached, //t9
+        IncCached, //t9
+        DecCached, //t9
         Invalid                               = 0xFF,
     }
 }

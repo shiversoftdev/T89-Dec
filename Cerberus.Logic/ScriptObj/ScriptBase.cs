@@ -453,6 +453,9 @@ namespace Cerberus.Logic
             // We can use the magic to determine game
             switch(reader.ReadUInt64())
             {
+                case 0x37000A0D43534780:
+                    ParseHashTables("t8_hash.map", "includes.map");
+                    return new T9_VM37Script(reader, t8_dword, t8_qword);
                 case 0x36000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
                     return new BlackOps4Script(reader, t8_dword, t8_qword);

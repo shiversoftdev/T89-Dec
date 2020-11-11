@@ -29,6 +29,7 @@ namespace Cerberus.Logic
         VariableName,
         VariableIndex,
         SwitchEnd,
-        GlobalFieldVariable
+        GlobalFieldVariable,
+        DoubleUInt8,
     }
 }

@@ -187,6 +187,11 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.ScriptMethodThreadCall2,          ScriptOpType.Call,              ScriptOperandType.Call),
             new ScriptOpMetadata(ScriptOpCode.ScriptMethodThreadCallPointer2,   ScriptOpType.Call,              ScriptOperandType.UInt8),
             new ScriptOpMetadata(ScriptOpCode.ClassFunctionThreadCall2,         ScriptOpType.Call,              ScriptOperandType.Call),
+            new ScriptOpMetadata(ScriptOpCode.SetGlobalObjectFieldVariable,     ScriptOpType.SetVariable,       ScriptOperandType.GlobalFieldVariable),
+            new ScriptOpMetadata(ScriptOpCode.EvalGlobalObjectFieldVariableRef, ScriptOpType.VariableReference, ScriptOperandType.GlobalFieldVariable),
+            new ScriptOpMetadata(ScriptOpCode.EvalLocalVariablesCached,         ScriptOpType.Variable,          ScriptOperandType.DoubleUInt8),
+            new ScriptOpMetadata(ScriptOpCode.IncCached,                        ScriptOpType.SingleOperand,     ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.DecCached,                        ScriptOpType.SingleOperand,     ScriptOperandType.UInt8)
         };
 
         /// <summary>

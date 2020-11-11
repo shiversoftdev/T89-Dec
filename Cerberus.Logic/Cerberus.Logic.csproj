@@ -111,7 +111,9 @@
     <Compile Include="Decompiler\DecompilerBlocks\DecompilerBlock.cs" />
     <Compile Include="Decompiler\DecompilerBlocks\DevBlock.cs" />
     <Compile Include="FastFile.cs" />
+    <Compile Include="Games\T9_VM37Meta.cs" />
     <Compile Include="Games\BlackOps4Metadata.cs" />
+    <Compile Include="Games\T9_VM37.cs" />
     <Compile Include="Games\BlackOps4Script.cs" />
     <Compile Include="CRC32.cs" />
     <Compile Include="Salsa20.cs" />
@@ -142,6 +144,11 @@
     <None Include="Games\t8_primary.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Games\t9_vm37_codes.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

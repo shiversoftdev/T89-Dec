@@ -28,8 +28,8 @@ namespace Cerberus.Logic
     /// </summary>
     internal class Decompiler : IDisposable
     {
-        private static bool UseTernaryLogging = true, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = false,
-            UseJumpDetectionLogging = false, UseForLoopVerbose = true, UseIfStatementLogging = true;
+        private static bool UseTernaryLogging = false, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = false,
+            UseJumpDetectionLogging = false, UseForLoopVerbose = false, UseIfStatementLogging = false;
         /// <summary>
         /// Operators by Op Code
         /// </summary>
@@ -1296,7 +1296,16 @@ namespace Cerberus.Logic
                                 break;
                             }
 
-                            if (op.Metadata.OpType == ScriptOpType.Variable)
+                            if (op.Metadata.OperandType == ScriptOperandType.DoubleUInt8)
+                            {
+                                var pair = GetVariableNames(op);
+                                if (pair.Item1 == variableName || pair.Item2 == variableName)
+                                {
+                                    isCompared = true;
+                                    break;
+                                }
+                            }
+                            else if (op.Metadata.OpType == ScriptOpType.Variable)
                             {
                                 var compVar = GetVariableName(op);
 
@@ -1310,20 +1319,21 @@ namespace Cerberus.Logic
                             }
                         }
 
+                        VerboseCondition($"[{Function.Name}] For loop isCompared {variableName}:{isCompared}", UseForLoopVerbose);
                         // Check if we hit a valid comparison
                         if (isCompared)
                         {
                             // Now let's do a backwards scan like the while, until we hit a reference to the variable, if we do
-                            // We can be farily confident it's a for loop and can mark is as such
+                            // We can be fairly confident it's a for loop and can mark is as such
                             // We can also run a jump check again to see forward jumps that match us
-                            var endIndex = GetInstructionAt(whileLoop.EndOffset) - 2;
+                            var endIndex = GetInstructionAt(whileLoop.EndOffset) - ((Script is BlackOps4Script) ? 2 : 1);
                             bool isModified = false;
                             int referenceIndex = -1;
-
+                            int _j = endIndex;
                             // Attempt to hit a comparison to this
-                            for (int j = endIndex; j >= 0; j--)
+                            for (_j = endIndex; _j >= 0; _j--)
                             {
-                                var op = Function.Operations[j];
+                                var op = Function.Operations[_j];
 
                                 if (IsInsideChildBlock(op.OpCodeOffset, whileLoop))
                                 {
@@ -1335,7 +1345,9 @@ namespace Cerberus.Logic
                                     break;
                                 }
 
-                                if (op.Metadata.OpType == ScriptOpType.SingleOperand)
+                                if (op.Metadata.OpType == ScriptOpType.SingleOperand && 
+                                    op.Metadata.OpCode != ScriptOpCode.DecCached && 
+                                    op.Metadata.OpCode != ScriptOpCode.IncCached)
                                 {
                                     continue;
                                 }
@@ -1353,7 +1365,21 @@ namespace Cerberus.Logic
                                     // So we can try and use it
                                     if (compVar == variableName)
                                     {
-                                        referenceIndex = j;
+                                        referenceIndex = _j;
+                                        isModified = true;
+                                        break;
+                                    }
+                                }
+
+                                if(op.Metadata.OpCode == ScriptOpCode.DecCached || op.Metadata.OpCode == ScriptOpCode.IncCached)
+                                {
+                                    var compVar = GetVariableName(op);
+
+                                    // At some point, this variable is being compared
+                                    // So we can try and use it
+                                    if (compVar == variableName)
+                                    {
+                                        referenceIndex = _j;
                                         isModified = true;
                                         break;
                                     }
@@ -1365,6 +1391,7 @@ namespace Cerberus.Logic
                                 }
                             }
 
+                            VerboseCondition($"[{Function.Name}] For loop isModified index.{referenceIndex:X3}:{isModified}:{_j:X3}", UseForLoopVerbose);
                             // Final straw, IS SHE MODIFIED
                             if (isModified)
                             {
@@ -1388,6 +1415,14 @@ namespace Cerberus.Logic
                                     {
                                         switch (op.Metadata.OpCode)
                                         {
+                                            case ScriptOpCode.SetGlobalObjectFieldVariable:
+                                                byte igobj = byte.Parse(op.Operands[0].Value.ToString());
+
+                                                if (!GlobalObjectTable.ContainsKey(igobj))
+                                                    throw new NotImplementedException($"Global object '{igobj}' unimplemented.");
+
+                                                forLoop.Modifier = $"{ GlobalObjectTable[igobj]}.{op.Operands[1].Value} = {Stack.Pop()};";
+                                                break;
                                             case ScriptOpCode.SetLocalVariableCached:
                                                 forLoop.Initializer = string.Format("{0} = {1}", LocalVariables[LocalVariables.Count - (int)op.Operands[0].Value - 1], Stack.Pop());
                                                 break;
@@ -1414,6 +1449,10 @@ namespace Cerberus.Logic
                                     Function.Operations[referenceIndex + 1].Metadata.OpCode == ScriptOpCode.Dec ||
                                     Function.Operations[referenceIndex + 1].Metadata.OpCode == ScriptOpCode.Inc
                                     )
+                                {
+                                    modifierStart = referenceIndex;
+                                }
+                                else if (Function.Operations[referenceIndex].Metadata.OpCode == ScriptOpCode.DecCached || Function.Operations[referenceIndex].Metadata.OpCode == ScriptOpCode.IncCached)
                                 {
                                     modifierStart = referenceIndex;
                                 }
@@ -1453,6 +1492,14 @@ namespace Cerberus.Logic
                     {
                         switch(op.Metadata.OpCode)
                         {
+                            case ScriptOpCode.SetGlobalObjectFieldVariable:
+                                byte igobj = byte.Parse(op.Operands[0].Value.ToString());
+
+                                if (!GlobalObjectTable.ContainsKey(igobj))
+                                    throw new NotImplementedException($"Global object '{igobj}' unimplemented.");
+
+                                loop.Modifier = $"{ GlobalObjectTable[igobj]}.{op.Operands[1].Value} = {Stack.Pop()};";
+                                break;
                             case ScriptOpCode.SetLocalVariableCached:
                                 loop.Modifier = string.Format("{0} = {1}", LocalVariables[LocalVariables.Count - (int)op.Operands[0].Value - 1], Stack.Pop());
                                 break;
@@ -1478,6 +1525,12 @@ namespace Cerberus.Logic
                                 return true;
                             case ScriptOpCode.Bit_Not:
                                 loop.Modifier = string.Format("~{0}", CurrentReference);
+                                return true;
+                            case ScriptOpCode.IncCached:
+                                loop.Modifier = string.Format("{0}++", LocalVariables[LocalVariables.Count - (int)op.Operands[0].Value - 1]);
+                                return true;
+                            case ScriptOpCode.DecCached:
+                                loop.Modifier = string.Format("{0}--", LocalVariables[LocalVariables.Count - (int)op.Operands[0].Value - 1]);
                                 return true;
                         }
 
@@ -1725,10 +1778,21 @@ namespace Cerberus.Logic
             return LocalVariables[LocalVariables.Count + ~index];
         }
 
+        private (string, string) GetVariableNames(ScriptOp op)
+        {
+            return (LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value], LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value]);
+        }
+
         private string GetVariableName(ScriptOp op)
         {
             switch(op.Metadata.OpCode)
             {
+                case ScriptOpCode.EvalGlobalObjectFieldVariableRef:
+                    byte igobj = byte.Parse(op.Operands[0].Value.ToString());
+                    if (!GlobalObjectTable.ContainsKey(igobj)) throw new NotImplementedException($"Global object '{igobj}' unimplemented.");
+                    return $"{GlobalObjectTable[igobj]}.{op.Operands[1].Value}";
+                case ScriptOpCode.IncCached:
+                case ScriptOpCode.DecCached:
                 case ScriptOpCode.SetLocalVariableCached:
                 case ScriptOpCode.SetNextArrayKeyCached:
                 case ScriptOpCode.EvalLocalVariableCached:
@@ -1747,7 +1811,7 @@ namespace Cerberus.Logic
                 case ScriptOpCode.EvalLocalVariableDefined:
                     return $"isdefined({LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value]})";
                 case ScriptOpCode.EvalGlobalObjectFieldVariable:
-                    byte igobj = byte.Parse(op.Operands[0].Value.ToString());
+                    igobj = byte.Parse(op.Operands[0].Value.ToString());
                     if (!GlobalObjectTable.ContainsKey(igobj))
                         throw new NotImplementedException($"Global object '{igobj}' unimplemented.");
                     return $"{GlobalObjectTable[igobj]}.{op.Operands[1].Value}";
@@ -1799,7 +1863,8 @@ namespace Cerberus.Logic
                 op.Metadata.OpCode == ScriptOpCode.BoolNot ||
                 op.Metadata.OpType == ScriptOpType.Object ||
                 op.Metadata.OpType == ScriptOpType.VariableReference ||
-                op.Metadata.OpType == ScriptOpType.Cast
+                op.Metadata.OpType == ScriptOpType.Cast || 
+                op.Metadata.OpType == ScriptOpType.DoubleOperand
 
                 )
             {
@@ -2099,6 +2164,16 @@ namespace Cerberus.Logic
                                     CurrentReference = "";
                                     break;
                                 }
+                            case ScriptOpCode.IncCached:
+                                {
+                                    Writer?.WriteLine(LocalVariables[LocalVariables.Count + ~(int)operation.Operands[0].Value] + "++;");
+                                    break;
+                                }
+                            case ScriptOpCode.DecCached:
+                                {
+                                    Writer?.WriteLine(LocalVariables[LocalVariables.Count + ~(int)operation.Operands[0].Value] + "--;");
+                                    break;
+                                }
                         }
                         break;
                     }
@@ -2359,6 +2434,10 @@ namespace Cerberus.Logic
                             case ScriptOpCode.EvalFieldVariableOnStack:
                                 Stack.Push($"{CurrentReference}.({Stack.Pop()})");
                                 break;
+                            case ScriptOpCode.EvalLocalVariablesCached:
+                                Stack.Push(LocalVariables[LocalVariables.Count + ~(int)operation.Operands[0].Value]);
+                                Stack.Push(LocalVariables[LocalVariables.Count + ~(int)operation.Operands[1].Value]);
+                                break;
                         }
                         break;
                     }
@@ -2390,6 +2469,16 @@ namespace Cerberus.Logic
                             case ScriptOpCode.EvalFieldVariableOnStackRef:
                                 {
                                     CurrentReference = $"{CurrentReference}.({Stack.Pop()})";
+                                    break;
+                                }
+                            case ScriptOpCode.EvalGlobalObjectFieldVariableRef:
+                                {
+                                    byte igobj = byte.Parse(operation.Operands[0].Value.ToString());
+
+                                    if (!GlobalObjectTable.ContainsKey(igobj))
+                                        throw new NotImplementedException($"Global object '{igobj}' unimplemented.");
+
+                                    CurrentReference = $"{GlobalObjectTable[igobj]}.{operation.Operands[1].Value}";
                                     break;
                                 }
                         }
@@ -2431,6 +2520,14 @@ namespace Cerberus.Logic
                         {
                             Writer?.WriteLine("{0} = GetNextArrayKey({1}, {2});", LocalVariables[LocalVariables.Count - (int)operation.Operands[0].Value - 1], Stack.Pop(), Stack.Pop());
                             break;
+                        }
+                        else if(operation.Metadata.OpCode == ScriptOpCode.SetGlobalObjectFieldVariable)
+                        {
+                            byte igobj = byte.Parse(operation.Operands[0].Value.ToString());
+
+                            if (!GlobalObjectTable.ContainsKey(igobj))
+                                throw new NotImplementedException($"Global object '{igobj}' unimplemented.");
+                            CurrentReference = $"{GlobalObjectTable[igobj]}.{operation.Operands[1].Value}";
                         }
 
                         Writer?.WriteLine("{0} = {1};", CurrentReference, Stack.Pop());
