@@ -470,7 +470,7 @@ namespace Cerberus.Logic
 
                     if(switchValue == 0 && i == switchCount - 1)
                     {
-                        switchString = "default";
+                        switchString = "default:";
                     }
                     else
                     {

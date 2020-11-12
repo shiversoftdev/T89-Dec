@@ -51,7 +51,7 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.EvalFieldVariable,                ScriptOpType.Variable,          ScriptOperandType.VariableName),
             new ScriptOpMetadata(ScriptOpCode.EvalFieldVariableRef,             ScriptOpType.VariableReference, ScriptOperandType.VariableName),
             new ScriptOpMetadata(ScriptOpCode.ClearFieldVariable,               ScriptOpType.ClearVariable,     ScriptOperandType.VariableName),
-            new ScriptOpMetadata(ScriptOpCode.SafeSetVariableFieldCached,       ScriptOpType.None,              ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.SafeSetVariableFieldCached,       ScriptOpType.SetVariable,       ScriptOperandType.GlobalFieldVariable),
             new ScriptOpMetadata(ScriptOpCode.SetWaittillVariableFieldCached,   ScriptOpType.None,              ScriptOperandType.UInt8),
             new ScriptOpMetadata(ScriptOpCode.ClearParams,                      ScriptOpType.None,              ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.CheckClearParams,                 ScriptOpType.None,              ScriptOperandType.None),
@@ -191,7 +191,14 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.EvalGlobalObjectFieldVariableRef, ScriptOpType.VariableReference, ScriptOperandType.GlobalFieldVariable),
             new ScriptOpMetadata(ScriptOpCode.EvalLocalVariablesCached,         ScriptOpType.Variable,          ScriptOperandType.DoubleUInt8),
             new ScriptOpMetadata(ScriptOpCode.IncCached,                        ScriptOpType.SingleOperand,     ScriptOperandType.UInt8),
-            new ScriptOpMetadata(ScriptOpCode.DecCached,                        ScriptOpType.SingleOperand,     ScriptOperandType.UInt8)
+            new ScriptOpMetadata(ScriptOpCode.DecCached,                        ScriptOpType.SingleOperand,     ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.EvalLocalArrayCached,             ScriptOpType.Variable,          ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.StringConcat,                     ScriptOpType.DoubleOperand,     ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.SetArrayField,                    ScriptOpType.SetVariable,       ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.EvalFieldVariableCached,          ScriptOpType.Variable,          ScriptOperandType.GlobalFieldVariable),
+            new ScriptOpMetadata(ScriptOpCode.EvalFieldVariableRefCached,       ScriptOpType.VariableReference, ScriptOperandType.GlobalFieldVariable),
+            new ScriptOpMetadata(ScriptOpCode.GetArrayValue,                    ScriptOpType.Call,              ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.GetArrayKeyIndex,                 ScriptOpType.Call,              ScriptOperandType.None)
         };
 
         /// <summary>

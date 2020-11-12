@@ -46,7 +46,7 @@ namespace Cerberus.Logic
         EvalFieldVariable                  = 0x20,
         EvalFieldVariableRef               = 0x21,
         ClearFieldVariable                 = 0x22,
-        SafeSetVariableFieldCached         = 0x23,
+        SafeSetVariableFieldCached         = 0x23, //t9
         SetWaittillVariableFieldCached     = 0x24,
         ClearParams                        = 0x25,
         CheckClearParams                   = 0x26,
@@ -187,6 +187,13 @@ namespace Cerberus.Logic
         EvalLocalVariablesCached, //t9
         IncCached, //t9
         DecCached, //t9
+        EvalLocalArrayCached, //t9
+        StringConcat, //t9
+        SetArrayField, //t9
+        EvalFieldVariableCached, //t9
+        EvalFieldVariableRefCached, //t9
+        GetArrayValue, //t9
+        GetArrayKeyIndex, //t9
         Invalid                               = 0xFF,
     }
 }

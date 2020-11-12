@@ -450,7 +450,8 @@ namespace Cerberus.Logic
         {
             List<ScriptOpSwitch> switches = new List<ScriptOpSwitch>();
             Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
-            var switchCount = Reader.ReadInt32();
+            var switchCount = Reader.ReadInt16();
+            Reader.ReadInt16(); //weird shit
 
             Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 8);
             for (int i = 0; i < switchCount; i++)
@@ -472,9 +473,9 @@ namespace Cerberus.Logic
                     // had 0 it would be at the start
                     var switchValue = Reader.ReadInt64();
 
-                    if(switchValue == 0 && i == switchCount - 1)
+                    if(switchValue == -2378481287159619856 && i == switchCount - 1)
                     {
-                        switchString = "default";
+                        switchString = "default:";
                     }
                     else
                     {
