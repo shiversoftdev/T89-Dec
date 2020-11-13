@@ -19,8 +19,6 @@ namespace Cerberus.CLI
         static readonly string[] AcceptedExtensions =
         {
             ".ff",
-            ".gsc",
-            ".csc",
             ".gscc",
             ".cscc",
         };

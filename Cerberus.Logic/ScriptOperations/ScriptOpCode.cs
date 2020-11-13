@@ -194,6 +194,11 @@ namespace Cerberus.Logic
         EvalFieldVariableRefCached, //t9
         GetArrayValue, //t9
         GetArrayKeyIndex, //t9
+        PixBeginEvent, //t9
+        PixEndEvent, //t9
+        EndonCallbackA, //t9
+        GetObjectHandle, //t9
+        WaittillTimeoutS, //t9
         Invalid                               = 0xFF,
     }
 }

@@ -198,7 +198,12 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.EvalFieldVariableCached,          ScriptOpType.Variable,          ScriptOperandType.GlobalFieldVariable),
             new ScriptOpMetadata(ScriptOpCode.EvalFieldVariableRefCached,       ScriptOpType.VariableReference, ScriptOperandType.GlobalFieldVariable),
             new ScriptOpMetadata(ScriptOpCode.GetArrayValue,                    ScriptOpType.Call,              ScriptOperandType.None),
-            new ScriptOpMetadata(ScriptOpCode.GetArrayKeyIndex,                 ScriptOpType.Call,              ScriptOperandType.None)
+            new ScriptOpMetadata(ScriptOpCode.GetArrayKeyIndex,                 ScriptOpType.Call,              ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.PixBeginEvent,                    ScriptOpType.Call,              ScriptOperandType.Hash),
+            new ScriptOpMetadata(ScriptOpCode.PixEndEvent,                      ScriptOpType.Call,              ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.EndonCallbackA,                   ScriptOpType.Notification,      ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.GetObjectHandle,                  ScriptOpType.StackPush,         ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.WaittillTimeoutS,                 ScriptOpType.Notification,      ScriptOperandType.UInt8)
         };
 
         /// <summary>

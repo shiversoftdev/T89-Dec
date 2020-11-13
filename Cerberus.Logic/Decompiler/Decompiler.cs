@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.CodeDom.Compiler;
+using System.Diagnostics;
 
 namespace Cerberus.Logic
 {
@@ -28,7 +29,7 @@ namespace Cerberus.Logic
     /// </summary>
     internal class Decompiler : IDisposable
     {
-        private static bool UseTernaryLogging = false, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = false,
+        private static bool UseTernaryLogging = true, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = false,
             UseJumpDetectionLogging = false, UseForLoopVerbose = false, UseIfStatementLogging = false;
         /// <summary>
         /// Operators by Op Code
@@ -87,7 +88,13 @@ namespace Cerberus.Logic
             { ScriptOpCode.GetDvarColorGreen,               new Tuple<string, int>("getdvarcolorgreen",     1) },
             { ScriptOpCode.GetDvarColorBlue,                new Tuple<string, int>("getdvarcolorblue",      1) },
             { ScriptOpCode.GetDvarColorAlpha,               new Tuple<string, int>("getdvarcoloralpha",     1) },
-            { ScriptOpCode.WaitFrame,                       new Tuple<string, int>("waitframe",             1) }
+            { ScriptOpCode.WaitFrame,                       new Tuple<string, int>("waitframe",             1) },
+            { ScriptOpCode.PixBeginEvent,                   new Tuple<string, int>("pixbeginevent",         0) },
+            { ScriptOpCode.PixEndEvent,                     new Tuple<string, int>("pixendevent",           0) },
+            { ScriptOpCode.EndOn,                           new Tuple<string, int>("endon",                 0) },
+            { ScriptOpCode.EndOnCallback,                   new Tuple<string, int>("endon_callback",        0) },
+            { ScriptOpCode.EndonCallbackA,                  new Tuple<string, int>("endon_callback",        0) },
+            { ScriptOpCode.WaittillTimeoutS,                new Tuple<string, int>("waittill_timeout",      0) }
         };
 
         static readonly Dictionary<byte, string> GlobalObjectTable = new Dictionary<byte, string>()
@@ -110,6 +117,8 @@ namespace Cerberus.Logic
         /// Gets or Sets the Script the function belongs to
         /// </summary>
         private ScriptBase Script { get; set; }
+
+        private HashSet<int> JumpLocations = new HashSet<int>();
 
         /// <summary>
         /// List of decompiler blocks
@@ -405,7 +414,12 @@ namespace Cerberus.Logic
                     TrueCondition = BuildStackEmission(i + 1, jindex, children),
                     FalseCondition = BuildStackEmission(jindex + 1, jePrevIndex + 1, children),
                 });
-                
+
+                if (Function.Operations[_startIndex].Metadata.OpCode == ScriptOpCode.EvalLocalVariablesCached && !IsTwoOperandExpression)
+                {
+                    parent.PushVal = GetVariableNames(Function.Operations[_startIndex]).Item1;
+                }
+
                 foreach (var child in children)
                     child.ParentBlock = parent;
 
@@ -461,6 +475,7 @@ namespace Cerberus.Logic
 
                     if (!t.Visited)
                     {
+                        if (t.PushVal != null) Stack.Push(t.PushVal);
                         Stack.Push(t.GetHeader());
                         t.Visited = true;
                         children.Add(t);
@@ -841,6 +856,7 @@ namespace Cerberus.Logic
 
                     if (!t.Visited)
                     {
+                        if (t.PushVal != null) Stack.Push(t.PushVal);
                         Stack.Push(t.GetHeader());
                         t.Visited = true;
                     }
@@ -995,7 +1011,6 @@ namespace Cerberus.Logic
 
             var startIndex = GetInstructionAt(startOp.OpCodeOffset + startOp.OpCodeSize);
             var endIndex = GetInstructionAt(endOffset);
-
             // Attempt to build it
             for (int j = startIndex; j < endIndex; j++)
             {
@@ -1014,6 +1029,7 @@ namespace Cerberus.Logic
                         throw new Exception("Operation is ternary, but some shit happened and its not the start of the block for build expression");
 
                     t.Visited = true;
+                    if (t.PushVal != null) Stack.Push(t.PushVal);
                     Stack.Push(t.GetHeader());
                     j = GetInstructionAt(t.EndOffset) - 1;
                     continue;
@@ -1040,6 +1056,7 @@ namespace Cerberus.Logic
             if (requiresBraces)
                 result = "(" + result + ")";
 
+            //Debug.Assert(startOp.OpCodeOffset != 0x1560);
             return result;
         }
 
@@ -1062,6 +1079,7 @@ namespace Cerberus.Logic
                     if(!t.Visited)
                     {
                         t.Visited = true;
+                        if (t.PushVal != null) Stack.Push(t.PushVal);
                         Stack.Push(t.GetHeader());
                     }
                     j = GetInstructionAt(t.EndOffset) - 1;
@@ -1140,84 +1158,169 @@ namespace Cerberus.Logic
             {
                 var op = Function.Operations[i];
 
-                if (op.Metadata.OpCode != ScriptOpCode.FirstArrayKeyCached)
-                    continue;
-
-                bool isForeach = ScriptOpCode.FirstArrayKeyCached == op.Metadata.OpCode && Function.Operations[i - 1].Metadata.OpCode == ScriptOpCode.SetLocalVariableCached;
-
-                if (!isForeach)
-                    continue;
-
-                var index = GetBlockIndexAt(Function.Operations[i + 2].OpCodeOffset);
-
-                if(!(Blocks[index] is WhileLoop loop))
-                    throw new ArgumentException("Expecting While Loop At FirstArrayKey");
-
-                int continueOffset;
-                var variableBeginIndex = FindStartIndex(i - 2);
-                // Process so we can obtain the real variable name
-                for (int j = variableBeginIndex; j < i - 1; j++)
+                if (op.Metadata.OpCode == ScriptOpCode.FirstArrayKeyCached)
                 {
-                    ProcessInstruction(Function.Operations[j]);
-                    Function.Operations[j].Visited = true;
-                }
-                var ArrayName = Stack.Pop();
-
-                Function.Operations[i - 1].Visited = true; // OP_SetLocalVariableCached
-                Function.Operations[i + 0].Visited = true; // OP_FirstArrayKeyCached
-                Function.Operations[i + 1].Visited = true; // OP_SetLocalVariableCached
-                Function.Operations[i + 2].Visited = true; // OP_EvalLocalVariableDefined
-                Function.Operations[i + 3].Visited = true; // OP_JumpOnFalse
-                Function.Operations[i + 4].Visited = true; // OP_EvalLocalVariableCached
-                Function.Operations[i + 5].Visited = true; // OP_EvalLocalVariableCached
-                Function.Operations[i + 6].Visited = true; // OP_EvalArray
-                Function.Operations[i + 7].Visited = true; // OP_SetLocalVariableCached
-                Function.Operations[i + 8].Visited = true; // OP_EvalLocalVariableCached
-                Function.Operations[i + 9].Visited = true; // OP_EvalLocalVariableCached
-                Function.Operations[i + 10].Visited = true; // OP_SetNextArrayKeyCached
-
-                // Clear the instructions at the end
-                var opIndex = GetInstructionAt(loop.EndOffset);
-
-                var KeyVar = Function.Operations[i + 1];
-
-                // iterate the foreach body, and try to find some reference to our key
-                // if we find a key ref, its a double foreach
-                bool UseKey = false;
-                for (int j = i + 11; j < opIndex - 2; j++)
-                {
-                    switch(Function.Operations[j].Metadata.OpCode)
-                    {
-                        case ScriptOpCode.EvalLocalVariableDefined:
-                        case ScriptOpCode.SetLocalVariableCached:
-                        case ScriptOpCode.SetNextArrayKeyCached:
-                        case ScriptOpCode.EvalLocalVariableCached:
-                        case ScriptOpCode.EvalLocalVariableRefCached:
-                        case ScriptOpCode.EvalLocalArrayRefCached:
-                            if(int.Parse(Function.Operations[j].Operands[0].Value.ToString()) == 
-                                int.Parse(KeyVar.Operands[0].Value.ToString())) UseKey = true;
-                            break;
-                    }
-
-                    if (UseKey) break;
+                    if (Function.Operations[i - 1].Metadata.OpCode != ScriptOpCode.SetLocalVariableCached)
+                        continue;
+                    TryMarkForeachVM36(i);
                 }
 
-                // Now that we've determined it's a foreach, we need to remove the necessary
-                // operations, along with determining the continue location
-
-                Function.Operations[opIndex - 1].Visited = true; // OP_EvalLocalVariableCached
-                Function.Operations[opIndex - 2].Visited = true; // OP_SetLocalVariableCached
-                continueOffset = Function.Operations[opIndex - 2].OpCodeOffset;
-
-                Blocks[index] = new ForEach(loop.StartOffset, loop.EndOffset)
+                if (op.Metadata.OpCode == ScriptOpCode.FirstArrayKey)
                 {
-                    ArrayName = ArrayName,
-                    KeyName = UseKey ? GetVariableName(KeyVar) : null,
-                    IteratorName = GetVariableName(Function.Operations[i + 7]),
-                    ContinueOffset = continueOffset,
-                    BreakOffset = loop.BreakOffset
-                };
+                    if (Function.Operations[i - 1].Metadata.OpCode != ScriptOpCode.EvalLocalVariableCached)
+                        continue;
+                    TryMarkForeachVM37(i);
+                }
             }
+        }
+
+        private void TryMarkForeachVM37(int i)
+        {
+            var op = Function.Operations[i];
+            var index = GetBlockIndexAt(Function.Operations[i + 2].OpCodeOffset);
+
+            if (!(Blocks[index] is WhileLoop loop))
+                return;
+
+            int continueOffset;
+            var variableBeginIndex = FindStartIndex(i - 3);
+            // Process so we can obtain the real variable name
+            for (int j = variableBeginIndex; j < i - 2; j++)
+            {
+                ProcessInstruction(Function.Operations[j]);
+                Function.Operations[j].Visited = true;
+            }
+            var ArrayName = Stack.Pop();
+
+            Function.Operations[i - 02].Visited = true; // OP_SetLocalVariableCached
+            Function.Operations[i - 01].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[i + 00].Visited = true; // OP_FirstArrayKey
+            Function.Operations[i + 01].Visited = true; // OP_SetLocalVariableCached
+            Function.Operations[i + 02].Visited = true; // OP_EvalLocalVariableDefined
+            Function.Operations[i + 03].Visited = true; // OP_JumpOnFalse
+            Function.Operations[i + 04].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[i + 05].Visited = true; // OP_GetArrayKeyIndex
+            Function.Operations[i + 06].Visited = true; // OP_SetLocalVariableCached
+            Function.Operations[i + 07].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[i + 08].Visited = true; // OP_GetArrayValue
+            Function.Operations[i + 09].Visited = true; // OP_SetLocalVariableCached
+            Function.Operations[i + 10].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[i + 11].Visited = true; // OP_NextArrayKey
+            Function.Operations[i + 12].Visited = true; // OP_SetLocalVariableCached
+
+            // Clear the instructions at the end
+            var opIndex = GetInstructionAt(loop.EndOffset);
+
+            var KeyVar = Function.Operations[i + 6];
+
+            // iterate the foreach body, and try to find some reference to our key
+            // if we find a key ref, its a double foreach
+            bool UseKey = false;
+            for (int j = i + 13; j < opIndex - 2; j++)
+            {
+                switch (Function.Operations[j].Metadata.OpCode)
+                {
+                    case ScriptOpCode.EvalLocalVariableDefined:
+                    case ScriptOpCode.SetLocalVariableCached:
+                    case ScriptOpCode.SetNextArrayKeyCached:
+                    case ScriptOpCode.EvalLocalVariableCached:
+                    case ScriptOpCode.EvalLocalVariableRefCached:
+                    case ScriptOpCode.EvalLocalArrayRefCached:
+                        if (int.Parse(Function.Operations[j].Operands[0].Value.ToString()) ==
+                            int.Parse(KeyVar.Operands[0].Value.ToString())) UseKey = true;
+                        break;
+                }
+                if (UseKey) break;
+            }
+
+            // Now that we've determined it's a foreach, we need to remove the necessary
+            // operations, along with determining the continue location
+            Function.Operations[opIndex - 1].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[opIndex - 2].Visited = true; // OP_SetLocalVariableCached
+            continueOffset = Function.Operations[opIndex - 2].OpCodeOffset;
+
+            Blocks[index] = new ForEach(loop.StartOffset, loop.EndOffset)
+            {
+                ArrayName = ArrayName,
+                KeyName = UseKey ? GetVariableName(KeyVar) : null,
+                IteratorName = GetVariableName(Function.Operations[i + 9]),
+                ContinueOffset = continueOffset,
+                BreakOffset = loop.BreakOffset
+            };
+        }
+
+        private void TryMarkForeachVM36(int i)
+        {
+            var op = Function.Operations[i];
+
+            var index = GetBlockIndexAt(Function.Operations[i + 2].OpCodeOffset);
+
+            if (!(Blocks[index] is WhileLoop loop))
+                throw new ArgumentException("Expecting While Loop At FirstArrayKey");
+
+            int continueOffset;
+            var variableBeginIndex = FindStartIndex(i - 2);
+            // Process so we can obtain the real variable name
+            for (int j = variableBeginIndex; j < i - 1; j++)
+            {
+                ProcessInstruction(Function.Operations[j]);
+                Function.Operations[j].Visited = true;
+            }
+            var ArrayName = Stack.Pop();
+
+            Function.Operations[i - 1].Visited = true; // OP_SetLocalVariableCached
+            Function.Operations[i + 0].Visited = true; // OP_FirstArrayKeyCached
+            Function.Operations[i + 1].Visited = true; // OP_SetLocalVariableCached
+            Function.Operations[i + 2].Visited = true; // OP_EvalLocalVariableDefined
+            Function.Operations[i + 3].Visited = true; // OP_JumpOnFalse
+            Function.Operations[i + 4].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[i + 5].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[i + 6].Visited = true; // OP_EvalArray
+            Function.Operations[i + 7].Visited = true; // OP_SetLocalVariableCached
+            Function.Operations[i + 8].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[i + 9].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[i + 10].Visited = true; // OP_SetNextArrayKeyCached
+
+            // Clear the instructions at the end
+            var opIndex = GetInstructionAt(loop.EndOffset);
+
+            var KeyVar = Function.Operations[i + 1];
+
+            // iterate the foreach body, and try to find some reference to our key
+            // if we find a key ref, its a double foreach
+            bool UseKey = false;
+            for (int j = i + 11; j < opIndex - 2; j++)
+            {
+                switch (Function.Operations[j].Metadata.OpCode)
+                {
+                    case ScriptOpCode.EvalLocalVariableDefined:
+                    case ScriptOpCode.SetLocalVariableCached:
+                    case ScriptOpCode.SetNextArrayKeyCached:
+                    case ScriptOpCode.EvalLocalVariableCached:
+                    case ScriptOpCode.EvalLocalVariableRefCached:
+                    case ScriptOpCode.EvalLocalArrayRefCached:
+                        if (int.Parse(Function.Operations[j].Operands[0].Value.ToString()) ==
+                            int.Parse(KeyVar.Operands[0].Value.ToString())) UseKey = true;
+                        break;
+                }
+                if (UseKey) break;
+            }
+
+            // Now that we've determined it's a foreach, we need to remove the necessary
+            // operations, along with determining the continue location
+
+            Function.Operations[opIndex - 1].Visited = true; // OP_EvalLocalVariableCached
+            Function.Operations[opIndex - 2].Visited = true; // OP_SetLocalVariableCached
+            continueOffset = Function.Operations[opIndex - 2].OpCodeOffset;
+
+            Blocks[index] = new ForEach(loop.StartOffset, loop.EndOffset)
+            {
+                ArrayName = ArrayName,
+                KeyName = UseKey ? GetVariableName(KeyVar) : null,
+                IteratorName = GetVariableName(Function.Operations[i + 7]),
+                ContinueOffset = continueOffset,
+                BreakOffset = loop.BreakOffset
+            };
         }
 
         private int GetBlockForInstruction(ScriptOp op)
@@ -1275,6 +1378,8 @@ namespace Cerberus.Logic
                         // Process so we can obtain the real variable name
                         for (int j = variableBeginIndex; j < index; j++)
                         {
+                            if (Function.Operations[j].Visited)
+                                continue;
                             ProcessInstruction(Function.Operations[j]);
                         }
 
@@ -1486,7 +1591,14 @@ namespace Cerberus.Logic
                                 }
 
                                 Blocks[i] = forLoop;
+
+                                return;
                             }
+                        }
+
+                        for (int j = variableBeginIndex; j < index; j++)
+                        {
+                            Function.Operations[j].Visited = false;
                         }
                     }
                 }
@@ -1623,6 +1735,7 @@ namespace Cerberus.Logic
 
                     if (!t.Visited)
                     {
+                        if (t.PushVal != null) Stack.Push(t.PushVal);
                         Stack.Push(t.GetHeader());
                     }
 
@@ -1891,7 +2004,8 @@ namespace Cerberus.Logic
 
                 )
             {
-                if (op.Metadata.OpCode != ScriptOpCode.Wait &&
+                if (op.Metadata.OpCode != ScriptOpCode.Wait && 
+                    op.Metadata.OpCode != ScriptOpCode.PixBeginEvent && op.Metadata.OpCode != ScriptOpCode.PixEndEvent &&
                     op.Metadata.OpCode != ScriptOpCode.WaitRealTime && op.Metadata.OpCode != ScriptOpCode.WaitFrame)
                 {
                     return true;
@@ -1911,6 +2025,9 @@ namespace Cerberus.Logic
             {
                 throw new Exception("Function contains invalid OpCode.");
             }
+
+            if(JumpLocations.Contains(operation.OpCodeOffset))
+                Writer?.WriteLine($"loc_{operation.OpCodeOffset:X8}:");
 
             switch (operation.Metadata.OpType)
             {
@@ -1967,8 +2084,8 @@ namespace Cerberus.Logic
                         else
                         {
                             Verbose($"[{Function.Name}] found a jump condition [0x{operation.OpCodeOffset:X4}:0x{jumpLoc:X4}] which does not suit the conditions of break or continue");
-                            DumpFunctionInfo();
-                            Writer?.WriteLine("jump 0x{0};", jumpLoc.ToString("X4"));
+                            Writer?.WriteLine("jump loc_{0};", jumpLoc.ToString("X8"));
+                            JumpLocations.Add(jumpLoc);
                         }
 
                         return false;
@@ -2047,6 +2164,9 @@ namespace Cerberus.Logic
                                     }
 
                                     Stack.Push(toPush);
+                                    break;
+                                case ScriptOpCode.GetObjectHandle:
+                                    Stack.Push($"&{CurrentReference}");
                                     break;
                             }
                         }
@@ -2316,11 +2436,13 @@ namespace Cerberus.Logic
                                 }
                         }
 
-                        paramCount = Math.Min(paramCount, Stack.Count);
+                        paramCount = Math.Min(paramCount, Stack.Count + (method ? -1 : 0));
                         Verbose($"[{Function.Name}] log call at 0x{operation.OpCodeOffset:X6} with {paramCount} params, stack size: {Stack.Count}");
                         // Push the call as it's basically a stack item
                         // wait is not pushed, it's technically not a call
-                        if (operation.Metadata.OpCode == ScriptOpCode.Wait || operation.Metadata.OpCode == ScriptOpCode.WaitRealTime || operation.Metadata.OpCode == ScriptOpCode.WaitFrame)
+                        if (operation.Metadata.OpCode == ScriptOpCode.Wait || operation.Metadata.OpCode == ScriptOpCode.WaitRealTime || 
+                            operation.Metadata.OpCode == ScriptOpCode.WaitFrame || 
+                            operation.Metadata.OpCode == ScriptOpCode.PixBeginEvent || operation.Metadata.OpCode == ScriptOpCode.PixEndEvent)
                         {
                             Writer?.WriteLine("{0};", GenerateFunctionCall(functionName, paramCount, threaded, method));
                         }
@@ -2347,10 +2469,11 @@ namespace Cerberus.Logic
                     {
                         switch (operation.Metadata.OpCode)
                         {
+                            case ScriptOpCode.EndonCallbackA:
                             case ScriptOpCode.EndOnCallback:
                             case ScriptOpCode.EndOn:
                                 {
-                                    Writer?.Write($"{Stack.Pop()} {(operation.Metadata.OpCode == ScriptOpCode.EndOn ? "endon" : "endon_callback")}(");
+                                    Writer?.Write($"{Stack.Pop()} {(InstructionFunctions[operation.Metadata.OpCode].Item1)}(");
 
                                     List<string> nArgs = new List<string>();
                                     for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++)
@@ -2390,6 +2513,7 @@ namespace Cerberus.Logic
 
                                     break;
                                 }
+                            case ScriptOpCode.WaittillTimeoutS:
                             case ScriptOpCode.WaittillTimeout:
                             case ScriptOpCode.WaitTill:
                                 {

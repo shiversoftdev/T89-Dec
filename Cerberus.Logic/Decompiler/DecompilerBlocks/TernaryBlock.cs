@@ -29,6 +29,8 @@ namespace Cerberus.Logic
         /// </summary>
         public TernaryBlock(int startOffset, int endOffset) : base(startOffset, endOffset) { RequiresBraces = false; }
 
+        public string PushVal { get; set; }
+
         /// <summary>
         /// Gets the header
         /// </summary>
