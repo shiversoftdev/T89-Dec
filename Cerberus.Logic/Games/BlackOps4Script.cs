@@ -75,7 +75,7 @@ namespace Cerberus.Logic
             Reader.ReadInt32(); //0x44 -- unk fixups (events)
             Reader.ReadUInt64(); //0x48 -- unks
             Reader.ReadUInt64(); //0x50 -- unks
-            Header.IncludeCount = Reader.ReadInt16();
+            Header.IncludeCount = Reader.ReadInt16();//58
 
             // Skip padding (header is 72 bytes in total)
             Reader.BaseStream.Position = 0x60;

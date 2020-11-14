@@ -520,5 +520,24 @@ namespace Cerberus.UI
             });
             ActiveThread.Start();
         }
+
+        private void SaveOpsClick(object sender, RoutedEventArgs e)
+        {
+            List<byte> tdata = new List<byte>();
+            byte[] VM_36 = Logic.BlackOps4Script.GetTableData();
+            byte[] VM_37 = Logic.T9_VM37Script.GetTableData();
+
+            tdata.Add(0x36);
+            tdata.Add(0x00);
+            tdata.AddRange(BitConverter.GetBytes((ushort)VM_36.Length));
+            tdata.AddRange(VM_36);
+
+            tdata.Add(0x37);
+            tdata.Add(0x00);
+            tdata.AddRange(BitConverter.GetBytes((ushort)VM_37.Length));
+            tdata.AddRange(VM_37);
+
+            File.WriteAllBytes("vm_codes.db2", tdata.ToArray());
+        }
     }
 }

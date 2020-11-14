@@ -28,6 +28,15 @@ namespace Cerberus.Logic
         }
         // Black Ops 4 Stock OP Code Table (Stock GSCs)
         private static ScriptOpCode[] PrimaryTable = null;
+        public static byte[] GetTableData()
+        {
+            LoadTable();
+            byte[] data = new byte[PrimaryTable.Length];
+            int i = 0;
+            foreach (var code in PrimaryTable)
+                data[i++] = (byte)code;
+            return data;
+        }
 
         private static ScriptOpCode[] SecondaryTable =
         {
