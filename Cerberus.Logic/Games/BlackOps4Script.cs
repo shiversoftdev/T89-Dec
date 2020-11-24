@@ -70,8 +70,9 @@ namespace Cerberus.Logic
             Header.ExportTableOffset = Reader.ReadInt32(); //0x30
             Reader.ReadInt32(); //unk 34
             Header.ImportTableOffset = Reader.ReadInt32(); //0x38
-            Reader.ReadInt32(); //0x3C
-            Header.FixupTableOffset = Reader.ReadInt32(); //0x40
+            Header.GlobalObjectCount = Reader.ReadInt16(); //0x3C
+            Reader.ReadInt16(); //0x3E
+            Header.GlobalObjectTable = Reader.ReadInt32(); //0x40
             Reader.ReadInt32(); //0x44 -- unk fixups (events)
             Reader.ReadUInt64(); //0x48 -- unks
             Reader.ReadUInt64(); //0x50 -- unks
@@ -79,6 +80,21 @@ namespace Cerberus.Logic
 
             // Skip padding (header is 72 bytes in total)
             Reader.BaseStream.Position = 0x60;
+        }
+
+        public override void LoadGlobalObjects()
+        {
+            GlobalObjects = new Dictionary<int, string>();
+            Reader.BaseStream.Position = Header.GlobalObjectTable;
+            for(int i = 0; i < Header.GlobalObjectCount; i++)
+            {
+                string obj = GetHashValue(Reader.ReadUInt32(), "var_");
+                uint count = Reader.ReadUInt32();
+                for(int j = 0; j < count; j++)
+                {
+                    GlobalObjects[Reader.ReadInt32()] = obj;
+                }
+            }
         }
 
         public override void LoadStrings()
@@ -176,7 +192,7 @@ namespace Cerberus.Logic
 
                 var referenceCount = Reader.ReadInt16();
                 import.ParameterCount = Reader.ReadByte();
-                Reader.BaseStream.Position += 1;
+                import.Flags = $"{Reader.ReadByte():X2}";
 
                 for (int j = 0; j < referenceCount; j++)
                 {

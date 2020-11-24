@@ -171,7 +171,7 @@
 0xaa = Nop; // op_sub_7FF715A384E0
 0xab = Nop; // op_sub_7FF715A384E0
 0xac = Nop; // op_sub_7FF715A384E0
-0xad = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0xad = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0xae = Plus; // op_sub_7FF715A175A0
 0xaf = Nop; // op_sub_7FF715A384E0
 0xb0 = JumpOnTrue; //op_sub_7FF715A170C0
@@ -269,7 +269,7 @@
 0x10c = Wait; // op_sub_7FF715A22030
 0x10d = Endon; // op_sub_7FF715A200D0
 0x10e = op_sub_7FF715A161E0;
-0x10f = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0x10f = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0x110 = GreaterThan; // op_sub_7FF715A16CD0
 0x111 = Nop; // op_sub_7FF715A384E0
 0x112 = Vector; // op__Z20VM_OP_Vector_Handler16scriptInstance_tP16function_stack_tRV14ScrVmContext_tRb
@@ -299,7 +299,7 @@
 0x12a = EvalArray; // op_sub_7FF715A1C0F0
 0x12b = Nop; // op_sub_7FF715A384E0
 0x12c = GetGlobalObject; // op_sub_7FF715A1CD00
-0x12d = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0x12d = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0x12e = Nop; // op_sub_7FF715A384E0
 0x12f = Nop; // op_sub_7FF715A384E0
 0x130 = JumpOnLessThan; // op_sub_7FF715A16B50
@@ -319,7 +319,7 @@
 0x13e = SuperNotEqual; // op_sub_7FF715A17760
 0x13f = Nop; // op_sub_7FF715A384E0
 0x140 = Nop; // op_sub_7FF715A384E0
-0x141 = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0x141 = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0x142 = op_sub_7FF715A179B0;
 0x143 = Nop; // op_sub_7FF715A384E0
 0x144 = Plus; // op_sub_7FF715A175A0
@@ -1684,7 +1684,7 @@
 0x693 = ScriptThreadCallPointer2; // op_sub_7FF715A18DA0
 0x694 = op_sub_7FF715A20B30;
 0x695 = Nop; // op_sub_7FF715A384E0
-0x696 = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0x696 = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0x697 = Nop; // op_sub_7FF715A384E0
 0x698 = Nop; // op_sub_7FF715A384E0
 0x699 = Nop; // op_sub_7FF715A384E0
@@ -1915,7 +1915,7 @@
 0x77a = Dec; //op_VM_OP_Dec
 0x77b = Nop; // op_sub_7FF715A384E0
 0x77c = ScriptThreadCallPointer2; // op_sub_7FF715A18DA0
-0x77d = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0x77d = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0x77e = Nop; // op_sub_7FF715A384E0
 0x77f = Nop; // op_sub_7FF715A384E0
 0x780 = op_sub_7FF715A1F450;
@@ -2618,7 +2618,7 @@
 0xa39 = Nop; // op_sub_7FF715A384E0
 0xa3a = ProfileStart; // op_sub_7FF715A15F90
 0xa3b = EvalLocalVariableRefCached; // Context Inc op_sub_7FF715A1C9A0
-0xa3c = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0xa3c = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0xa3d = SuperEqual; // op_sub_7FF715A176E0
 0xa3e = WaitFrame; // op_sub_7FF715A207E0
 0xa3f = GetNegByte; // op_sub_7FF715A166D0
@@ -2856,7 +2856,7 @@
 0xb27 = JumpOnTrueExpr; // op_sub_7FF715A17020
 0xb28 = op_sub_7FF715A1BB00;
 0xb29 = op_sub_7FF715A161E0;
-0xb2a = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0xb2a = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0xb2b = Nop; // op_sub_7FF715A384E0
 0xb2c = Nop; // op_sub_7FF715A384E0
 0xb2d = VectorConstant; // op_sub_7FF715A179F0
@@ -3067,7 +3067,7 @@
 0xbfa = JumpOnTrueExpr; // op_sub_7FF715A17020
 0xbfb = Nop; // op_sub_7FF715A384E0
 0xbfc = EvalFieldVariableRef; //op_sub_7FF715A1C3C0
-0xbfd = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0xbfd = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0xbfe = Nop; // op_sub_7FF715A384E0
 0xbff = Nop; // op_sub_7FF715A384E0
 0xc00 = Nop; // op_sub_7FF715A384E0
@@ -3529,7 +3529,7 @@
 0xdc8 = Inc; //op_VM_OP_Inc
 0xdc9 = Nop; // op_sub_7FF715A384E0
 0xdca = ClassFunctionCall; // op_sub_7FF715A192A0
-0xdcb = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0xdcb = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0xdcc = Jump; // op_sub_7FF715A17180
 0xdcd = Nop; // op_sub_7FF715A384E0
 0xdce = Nop; // op_sub_7FF715A384E0
@@ -4027,7 +4027,7 @@
 0xfba = ShiftRight; // op_sub_7FF715A17660
 0xfbb = Nop; // op_sub_7FF715A384E0
 0xfbc = Nop; // op_sub_7FF715A384E0
-0xfbd = EvalLocalVariableCached; // Eval2 op_sub_7FF715A1F830
+0xfbd = EvalLocalVariableCached2; // op_sub_7FF715A1F830
 0xfbe = ScriptMethodThreadCallPointer2; // op_sub_7FF715A19ED0
 0xfbf = Nop; // op_sub_7FF715A384E0
 0xfc0 = Wait; // op_sub_7FF715A22030

@@ -75,6 +75,8 @@ namespace Cerberus.Logic
         /// </summary>
         public List<ScriptAnimTree> AnimTrees { get; set; }
 
+        public Dictionary<int, string> GlobalObjects { get; set; }
+
         /// <summary>
         /// Hash References that weren't replaced
         /// </summary>
@@ -94,6 +96,7 @@ namespace Cerberus.Logic
             LoadStrings();
             LoadImports();
             LoadExports();
+            LoadGlobalObjects();
         }
 
         /// <summary>
@@ -110,6 +113,7 @@ namespace Cerberus.Logic
         public abstract void LoadStrings();
         public abstract void LoadImports();
         public abstract void LoadExports();
+        public abstract void LoadGlobalObjects();
         public abstract List<ScriptOpSwitch> LoadEndSwitch();
         public abstract int GetJumpLocation(int from, int to);
         public abstract ScriptOp LoadOperation(int offset);

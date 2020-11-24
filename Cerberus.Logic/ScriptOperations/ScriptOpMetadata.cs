@@ -203,7 +203,9 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.PixEndEvent,                      ScriptOpType.Call,              ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.EndonCallbackA,                   ScriptOpType.Notification,      ScriptOperandType.UInt8),
             new ScriptOpMetadata(ScriptOpCode.GetObjectHandle,                  ScriptOpType.StackPush,         ScriptOperandType.None),
-            new ScriptOpMetadata(ScriptOpCode.WaittillTimeoutS,                 ScriptOpType.Notification,      ScriptOperandType.UInt8)
+            new ScriptOpMetadata(ScriptOpCode.WaittillTimeoutS,                 ScriptOpType.Notification,      ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.EvalLocalVariableCached2,         ScriptOpType.Variable,          ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.EvalLocalVariableRefCached2,      ScriptOpType.VariableReference, ScriptOperandType.UInt8),
         };
 
         /// <summary>

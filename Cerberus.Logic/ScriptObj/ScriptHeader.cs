@@ -95,6 +95,8 @@ namespace Cerberus.Logic
         /// Gets or Sets the Offset to the Fixup Table Section
         /// </summary>
         public int FixupTableOffset {get; set; }
+        public int GlobalObjectCount { get; set; }
+        public int GlobalObjectTable { get; set; }
 
         /// <summary>
         /// Gets or Sets the Number of Fixups in the Fixup Table

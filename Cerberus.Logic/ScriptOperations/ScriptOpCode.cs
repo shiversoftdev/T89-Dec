@@ -199,6 +199,8 @@ namespace Cerberus.Logic
         EndonCallbackA, //t9
         GetObjectHandle, //t9
         WaittillTimeoutS, //t9
+        EvalLocalVariableCached2,
+        EvalLocalVariableRefCached2,
         Invalid                               = 0xFF,
     }
 }
