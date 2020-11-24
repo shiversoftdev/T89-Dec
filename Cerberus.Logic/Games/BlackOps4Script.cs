@@ -72,8 +72,8 @@ namespace Cerberus.Logic
             Header.ImportTableOffset = Reader.ReadInt32(); //0x38
             Header.GlobalObjectCount = Reader.ReadInt16(); //0x3C
             Reader.ReadInt16(); //0x3E
-            Header.GlobalObjectTable = Reader.ReadInt32(); //0x40
-            Reader.ReadInt32(); //0x44 -- unk fixups (events)
+            Reader.ReadInt32(); //0x40
+            Header.GlobalObjectTable = Reader.ReadInt32(); //0x44 -- unk fixups (events)
             Reader.ReadUInt64(); //0x48 -- unks
             Reader.ReadUInt64(); //0x50 -- unks
             Header.IncludeCount = Reader.ReadInt16();//58
