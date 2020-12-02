@@ -2348,6 +2348,8 @@ namespace Cerberus.Logic
                                     }
                                     break;
                                 }
+                            case ScriptOpCode.CallBuiltin:
+                            case ScriptOpCode.CallBuiltinMethod:
                             case ScriptOpCode.ScriptFunctionCall:
                             case ScriptOpCode.ScriptMethodCall:
                             case ScriptOpCode.ScriptMethodThreadCall2:
@@ -2379,6 +2381,7 @@ namespace Cerberus.Logic
                                     // Check for method calls
                                     if (
                                     operation.Metadata.OpCode == ScriptOpCode.ScriptMethodCall ||
+                                    operation.Metadata.OpCode == ScriptOpCode.CallBuiltinMethod || 
                                     operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall || 
                                     operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall2)
                                     {

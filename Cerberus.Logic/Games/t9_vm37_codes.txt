@@ -13,8 +13,8 @@
 0xc = op_sub_7FF65695A390;
 0xd = CheckClearParams; // op_sub_7FF65695A330
 0xe = PreScriptCall; // op_sub_7FF65695A710
-0xf = op_sub_7FF65695A1B0;
-0x10 = op_sub_7FF65695A100;
+0xf = CallBuiltin;
+0x10 = CallBuiltinMethod;
 0x11 = End; // op_sub_7FF65695A4A0
 0x12 = EvalLocalVariableCached2; // op_sub_7FF656963E00
 0x13 = ShiftRight; // op_sub_7FF656959480
@@ -69,7 +69,7 @@
 0x44 = CastVariableName; // op_sub_7FF656957FE0
 0x45 = Inc; // op_sub_7FF656958AE0
 0x46 = EvalFieldVariableRefCached; // op_sub_7FF65695EDD0
-0x47 = op_sub_7FF65695F780;
+0x47 = GetFunction; // op_sub_7FF65695F780
 0x48 = ScriptMethodThreadCall; // op_sub_7FF65695C750
 0x49 = VectorConstant; // op_sub_7FF656959890
 0x4a = op_sub_7FF656994900;
@@ -149,7 +149,7 @@
 0x94 = AddToStruct; // op_sub_7FF65695D9E0
 0x95 = EvalFieldVariableOnStack; // op_sub_7FF65695E830
 0x96 = Plus; // op_sub_7FF6569593C0
-0x97 = op_sub_7FF65695F780;
+0x97 = GetFunction; // op_sub_7FF65695F780
 0x98 = op_sub_7FF656994900;
 0x99 = SuperNotEqual; // op_sub_7FF656959580
 0x9a = ScriptThreadCallPointer; // op_sub_7FF65695CBE0
@@ -227,10 +227,10 @@
 0xe2 = op_sub_7FF656994900;
 0xe3 = op_sub_7FF656994900;
 0xe4 = EvalGlobalObjectFieldVariable; // op_sub_7FF65695FA90
-0xe5 = op_sub_7FF65695F780;
+0xe5 = GetFunction; // op_sub_7FF65695F780
 0xe6 = SuperNotEqual; // op_sub_7FF656959580
 0xe7 = FirstArrayKey; // op_sub_7FF65695F7E0
-0xe8 = op_sub_7FF65695F780;
+0xe8 = GetFunction; // op_sub_7FF65695F780
 0xe9 = CastBool; // op_sub_7FF656957FA0
 0xea = op_sub_7FF656994900;
 0xeb = CastBool; // op_sub_7FF656957FA0
@@ -488,7 +488,7 @@
 0x1e7 = EvalLocalVariableRefCached2; // used with arrays - op_sub_7FF65695F6A0
 0x1e8 = CastBool; // op_sub_7FF656957FA0
 0x1e9 = SetArrayField; // op_sub_7FF65695E2C0
-0x1ea = op_sub_7FF65695F780;
+0x1ea = GetFunction; // op_sub_7FF65695F780
 0x1eb = op_sub_7FF65695E160;
 0x1ec = op_sub_7FF656994900;
 0x1ed = ShiftLeft; // op_sub_7FF656959420
@@ -594,7 +594,7 @@
 0x251 = DecTop; // op_sub_7FF65695DF80
 0x252 = SetVariableFieldRef; // op_sub_7FF65695E950
 0x253 = Divide; // op_sub_7FF656958210
-0x254 = op_sub_7FF65695F780;
+0x254 = GetFunction; // op_sub_7FF65695F780
 0x255 = op_sub_7FF656994900;
 0x256 = Bit_And; // op_sub_7FF656957E10
 0x257 = GetObjectHandle; // op_sub_7FF656963ED0
@@ -635,7 +635,7 @@
 0x27a = EvalLocalArrayCached; // op_sub_7FF65695F5E0
 0x27b = op_sub_7FF656994900;
 0x27c = op_sub_7FF656994900;
-0x27d = op_sub_7FF65695F780;
+0x27d = GetFunction; // op_sub_7FF65695F780
 0x27e = op_sub_7FF656994900;
 0x27f = GetByte; // op_sub_7FF6569583A0
 0x280 = op_sub_7FF656994900;
@@ -846,7 +846,7 @@
 0x34d = NotEqual; // op_sub_7FF656959360
 0x34e = GetGlobalObject; // op_sub_7FF65695FBA0
 0x34f = ShiftLeft; // op_sub_7FF656959420
-0x350 = op_sub_7FF65695F780;
+0x350 = GetFunction; // op_sub_7FF65695F780
 0x351 = ScriptFunctionCall; // op_sub_7FF65695B9A0
 0x352 = SetVariableField; // op_sub_7FF656964110
 0x353 = WaitTill; // op_sub_7FF656966880
@@ -857,7 +857,7 @@
 0x358 = ClassFunctionCall; // op_sub_7FF65695B520
 0x359 = IncCached; // op_sub_7FF65695F4E0
 0x35a = ScriptMethodCall; // op_sub_7FF65695BE10
-0x35b = op_sub_7FF65695F780;
+0x35b = GetFunction; // op_sub_7FF65695F780
 0x35c = op_sub_7FF656958690;
 0x35d = GetUnsignedShort; // op_sub_7FF656958790
 0x35e = Jump; // op_sub_7FF656958F80
@@ -1827,7 +1827,7 @@
 0x722 = ScriptFunctionCall; // op_sub_7FF65695B9A0
 0x723 = op_sub_7FF656994900;
 0x724 = op_sub_7FF656994900;
-0x725 = op_sub_7FF65695F780;
+0x725 = GetFunction; // op_sub_7FF65695F780
 0x726 = GetUnsignedShort; // op_sub_7FF656958790
 0x727 = EvalLocalVariableCached2; // op_sub_7FF656963E00
 0x728 = op_sub_7FF656994900;
@@ -1844,7 +1844,7 @@
 0x733 = EvalLocalArrayCached; // op_sub_7FF65695F5E0
 0x734 = GetSelfObject; // op_sub_7FF656960080
 0x735 = GetArrayKeyIndex; // op_sub_7FF65695FC50
-0x736 = op_sub_7FF65695F780;
+0x736 = GetFunction; // op_sub_7FF65695F780
 0x737 = Return; // op_sub_7FF65695A760
 0x738 = PixBeginEvent; // op_sub_7FF65695D2A0
 0x739 = JumpOnTrue; // op_sub_7FF656958EA0
@@ -1923,7 +1923,7 @@
 0x782 = op_sub_7FF656994900;
 0x783 = op_sub_7FF656994900;
 0x784 = op_sub_7FF6569584B0;
-0x785 = op_sub_7FF65695F780;
+0x785 = GetFunction; // op_sub_7FF65695F780
 0x786 = DecCached; // op_sub_7FF65695F440
 0x787 = SuperNotEqual; // op_sub_7FF656959580
 0x788 = SetLocalVariableCached; // op_sub_7FF65695F580
@@ -2049,7 +2049,7 @@
 0x800 = IsDefined; // op_sub_7FF656963BB0
 0x801 = VectorScale; // op_sub_7FF656959990
 0x802 = LessThan; // op_sub_7FF6569591C0
-0x803 = op_sub_7FF65695F780;
+0x803 = GetFunction; // op_sub_7FF65695F780
 0x804 = GetNegByte; // op_sub_7FF656958510
 0x805 = op_sub_7FF656994900;
 0x806 = ScriptFunctionCall; // op_sub_7FF65695B9A0
@@ -2164,7 +2164,7 @@
 0x873 = op_sub_7FF656994900;
 0x874 = op_sub_7FF656994900;
 0x875 = op_sub_7FF656963F90;
-0x876 = op_sub_7FF65695F780;
+0x876 = GetFunction; // op_sub_7FF65695F780
 0x877 = EndOnCallback; // op_sub_7FF656964690
 0x878 = op_sub_7FF656994900;
 0x879 = op_sub_7FF656958690;
@@ -2636,7 +2636,7 @@
 0xa4b = GreaterThan; // op_sub_7FF656958A90
 0xa4c = WaitTill; // op_sub_7FF656966880
 0xa4d = op_sub_7FF656994900;
-0xa4e = op_sub_7FF65695F780;
+0xa4e = GetFunction; // op_sub_7FF65695F780
 0xa4f = op_sub_7FF65695B040;
 0xa50 = op_sub_7FF656994900;
 0xa51 = Bit_Xor; // op_sub_7FF656957ED0
@@ -2744,7 +2744,7 @@
 0xab7 = CastFieldObject; // op_sub_7FF65695DCE0
 0xab8 = NextArrayKey; // op_sub_7FF65695FD80
 0xab9 = Minus; // op_sub_7FF656959220
-0xaba = op_sub_7FF65695F780;
+0xaba = GetFunction; // op_sub_7FF65695F780
 0xabb = EvalSelfFieldVariable; // op_sub_7FF65695FF20
 0xabc = op_sub_7FF656994900;
 0xabd = ScriptFunctionCallPointer; // op_sub_7FF65695B730
@@ -3000,7 +3000,7 @@
 0xbb7 = op_sub_7FF656994900;
 0xbb8 = ScriptMethodThreadCallPointer; // op_sub_7FF65695C4E0
 0xbb9 = EvalSelfFieldVariable; // op_sub_7FF65695FF20
-0xbba = op_sub_7FF65695F780;
+0xbba = GetFunction; // op_sub_7FF65695F780
 0xbbb = WaitTillMatch; // op_sub_7FF656965BB0
 0xbbc = JumpOnGreaterThan; // op_sub_7FF656959010
 0xbbd = Bit_And; // op_sub_7FF656957E10
@@ -3067,7 +3067,7 @@
 0xbfa = SetVariableField; // op_sub_7FF656964110
 0xbfb = Multiply; // op_sub_7FF6569592E0
 0xbfc = CastFieldObject; // op_sub_7FF65695DCE0
-0xbfd = op_sub_7FF65695F780;
+0xbfd = GetFunction; // op_sub_7FF65695F780
 0xbfe = ScriptMethodCall; // op_sub_7FF65695BE10
 0xbff = NextArrayKey; // op_sub_7FF65695FD80
 0xc00 = op_sub_7FF656994900;
@@ -3121,7 +3121,7 @@
 0xc30 = JumpOnFalseExpr; // op_sub_7FF656958C50
 0xc31 = GetGlobalObject; // op_sub_7FF65695FBA0
 0xc32 = EvalSelfFieldVariable; // op_sub_7FF65695FF20
-0xc33 = op_sub_7FF65695F780;
+0xc33 = GetFunction; // op_sub_7FF65695F780
 0xc34 = PixBeginEvent; // op_sub_7FF65695D2A0
 0xc35 = JumpOnTrue; // op_sub_7FF656958EA0
 0xc36 = op_sub_7FF656994900;
@@ -3218,7 +3218,7 @@
 0xc91 = GetByte; // op_sub_7FF6569583A0
 0xc92 = ShiftLeft; // op_sub_7FF656959420
 0xc93 = op_sub_7FF656994900;
-0xc94 = op_sub_7FF65695F780;
+0xc94 = GetFunction; // op_sub_7FF65695F780
 0xc95 = CastAndEvalFieldVariable; // op_sub_7FF65695DBD0
 0xc96 = op_sub_7FF656994900;
 0xc97 = op_sub_7FF656994900;
@@ -3424,7 +3424,7 @@
 0xd5f = op_sub_7FF656994900;
 0xd60 = EndOnCallback; // op_sub_7FF656964690
 0xd61 = GetObjectHandle; // op_sub_7FF656963ED0
-0xd62 = op_sub_7FF65695F780;
+0xd62 = GetFunction; // op_sub_7FF65695F780
 0xd63 = op_sub_7FF656994900;
 0xd64 = op_sub_7FF656994900;
 0xd65 = Equal; // op_sub_7FF656958350
@@ -3435,7 +3435,7 @@
 0xd6a = GetGlobalObject; // op_sub_7FF65695FBA0
 0xd6b = LessThanOrEqualTo; // op_sub_7FF656959140
 0xd6c = GetGlobalObject; // op_sub_7FF65695FBA0
-0xd6d = op_sub_7FF65695F780;
+0xd6d = GetFunction; // op_sub_7FF65695F780
 0xd6e = NotEqual; // op_sub_7FF656959360
 0xd6f = op_sub_7FF656994900;
 0xd70 = JumpOnTrueExpr; // op_sub_7FF656958E00
@@ -3494,7 +3494,7 @@
 0xda5 = GetSelf; // op_sub_7FF656960130
 0xda6 = Equal; // op_sub_7FF656958350
 0xda7 = JumpOnFalse; // op_sub_7FF656958CF0
-0xda8 = op_sub_7FF65695F780;
+0xda8 = GetFunction; // op_sub_7FF65695F780
 0xda9 = EvalGlobalObjectFieldVariableRef; // op_sub_7FF65695F9F0
 0xdaa = WaittillTimeout; // op_sub_7FF656966210
 0xdab = AddToStruct; // op_sub_7FF65695D9E0
@@ -3639,7 +3639,7 @@
 0xe36 = EvalLocalVariableDefined; // op_sub_7FF65695F2C0
 0xe37 = op_sub_7FF656994900;
 0xe38 = op_sub_7FF656994900;
-0xe39 = op_sub_7FF65695F780;
+0xe39 = GetFunction; // op_sub_7FF65695F780
 0xe3a = ScriptThreadCall; // op_sub_7FF65695CE60
 0xe3b = Bit_Not; // op_sub_7FF656957F20
 0xe3c = CastAndEvalFieldVariable; // op_sub_7FF65695DBD0
@@ -3715,7 +3715,7 @@
 0xe82 = op_sub_7FF656994900;
 0xe83 = op_sub_7FF656994900;
 0xe84 = NextArrayKey; // op_sub_7FF65695FD80
-0xe85 = op_sub_7FF65695F780;
+0xe85 = GetFunction; // op_sub_7FF65695F780
 0xe86 = op_sub_7FF656994900;
 0xe87 = op_sub_7FF656994900;
 0xe88 = Notify; // op_sub_7FF656964F90
@@ -3896,7 +3896,7 @@
 0xf37 = GetByte; // op_sub_7FF6569583A0
 0xf38 = op_sub_7FF6569587F0;
 0xf39 = op_sub_7FF656994900;
-0xf3a = op_sub_7FF65695F780;
+0xf3a = GetFunction; // op_sub_7FF65695F780
 0xf3b = SetVariableField; // op_sub_7FF656964110
 0xf3c = Bit_Xor; // op_sub_7FF656957ED0
 0xf3d = op_sub_7FF656994900;
