@@ -321,9 +321,7 @@ namespace Cerberus.Logic
                 case ScriptOperandType.Hash:
                     {
                         Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 8);
-                        string val = "\"" + GetHashValue(Reader.ReadUInt64(), "hash_") + "\"";
-                        if (!val.StartsWith("\"hash_"))
-                            val = "#" + val;
+                        string val = "#\"" + GetHashValue(Reader.ReadUInt64(), "hash_") + "\"";
                         operation.Operands.Add(new ScriptOpOperand(val));
                         break;
                     }
