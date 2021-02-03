@@ -12,7 +12,7 @@ namespace Cerberus.Logic
     public partial class T9_VM37Script : ScriptBase
     {
         /// <summary>
-        /// Returns the Game Name for Black Ops 4
+        /// Returns the Game Name for CW
         /// </summary>
         public override string Game => "Cold War VM 37";
 
@@ -23,7 +23,7 @@ namespace Cerberus.Logic
         {
             LoadTable();
             // Ensure we're at the header (skip 8 byte magic)
-            Reader.BaseStream.Position = 8;
+            Reader.BaseStream.Position = 7;
 
             Header = new ScriptHeader();
             #region legacy
@@ -57,6 +57,7 @@ namespace Cerberus.Logic
             FilePath = Reader.ReadNullTerminatedString();
             */
             #endregion
+            Header.VMRevision = Reader.ReadByte();
             Header.SourceChecksum = (uint)Reader.ReadUInt64(); //0x8
             FilePath = GetHashValue(Reader.ReadUInt64(), "script_"); //0x10
             Header.IncludeTableOffset = Reader.ReadInt32(); //0x18

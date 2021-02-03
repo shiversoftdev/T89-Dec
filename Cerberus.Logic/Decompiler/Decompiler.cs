@@ -1156,8 +1156,13 @@ namespace Cerberus.Logic
 
                 if (op.Metadata.OpCode == ScriptOpCode.FirstArrayKey)
                 {
-                    if (Function.Operations[i - 1].Metadata.OpCode != ScriptOpCode.EvalLocalVariableCached && Function.Operations[i - 1].Metadata.OpCode != ScriptOpCode.EvalLocalVariableCached2)
+                    if (Function.Operations[i - 1].Metadata.OpCode != ScriptOpCode.EvalLocalVariableCached && Function.Operations[i - 1].Metadata.OpCode != ScriptOpCode.EvalLocalVariableCached2) 
                         continue;
+                    if (Script.Header.VMRevision == 0x1C)
+                    {
+                        TryMarkForeachVM1C(i);
+                        continue;
+                    }
                     TryMarkForeachVM37(i);
                 }
             }
@@ -1234,6 +1239,79 @@ namespace Cerberus.Logic
                 ArrayName = ArrayName,
                 KeyName = UseKey ? GetVariableName(KeyVar) : null,
                 IteratorName = GetVariableName(Function.Operations[i + 9]),
+                ContinueOffset = continueOffset,
+                BreakOffset = loop.BreakOffset
+            };
+        }
+
+        private void TryMarkForeachVM1C(int i)
+        {
+            var op = Function.Operations[i];
+
+            var index = GetBlockIndexAt(Function.Operations[i + 3].OpCodeOffset);
+
+            if (!(Blocks[index] is WhileLoop loop))
+                throw new ArgumentException("Expecting While Loop At FirstArrayKey");
+
+            int continueOffset;
+            var variableBeginIndex = FindStartIndex(i - 4);
+            // Process so we can obtain the real variable name
+            for (int j = variableBeginIndex; j < i - 3; j++)
+            {
+                ProcessInstruction(Function.Operations[j]);
+                Function.Operations[j].Visited = true;
+            }
+            var ArrayName = Stack.Pop();
+
+            // Mark these operations
+            Function.Operations[i - 3].Visited = true;
+            Function.Operations[i - 2].Visited = true;
+            Function.Operations[i - 1].Visited = true;
+            Function.Operations[i + 0].Visited = true;
+            Function.Operations[i + 1].Visited = true;
+            Function.Operations[i + 2].Visited = true;
+            Function.Operations[i + 3].Visited = true;
+            Function.Operations[i + 4].Visited = true;
+            Function.Operations[i + 5].Visited = true;
+            Function.Operations[i + 6].Visited = true;
+            Function.Operations[i + 7].Visited = true;
+            Function.Operations[i + 8].Visited = true;
+            Function.Operations[i + 9].Visited = true;
+            Function.Operations[i + 10].Visited = true;
+
+            // Clear the instructions at the end
+            var opIndex = GetInstructionAt(loop.EndOffset);
+
+            // Now that we've determined it's a foreach, we need to remove the necessary
+            // operations, along with determining the continue location, since Bo3 and 2 
+            // are slightly different
+            if (Function.Operations[i + 13].Metadata.OpCode == ScriptOpCode.NextArrayKey)
+            {
+                Function.Operations[i + 11].Visited = true;
+                Function.Operations[i + 12].Visited = true;
+                Function.Operations[i + 13].Visited = true;
+                Function.Operations[i + 14].Visited = true;
+                Function.Operations[i + 15].Visited = true;
+                Function.Operations[opIndex - 1].Visited = true;
+                Function.Operations[opIndex - 2].Visited = true;
+                Function.Operations[opIndex - 3].Visited = true;
+                continueOffset = Function.Operations[opIndex - 3].OpCodeOffset;
+            }
+            else
+            {
+                Function.Operations[opIndex - 1].Visited = true;
+                Function.Operations[opIndex - 2].Visited = true;
+                Function.Operations[opIndex - 3].Visited = true;
+                Function.Operations[opIndex - 4].Visited = true;
+                Function.Operations[opIndex - 5].Visited = true;
+                continueOffset = Function.Operations[opIndex - 5].OpCodeOffset;
+            }
+
+            Blocks[index] = new ForEach(loop.StartOffset, loop.EndOffset)
+            {
+                ArrayName = ArrayName,
+                KeyName = null,
+                IteratorName = GetVariableName(Function.Operations[i + 7]),
                 ContinueOffset = continueOffset,
                 BreakOffset = loop.BreakOffset
             };
@@ -2444,14 +2522,20 @@ namespace Cerberus.Logic
                             case ScriptOpCode.EndOnCallback:
                             case ScriptOpCode.EndOn:
                                 {
+                                    #region VM1C (T7)
+                                    if (Script.Header.VMRevision == 0x1C)
+                                    {
+                                        Writer?.WriteLine("{0} endon({1});", Stack.Pop(), Stack.Pop());
+                                        break;
+                                    }
+                                    #endregion
+                                    #region VM37
                                     Writer?.Write($"{Stack.Pop()} {(InstructionFunctions[operation.Metadata.OpCode].Item1)}(");
-
                                     List<string> nArgs = new List<string>();
-                                    for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++)
-                                        nArgs.Add(Stack.Pop());
+                                    for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++) nArgs.Add(Stack.Pop());
                                     Writer?.Write(string.Join(", ", nArgs));
-
                                     Writer?.WriteLine(");");
+                                    #endregion
                                     break;
                                 }
                             case ScriptOpCode.Notify:
@@ -2469,38 +2553,61 @@ namespace Cerberus.Logic
                                 }
                             case ScriptOpCode.WaitTillMatch:
                                 {
+                                    #region VM1C (T7)
+                                    if (Script.Header.VMRevision == 0x1C)
+                                    {
+                                        Writer.Write("{0} {1}({2}", Stack.Pop(), "waittill_match", Stack.Pop());
+                                        // Parse the variables created by a waittill
+                                        var index = GetInstructionAt(operation.OpCodeOffset) + 1;
+                                        while (Function.Operations[index].Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached)
+                                        {
+                                            Writer.Write(", {0}", GetVariableName(Function.Operations[index]));
+                                            index++;
+                                        }
+                                        Writer.WriteLine(");");
+                                        break;
+                                    }
+                                    #endregion
+                                    #region VM37
                                     string pushOp = "";
                                     pushOp += $"{Stack.Pop()} waittill_match(";
-
                                     List<string> nArgs = new List<string>();
-                                    for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++)
-                                        nArgs.Add(Stack.Pop());
-
+                                    for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++) nArgs.Add(Stack.Pop());
                                     pushOp += string.Join(", ", nArgs);
-
                                     pushOp += ")";
-
                                     Stack.Push(pushOp);
-
                                     break;
+                                    #endregion
                                 }
                             case ScriptOpCode.WaittillTimeoutS:
                             case ScriptOpCode.WaittillTimeout:
                             case ScriptOpCode.WaitTill:
                                 {
+                                    #region VM1C (T7)
+                                    if (Script.Header.VMRevision == 0x1C)
+                                    {
+                                        Writer.Write("{0} {1}({2}", Stack.Pop(), (operation.Metadata.OpCode == ScriptOpCode.WaitTill ? "waittill" : "waittill_timeout"), Stack.Pop());
+                                        // Parse the variables created by a waittill
+                                        var index = GetInstructionAt(operation.OpCodeOffset) + 1;
+                                        while (Function.Operations[index].Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached)
+                                        {
+                                            Writer.Write(", {0}", GetVariableName(Function.Operations[index]));
+                                            index++;
+                                        }
+                                        Writer.WriteLine(");");
+                                        break;
+                                    }
+                                    #endregion
+                                    #region VM37
                                     string pushOp = "";
                                     pushOp += $"{Stack.Pop()} {(operation.Metadata.OpCode == ScriptOpCode.WaitTill ? "waittill" : "waittill_timeout")}(";
-
                                     var nArgs = new List<string>();
-                                    for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++)
-                                        nArgs.Add(Stack.Pop());
-
+                                    for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++) nArgs.Add(Stack.Pop());
                                     pushOp += string.Join(", ", nArgs);
-
                                     pushOp += ")";
                                     Stack.Push(pushOp);
-
                                     break;
+                                    #endregion
                                 }
                             case ScriptOpCode.WaitTillFrameEnd:
                                 {

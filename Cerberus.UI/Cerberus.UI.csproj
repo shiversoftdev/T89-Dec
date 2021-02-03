@@ -162,6 +162,9 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <EmbeddedResource Include="Resources\GSC.xshd" />
+    <None Include="t7_hash.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="t8_hash.map">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

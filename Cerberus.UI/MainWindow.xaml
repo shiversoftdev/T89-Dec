@@ -7,7 +7,7 @@
         xmlns:WpfHexaEditor="clr-namespace:WpfHexaEditor;assembly=WPFHexaEditor"
         x:Class="Cerberus.UI.MainWindow"
         mc:Ignorable="d"
-        Title="T89 Decompiler" Height="590" Width="1280" MinHeight="720" MinWidth="960" Background="#FF21252B" Closing="WindowClosing">
+        Title="Treyarch Decompiler" Height="590" Width="1280" MinHeight="720" MinWidth="960" Background="#FF21252B" Closing="WindowClosing">
     <Grid Background="#FF252526">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="90.133" MaxWidth="800"/>

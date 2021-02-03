@@ -90,6 +90,10 @@ namespace Cerberus.Logic
             Reader = reader;
             DWORDHashTable = hashTable;
             QWORDHashTable = qword_hashTable;
+        }
+
+        public ScriptBase Load()
+        {
             LoadHeader();
             LoadIncludes();
             LoadAnimTrees();
@@ -97,6 +101,7 @@ namespace Cerberus.Logic
             LoadImports();
             LoadExports();
             LoadGlobalObjects();
+            return this;
         }
 
         /// <summary>
@@ -404,7 +409,7 @@ namespace Cerberus.Logic
             if ((value & 0xFFFFFFFF00000000L) == 0)
                 return GetHashValue((uint)value, prefix, defaultVal);
 
-            if (QWORDHashTable.TryGetValue(value, out string result))
+            if (QWORDHashTable != null && QWORDHashTable.TryGetValue(value, out string result))
                 return result;
 
             if (!string.IsNullOrWhiteSpace(defaultVal))
@@ -448,6 +453,7 @@ namespace Cerberus.Logic
 
         private static Dictionary<uint, string> t8_dword;
         private static Dictionary<ulong, string> t8_qword;
+        private static Dictionary<uint, string> t7_dword;
         /// <summary>
         /// Loads the given script using the respective game class
         /// </summary>
@@ -459,12 +465,38 @@ namespace Cerberus.Logic
             {
                 case 0x37000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
-                    return new T9_VM37Script(reader, t8_dword, t8_qword);
+                    return new T9_VM37Script(reader, t8_dword, t8_qword).Load();
                 case 0x36000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
-                    return new BlackOps4Script(reader, t8_dword, t8_qword);
+                    return new BlackOps4Script(reader, t8_dword, t8_qword).Load();
+                case 0x1C000A0D43534780:
+                    LoadT7Hashes("t7_hash.map");
+                    return new T7VM1CScript(reader, t7_dword).Load();
+                case 0x1CFF0A0D43534780:
+                    LoadT7Hashes("t7_hash.map");
+                    var scr =  new T7VM1CScript(reader, t7_dword);
+                    scr.IsPS4 = true;
+                    return scr.Load();
                 default:
                     throw new ArgumentException("Invalid Script Magic Number.", "Magic");
+            }
+        }
+
+        private static void LoadT7Hashes(string filePath)
+        {
+            if (t7_dword != null) return;
+            t7_dword = new Dictionary<uint, string>();
+            if (!File.Exists(filePath)) return;
+            var hashData = File.ReadAllBytes(filePath);
+            int i = 0;
+            while (i < hashData.Length)
+            {
+                uint dwordValue = BitConverter.ToUInt32(hashData, i);
+                i += 4;
+                byte strlen = hashData[i];
+                string rawString = Encoding.ASCII.GetString(hashData, i + 1, strlen);
+                i += 1 + strlen;
+                t7_dword[dwordValue] = rawString;
             }
         }
 
@@ -474,7 +506,7 @@ namespace Cerberus.Logic
                 return;
             t8_dword = new Dictionary<uint, string>();
             t8_qword = new Dictionary<ulong, string>();
-            if (!File.Exists(filePath))
+            if (!File.Exists(filePath) || !File.Exists(include_map))
                 return;
 
             var hashData = File.ReadAllBytes(filePath);

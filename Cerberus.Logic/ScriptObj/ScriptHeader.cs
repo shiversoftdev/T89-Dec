@@ -117,5 +117,7 @@ namespace Cerberus.Logic
         /// Gets or Sets the Misc. Flags
         /// </summary>
         public int Flags { get; set; }
+
+        public int VMRevision { get; set; }
     }
 }
