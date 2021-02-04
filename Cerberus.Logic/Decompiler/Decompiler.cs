@@ -655,8 +655,18 @@ namespace Cerberus.Logic
 
                         Blocks.Add(caseBlock);
                     }
-
-                    switchBlock.BreakOffset = Utility.AlignValue(switchBlock.EndOffset + 4, 8) + (cases.Count * 16);
+                    #region VM1C (T7)
+                    if(Script.Header.VMRevision == 0x1C)
+                    {
+                        switchBlock.BreakOffset = switchBlock.EndOffset + (cases.Count * 8) + 4;
+                    }
+                    #endregion
+                    #region VM37
+                    else
+                    {
+                        switchBlock.BreakOffset = Utility.AlignValue(switchBlock.EndOffset + 4, 8) + (cases.Count * 16);
+                    }
+                    #endregion
                 }
             }
         }
@@ -1311,7 +1321,7 @@ namespace Cerberus.Logic
             {
                 ArrayName = ArrayName,
                 KeyName = null,
-                IteratorName = GetVariableName(Function.Operations[i + 7]),
+                IteratorName = GetVariableName(Function.Operations[i + 9]),
                 ContinueOffset = continueOffset,
                 BreakOffset = loop.BreakOffset
             };
@@ -1983,6 +1993,7 @@ namespace Cerberus.Logic
                 case ScriptOpCode.DecCached:
                 case ScriptOpCode.SetLocalVariableCached:
                 case ScriptOpCode.SetNextArrayKeyCached:
+                case ScriptOpCode.SetWaittillVariableFieldCached:
                 case ScriptOpCode.EvalLocalVariableCached:
                 case ScriptOpCode.EvalLocalVariableCached2:
                 case ScriptOpCode.EvalLocalVariableRefCached2:
