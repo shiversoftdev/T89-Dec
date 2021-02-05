@@ -20,7 +20,7 @@ namespace Cerberus.Logic
         public int ParameterCount { get; set; }
         public int DisassemblyLine { get; set; }
         public int DecompilerLine { get; set; }
-        public ScriptExportFlags Flags { get; set; }
+        public byte Flags { get; set; }
         public List<ScriptOp> Operations = new List<ScriptOp>();
         public string DirtyMessage;
     }

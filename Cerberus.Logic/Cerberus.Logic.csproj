@@ -113,6 +113,8 @@
     <Compile Include="FastFile.cs" />
     <Compile Include="Games\T7VM1CScript.cs" />
     <Compile Include="Games\T7VM1Cmeta.cs" />
+    <Compile Include="Games\T9_VM38Meta.cs" />
+    <Compile Include="Games\T9_VM38.cs" />
     <Compile Include="Games\T9_VM37Meta.cs" />
     <Compile Include="Games\BlackOps4Metadata.cs" />
     <Compile Include="Games\T9_VM37.cs" />
@@ -148,6 +150,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Games\t9_vm38_codes.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Games\t7vm1corbis.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

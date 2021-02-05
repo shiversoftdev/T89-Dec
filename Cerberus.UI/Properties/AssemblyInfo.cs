@@ -7,12 +7,12 @@ using System.Windows;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Cerberus - Black Ops II/III GSC Decompiler")]
-[assembly: AssemblyDescription("Black Ops II/III GSC Decompiler")]
+[assembly: AssemblyTitle("TDec - Treyarch GSC Decompiler")]
+[assembly: AssemblyDescription("1CO, 1CP, 36P, 37P, 38P")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Philip/Scobalula")]
-[assembly: AssemblyProduct("Cerberus.CLI")]
-[assembly: AssemblyCopyright("Copyright © Philip/Scobalula 2019")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

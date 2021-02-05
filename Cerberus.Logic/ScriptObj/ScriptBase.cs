@@ -128,7 +128,8 @@ namespace Cerberus.Logic
             var eip = function.ByteCodeOffset;
             var endOffset = function.ByteCodeOffset + function.ByteCodeSize;
             Stack<int> OperationOffsets = new Stack<int>();
-
+            int UnclosedSwitches = 0;
+            //Stack<int> SwitchOffsets = new Stack<int>();
             while (function.ByteCodeSize == 0 // on black ops 3+ the end of the function is garbage filled when dumped.
                 || OperationOffsets.Count > 0) 
             {
@@ -139,21 +140,28 @@ namespace Cerberus.Logic
                     if (op == null) break;
                     function.Operations.Add(op);
 
+                    if(op.Metadata.OpCode == ScriptOpCode.Switch) UnclosedSwitches++;
+                    if (op.Metadata.OpCode == ScriptOpCode.EndSwitch) UnclosedSwitches--;
+
                     if (op.Metadata.OpType == ScriptOpType.Jump || 
-                        op.Metadata.OpType == ScriptOpType.JumpCondition ||
-                        op.Metadata.OpType == ScriptOpType.JumpExpression)
+                    op.Metadata.OpType == ScriptOpType.JumpCondition ||
+                    op.Metadata.OpType == ScriptOpType.JumpExpression)
                     {
                         OperationOffsets.Push(GetJumpLocation(op.OpCodeOffset + op.OpCodeSize, int.Parse(op.Operands[0].Value.ToString())));
                     }
                     if(op.Metadata.OpType == ScriptOpType.Return)
                     {
                         endOffset = Math.Max(endOffset, eip + op.OpCodeSize);
-                        while (GetInstructionAt(function, eip) != -1 && OperationOffsets.Count > 0)
-                            eip = OperationOffsets.Pop();
-                        
-                        if (GetInstructionAt(function, eip) != -1)
-                            break;
-
+                        if (UnclosedSwitches > 0)
+                        {
+                            eip += op.OpCodeSize;
+                        }
+                        else
+                        {
+                            while (GetInstructionAt(function, eip) != -1 && OperationOffsets.Count > 0)
+                                eip = OperationOffsets.Pop();
+                            if (GetInstructionAt(function, eip) != -1) break;
+                        }
                         continue;
                     }
                     eip += op.OpCodeSize;
@@ -176,6 +184,21 @@ namespace Cerberus.Logic
         private int GetInstructionAt(ScriptExport function, int offset)
         {
             return function.Operations.FindIndex(x => x.OpCodeOffset == offset);
+        }
+
+
+        private string ExportFlagsToString(byte flags)
+        {
+            List<string> results = new List<string>();
+            for(int i = 0; i < 8; i++)
+            {
+                byte f = (byte)(1 << i);
+                if ((flags & f) == 0) continue;
+                if (Header.VMRevision <= 0x37 && Enum.IsDefined(typeof(v1cScriptExportFlags), (int)f)) results.Add(((v1cScriptExportFlags)f).ToString());
+                else if (Header.VMRevision > 0x37 && Enum.IsDefined(typeof(v38ExportFlags), (int)f)) results.Add(((v38ExportFlags)f).ToString());
+                else results.Add(f.ToString());
+            }
+            return results.Count > 0 ? string.Join(", ", results) : "None";
         }
 
         /// <summary>
@@ -212,7 +235,7 @@ namespace Cerberus.Logic
                     output.AppendLine(string.Format("\tOffset: 0x{0:X}", function.ByteCodeOffset));
                     output.AppendLine(string.Format("\tSize: 0x{0:X}", function.ByteCodeSize));
                     output.AppendLine(string.Format("\tParameters: {0}", function.ParameterCount));
-                    output.AppendLine(string.Format("\tFlags: {0}", function.Flags));
+                    output.AppendLine(string.Format("\tFlags: {0}", ExportFlagsToString((byte)function.Flags)));
                     output.AppendLine("*/");
                     lineNumber += 9;
 
@@ -329,7 +352,7 @@ namespace Cerberus.Logic
                 output.AppendLine(string.Format("\tOffset: 0x{0:X}", function.ByteCodeOffset));
                 output.AppendLine(string.Format("\tSize: 0x{0:X}", function.ByteCodeSize));
                 output.AppendLine(string.Format("\tParameters: {0}", function.ParameterCount));
-                output.AppendLine(string.Format("\tFlags: {0}", function.Flags));
+                output.AppendLine(string.Format("\tFlags: {0}", ExportFlagsToString((byte)function.Flags)));
                 output.AppendLine("*/");
                 lineNumber += 9;
 
@@ -463,6 +486,9 @@ namespace Cerberus.Logic
             // We can use the magic to determine game
             switch(reader.ReadUInt64())
             {
+                case 0x38000A0D43534780:
+                    ParseHashTables("t8_hash.map", "includes.map");
+                    return new T9_VM38Script(reader, t8_dword, t8_qword).Load();
                 case 0x37000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
                     return new T9_VM37Script(reader, t8_dword, t8_qword).Load();

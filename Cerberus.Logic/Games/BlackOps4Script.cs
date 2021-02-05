@@ -158,7 +158,7 @@ namespace Cerberus.Logic
                     Namespace      = GetHashValue(Reader.ReadUInt32(), "namespace_"),
                     Namespace2     = GetHashValue(Reader.ReadUInt32(), "namespace_"),
                     ParameterCount = Reader.ReadByte(),
-                    Flags          = (ScriptExportFlags)Reader.ReadByte()
+                    Flags          = Reader.ReadByte()
                 };
                 Reader.BaseStream.Position += 2;
                 var crc32 = new CRC32();

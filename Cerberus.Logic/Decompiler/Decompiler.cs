@@ -260,22 +260,42 @@ namespace Cerberus.Logic
             return InternalWriter?.ToString() ?? "No Output";
         }
 
+        private bool IsPrivate(byte flags)
+        {
+            if (Script.Header.VMRevision <= 0x37) return ((v1cScriptExportFlags)flags).HasFlag(v1cScriptExportFlags.Private);
+            return ((v38ExportFlags)flags).HasFlag(v38ExportFlags.Private);
+        }
+
+        private bool IsAutoExec(byte flags)
+        {
+            if (Script.Header.VMRevision <= 0x37) return ((v1cScriptExportFlags)flags).HasFlag(v1cScriptExportFlags.AutoExec);
+            return ((v38ExportFlags)flags).HasFlag(v38ExportFlags.AutoExec);
+        }
+
+        private bool IsEvent(byte flags)
+        {
+            if (Script.Header.VMRevision <= 0x37) return ((v1cScriptExportFlags)flags).HasFlag(v1cScriptExportFlags.Event);
+            return ((v38ExportFlags)flags).HasFlag(v38ExportFlags.Event);
+        }
+
         /// <summary>
         /// Builds the function definition
         /// </summary>
         private string BuildFunctionDefinition()
         {
-            var result = "function ";
+            var result = "";
 
             // Flags, currently only 2 are known (Private/Autoexec)
-            if(Function.Flags.HasFlag(ScriptExportFlags.Private))
+            if(IsPrivate(Function.Flags))
             {
                 result += "private ";
             }
-            if (Function.Flags.HasFlag(ScriptExportFlags.AutoExec))
+            if (IsAutoExec(Function.Flags))
             {
                 result += "autoexec ";
             }
+
+            result += IsEvent(Function.Flags) ? "event " : "function ";
 
             result += Function.Name + "(";
 

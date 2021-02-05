@@ -9,15 +9,15 @@ using PhilLibX.IO;
 
 namespace Cerberus.Logic
 {
-    public partial class T9_VM37Script : ScriptBase
+    public partial class T9_VM38Script : ScriptBase
     {
         /// <summary>
         /// Returns the Game Name for CW
         /// </summary>
-        public override string Game => "Cold War VM 37";
+        public override string Game => "Cold War VM 38";
 
-        public T9_VM37Script(Stream stream, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(stream, hashTable, qword_hashTable) { }
-        public T9_VM37Script(BinaryReader reader, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(reader, hashTable, qword_hashTable) { }
+        public T9_VM38Script(Stream stream, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(stream, hashTable, qword_hashTable) { }
+        public T9_VM38Script(BinaryReader reader, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(reader, hashTable, qword_hashTable) { }
 
         public override void LoadHeader()
         {
@@ -28,35 +28,6 @@ namespace Cerberus.Logic
             Header = new ScriptHeader();
             #region legacy
             /*
-            {
-                SourceChecksum         = (uint)Reader.ReadUInt64(), //0x8
-                IncludeTableOffset     = Reader.ReadInt32(), //0xC -- checked
-                AnimTreeTableOffset    = Reader.ReadInt32(), //0x10 -- checked
-                ByteCodeOffset         = Reader.ReadInt32(), //0x14
-                StringTableOffset      = Reader.ReadInt32(), //0x18 -- checked
-                DebugStringTableOffset = Reader.ReadInt32(), //0x1c -- checked
-                ExportTableOffset      = Reader.ReadInt32(), //0x20 -- checked
-                ImportTableOffset      = Reader.ReadInt32(), //0x24
-                FixupTableOffset       = Reader.ReadInt32(), //0x28
-                ProfileTableOffset     = Reader.ReadInt32(), //0x2c
-                ByteCodeSize           = Reader.ReadInt32(), //0x30
-                NameOffset             = Reader.ReadInt32(), //0x34
-                StringCount            = Reader.ReadInt16(), //0x38
-                ExportsCount           = Reader.ReadInt16(), //0x3A
-                ImportsCount           = Reader.ReadInt16(), //0x3C
-                FixupCount             = Reader.ReadInt16(), //0x3E
-                ProfileCount           = Reader.ReadInt16(), //0x40
-                DebugStringCount       = Reader.ReadInt16(), //0x42 -- checked
-                IncludeCount           = Reader.ReadByte(), //0x44
-                AnimTreeCount          = Reader.ReadByte(), //0x45
-                Flags                  = Reader.ReadByte() //0x46
-            };
-            
-            // Get name of this script from the header
-            Reader.BaseStream.Position = Header.NameOffset;
-            FilePath = Reader.ReadNullTerminatedString();
-            */
-            #endregion
             Header.VMRevision = Reader.ReadByte();
             Header.SourceChecksum = (uint)Reader.ReadUInt64(); //0x8
             FilePath = GetHashValue(Reader.ReadUInt64(), "script_"); //0x10
@@ -77,7 +48,30 @@ namespace Cerberus.Logic
             Reader.ReadInt32(); //0x44 -- unk
             Reader.ReadUInt64(); //0x48 -- unks
             Header.IncludeCount = Reader.ReadByte();
-
+            // Get name of this script from the header
+            Reader.BaseStream.Position = Header.NameOffset;
+            FilePath = Reader.ReadNullTerminatedString();
+            */
+            #endregion
+            Header.VMRevision = Reader.ReadByte();
+            Header.SourceChecksum = (uint)Reader.ReadUInt64(); //0x8
+            FilePath = GetHashValue(Reader.ReadUInt64(), "script_"); //0x10
+            Header.StringCount = Reader.ReadInt16(); //0x18
+            Header.ExportsCount = Reader.ReadInt16(); //0x1A
+            Header.ImportsCount = Reader.ReadInt16(); //0x1C
+            Reader.ReadInt16(); //0x1E -- unk
+            Header.GlobalObjectCount = Reader.ReadInt16(); //0x20
+            Reader.ReadInt16(); //0x22 -- unk
+            Header.IncludeCount = (byte)Reader.ReadUInt16(); //0x24
+            Reader.ReadInt16(); //0x26 -- unk
+            Reader.ReadInt32(); //0x28 -- unk
+            Reader.ReadInt32(); //0x2C -- bytecode start
+            Header.StringTableOffset = Reader.ReadInt32(); //0x30
+            Header.IncludeTableOffset = Reader.ReadInt32(); //0x34
+            Header.ExportTableOffset = Reader.ReadInt32(); //0x38
+            Header.ImportTableOffset = Reader.ReadInt32(); //0x3C
+            Reader.ReadInt32(); //0x40 -- unk
+            Header.GlobalObjectTable = Reader.ReadInt32(); //0x44
             Reader.BaseStream.Position = 0x58;
         }
 

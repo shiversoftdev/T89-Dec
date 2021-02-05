@@ -116,6 +116,7 @@
       <Word>object</Word>
       <Word>new</Word>
       <Word>function</Word>
+      <Word>event</Word>
       <Word>var</Word>
       <Word>return</Word>
       <Word>thread</Word>
