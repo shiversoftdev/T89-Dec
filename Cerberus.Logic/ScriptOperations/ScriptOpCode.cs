@@ -201,6 +201,7 @@ namespace Cerberus.Logic
         WaittillTimeoutS, //t9
         EvalLocalVariableCached2,
         EvalLocalVariableRefCached2,
+        ClearFieldVariableOnStack,
         Invalid                               = 0xFF,
     }
 }

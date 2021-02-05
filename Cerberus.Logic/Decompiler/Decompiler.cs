@@ -2339,6 +2339,11 @@ namespace Cerberus.Logic
                                     Writer?.WriteLine("{0}.{1} = undefined;", CurrentReference, operation.Operands[0].Value);
                                     break;
                                 }
+                            case ScriptOpCode.ClearFieldVariableOnStack:
+                                {
+                                    Writer?.WriteLine("{0}.({1}) = undefined;", CurrentReference, Stack.Pop());
+                                    break;
+                                }
                             case ScriptOpCode.ClearArray:
                                 {
                                     Writer?.WriteLine("{0}[{1}] = undefined;", CurrentReference, Stack.Pop());

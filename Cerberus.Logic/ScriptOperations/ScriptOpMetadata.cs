@@ -206,6 +206,7 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.WaittillTimeoutS,                 ScriptOpType.Notification,      ScriptOperandType.UInt8),
             new ScriptOpMetadata(ScriptOpCode.EvalLocalVariableCached2,         ScriptOpType.Variable,          ScriptOperandType.UInt8),
             new ScriptOpMetadata(ScriptOpCode.EvalLocalVariableRefCached2,      ScriptOpType.VariableReference, ScriptOperandType.UInt8),
+            new ScriptOpMetadata(ScriptOpCode.ClearFieldVariableOnStack,        ScriptOpType.ClearVariable,     ScriptOperandType.None)
         };
 
         /// <summary>

@@ -366,7 +366,7 @@
 0x16d = GetObjectType; // op_sub_7FF656963CB0
 0x16e = SuperNotEqual; // op_sub_7FF656959580
 0x16f = op_sub_7FF65695EB20;
-0x170 = op_sub_7FF65695DDD0;
+0x170 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x171 = GetArrayKeyIndex; // op_sub_7FF65695FC50
 0x172 = ClassFunctionThreadCall; // op_sub_7FF65695C980
 0x173 = AddToStruct; // op_sub_7FF65695D9E0
@@ -579,7 +579,7 @@
 0x242 = op_sub_7FF656994900;
 0x243 = ScriptMethodCall; // op_sub_7FF65695BE10
 0x244 = WaitTillMatch; // op_sub_7FF656965BB0
-0x245 = op_sub_7FF65695DDD0;
+0x245 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x246 = BoolNot; // op_sub_7FF656957F60
 0x247 = Bit_Not; // op_sub_7FF656957F20
 0x248 = WaitFrame; // op_sub_7FF6569651E0
@@ -590,7 +590,7 @@
 0x24d = op_sub_7FF656994900;
 0x24e = JumpOnLessThan; // op_sub_7FF6569588E0
 0x24f = op_sub_7FF65695ADD0;
-0x250 = op_sub_7FF65695DDD0;
+0x250 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x251 = DecTop; // op_sub_7FF65695DF80
 0x252 = SetVariableFieldRef; // op_sub_7FF65695E950
 0x253 = Divide; // op_sub_7FF656958210
@@ -865,7 +865,7 @@
 0x360 = VectorConstant; // op_sub_7FF656959890
 0x361 = EvalFieldVariableOnStackRef; // op_sub_7FF65695E7D0
 0x362 = op_sub_7FF656958020;
-0x363 = op_sub_7FF65695DDD0;
+0x363 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x364 = CastAndEvalFieldVariable; // op_sub_7FF65695DBD0
 0x365 = ScriptThreadCall2; // op_sub_7FF65695B2D0
 0x366 = JumpOnGreaterThan; // op_sub_7FF656959010
@@ -1024,7 +1024,7 @@
 0x3ff = ClearArray; // op_sub_7FF65695DDA0
 0x400 = op_sub_7FF656994900;
 0x401 = ScriptMethodCallPointer; // op_sub_7FF65695BBA0
-0x402 = op_sub_7FF65695DDD0;
+0x402 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x403 = op_sub_7FF656994900;
 0x404 = op_sub_7FF656994900;
 0x405 = op_sub_7FF656958690;
@@ -1058,7 +1058,7 @@
 0x421 = op_sub_7FF65695B040;
 0x422 = Vector; // op_sub_7FF656959AF0
 0x423 = ShiftRight; // op_sub_7FF656959480
-0x424 = op_sub_7FF65695DDD0;
+0x424 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x425 = op_sub_7FF656994900;
 0x426 = ScriptThreadCallPointer; // op_sub_7FF65695CBE0
 0x427 = op_sub_7FF656994900;
@@ -1076,7 +1076,7 @@
 0x433 = GetArrayValue; // op_sub_7FF65695E010
 0x434 = VectorConstant; // op_sub_7FF656959890
 0x435 = ClassFunctionThreadCall; // op_sub_7FF65695C980
-0x436 = op_sub_7FF65695DDD0;
+0x436 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x437 = EvalArray; // op_sub_7FF65695E750
 0x438 = LessThanOrEqualTo; // op_sub_7FF656959140
 0x439 = SafeCreateLocalVariables; // op_sub_7FF65695A970
@@ -1197,7 +1197,7 @@
 0x4ac = op_sub_7FF656994900;
 0x4ad = Vector; // op_sub_7FF656959AF0
 0x4ae = op_sub_7FF65695C010;
-0x4af = op_sub_7FF65695DDD0;
+0x4af = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x4b0 = Divide; // op_sub_7FF656958210
 0x4b1 = BoolNot; // op_sub_7FF656957F60
 0x4b2 = Bit_Xor; // op_sub_7FF656957ED0
@@ -1552,7 +1552,7 @@
 0x60f = EvalFieldVariableRef; // op_sub_7FF65695EA90
 0x610 = GetUndefined; // op_sub_7FF6569586F0
 0x611 = GetAPIFunction; // op_sub_7FF65695F920
-0x612 = op_sub_7FF65695DDD0;
+0x612 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x613 = op_sub_7FF656994900;
 0x614 = SetArrayField; // op_sub_7FF65695E2C0
 0x615 = op_sub_7FF65695EB20;
@@ -1687,7 +1687,7 @@
 0x696 = Return; // op_sub_7FF65695A760
 0x697 = op_sub_7FF656994900;
 0x698 = op_sub_7FF656994900;
-0x699 = op_sub_7FF65695DDD0;
+0x699 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x69a = EvalFieldVariableRefCached; // op_sub_7FF65695EDD0
 0x69b = SafeCreateLocalVariables; // op_sub_7FF65695A970
 0x69c = op_sub_7FF656994900;
@@ -1761,7 +1761,7 @@
 0x6e0 = op_sub_7FF656994900;
 0x6e1 = op_sub_7FF656994900;
 0x6e2 = EvalLocalVariableDefined; // op_sub_7FF65695F2C0
-0x6e3 = op_sub_7FF65695DDD0;
+0x6e3 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x6e4 = EvalLocalVariableDefined; // op_sub_7FF65695F2C0
 0x6e5 = op_sub_7FF656994900;
 0x6e6 = GetGlobalObject; // op_sub_7FF65695FBA0
@@ -1972,7 +1972,7 @@
 0x7b3 = CastVariableName; // op_sub_7FF656957FE0
 0x7b4 = SafeCreateLocalVariables; // op_sub_7FF65695A970
 0x7b5 = op_sub_7FF656958690;
-0x7b6 = op_sub_7FF65695DDD0;
+0x7b6 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x7b7 = op_sub_7FF65695C010;
 0x7b8 = VectorConstant; // op_sub_7FF656959890
 0x7b9 = SafeSetVariableFieldCached; // op_sub_7FF65695EC00
@@ -2024,7 +2024,7 @@
 0x7e7 = EvalArray; // op_sub_7FF65695E750
 0x7e8 = ClassFunctionCall; // op_sub_7FF65695B520
 0x7e9 = op_sub_7FF656994900;
-0x7ea = op_sub_7FF65695DDD0;
+0x7ea = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x7eb = JumpOnFalseExpr; // op_sub_7FF656958C50
 0x7ec = Bit_Not; // op_sub_7FF656957F20
 0x7ed = op_sub_7FF656994900;
@@ -2032,7 +2032,7 @@
 0x7ef = WaitTillMatch; // op_sub_7FF656965BB0
 0x7f0 = op_sub_7FF656994900;
 0x7f1 = ScriptMethodCallPointer; // op_sub_7FF65695BBA0
-0x7f2 = op_sub_7FF65695DDD0;
+0x7f2 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x7f3 = CastVariableName; // op_sub_7FF656957FE0
 0x7f4 = VectorScale; // op_sub_7FF656959990
 0x7f5 = op_sub_7FF656994900;
@@ -2108,7 +2108,7 @@
 0x83b = ScriptThreadCall2; // op_sub_7FF65695B2D0
 0x83c = op_sub_7FF656959850;
 0x83d = JumpOnTrue; // op_sub_7FF656958EA0
-0x83e = op_sub_7FF65695DDD0;
+0x83e = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x83f = GetZero; // op_sub_7FF656958850
 0x840 = op_sub_7FF656994900;
 0x841 = ScriptFunctionCall; // op_sub_7FF65695B9A0
@@ -2266,7 +2266,7 @@
 0x8d9 = op_sub_7FF656994900;
 0x8da = ScriptMethodThreadCallPointer; // op_sub_7FF65695C4E0
 0x8db = GetGlobalObject; // op_sub_7FF65695FBA0
-0x8dc = op_sub_7FF65695DDD0;
+0x8dc = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x8dd = JumpOnLessThan; // op_sub_7FF6569588E0
 0x8de = op_sub_7FF656994900;
 0x8df = op_sub_7FF656994900;
@@ -2528,7 +2528,7 @@
 0x9df = op_sub_7FF656994900;
 0x9e0 = JumpOnTrueExpr; // op_sub_7FF656958E00
 0x9e1 = Bit_Or; // op_sub_7FF656957E70
-0x9e2 = op_sub_7FF65695DDD0;
+0x9e2 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0x9e3 = op_sub_7FF656994900;
 0x9e4 = WaitTillFrameEnd; // op_sub_7FF656965310
 0x9e5 = ScriptMethodCallPointer; // op_sub_7FF65695BBA0
@@ -2691,7 +2691,7 @@
 0xa82 = op_sub_7FF656994900;
 0xa83 = op_sub_7FF656994900;
 0xa84 = op_sub_7FF656994900;
-0xa85 = op_sub_7FF65695DDD0;
+0xa85 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0xa86 = DecCached; // op_sub_7FF65695F440
 0xa87 = SuperNotEqual; // op_sub_7FF656959580
 0xa88 = GreaterThanOrEqualTo; // op_sub_7FF656958A1;
@@ -2979,7 +2979,7 @@
 0xba2 = NextArrayKey; // op_sub_7FF65695FD80
 0xba3 = GetAPIFunction; // op_sub_7FF65695F920
 0xba4 = GetZero; // op_sub_7FF656958850
-0xba5 = op_sub_7FF65695DDD0;
+0xba5 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0xba6 = op_sub_7FF656994900;
 0xba7 = op_sub_7FF656994900;
 0xba8 = GetNegUnsignedShort; // op_sub_7FF6569585C0
@@ -3087,7 +3087,7 @@
 0xc0e = op_sub_7FF656994900;
 0xc0f = op_sub_7FF656994900;
 0xc10 = Plus; // op_sub_7FF6569593C0
-0xc11 = op_sub_7FF65695DDD0;
+0xc11 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0xc12 = EvalLocalArrayCached; // op_sub_7FF65695F5E0
 0xc13 = op_sub_7FF656994900;
 0xc14 = JumpOnLessThan; // op_sub_7FF6569588E0
@@ -3290,7 +3290,7 @@
 0xcd9 = op_sub_7FF656994900;
 0xcda = EvalLocalVariableRefCached; // op_sub_7FF65695F0E0
 0xcdb = op_sub_7FF656994900;
-0xcdc = op_sub_7FF65695DDD0;
+0xcdc = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0xcdd = op_sub_7FF656994900;
 0xcde = op_sub_7FF656958020;
 0xcdf = GetTime; // op_sub_7FF6569601D0
@@ -3310,7 +3310,7 @@
 0xced = DevblockBegin; // op_sub_7FF6569581B0
 0xcee = VectorConstant; // op_sub_7FF656959890
 0xcef = GetFloat; // op_sub_7FF6569583F0
-0xcf0 = op_sub_7FF65695DDD0;
+0xcf0 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0xcf1 = DecTop; // op_sub_7FF65695DF80
 0xcf2 = GetObjectHandle; // op_sub_7FF656963ED0
 0xcf3 = Dec; // op_sub_7FF656958060
@@ -3546,7 +3546,7 @@
 0xdd9 = SizeOf; // op_sub_7FF6569641B0
 0xdda = GreaterThanOrEqualTo; // op_sub_7FF656958A1;
 0xddb = ScriptMethodThreadCall2; // op_sub_7FF65695C290
-0xddc = op_sub_7FF65695DDD0;
+0xddc = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0xddd = EvalLocalVariableCached; // For math expressions -- op_sub_7FF65695F6E0
 0xdde = GetNegUnsignedShort; // op_sub_7FF6569585C0
 0xddf = SizeOf; // op_sub_7FF6569641B0
@@ -3700,7 +3700,7 @@
 0xe73 = op_sub_7FF656994900;
 0xe74 = SuperEqual; // op_sub_7FF656959500
 0xe75 = WaitTillMatch; // op_sub_7FF656965BB0
-0xe76 = op_sub_7FF65695DDD0;
+0xe76 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0xe77 = Plus; // op_sub_7FF6569593C0
 0xe78 = JumpOnGreaterThan; // op_sub_7FF656959010
 0xe79 = op_sub_7FF656994900;
@@ -3818,7 +3818,7 @@
 0xee9 = SetArrayField; // op_sub_7FF65695E2C0
 0xeea = EvalLocalVariableRefCached; // op_sub_7FF65695F0E0
 0xeeb = op_sub_7FF656994900;
-0xeec = op_sub_7FF65695DDD0;
+0xeec = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0xeed = CastBool; // op_sub_7FF656957FA0
 0xeee = op_sub_7FF656994900;
 0xeef = StringConcat; // op_sub_7FF65695D600
@@ -3925,7 +3925,7 @@
 0xf54 = op_sub_7FF656994900;
 0xf55 = JumpOnFalseExpr; // op_sub_7FF656958C50
 0xf56 = VectorConstant; // op_sub_7FF656959890
-0xf57 = op_sub_7FF65695DDD0;
+0xf57 = ClearFieldVariableOnStack; // op_sub_7FF65695DDD0
 0xf58 = ScriptFunctionCallPointer; // op_sub_7FF65695B730
 0xf59 = EndOn; // op_sub_7FF656964AC0
 0xf5a = Equal; // op_sub_7FF656958350

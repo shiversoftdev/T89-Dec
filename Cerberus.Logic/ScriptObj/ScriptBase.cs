@@ -151,16 +151,18 @@ namespace Cerberus.Logic
                     }
                     if(op.Metadata.OpType == ScriptOpType.Return)
                     {
+                        int instr = GetInstructionAt(function, eip);
                         endOffset = Math.Max(endOffset, eip + op.OpCodeSize);
                         if (UnclosedSwitches > 0)
                         {
                             eip += op.OpCodeSize;
+                            while ((instr = GetInstructionAt(function, eip)) != -1) eip += function.Operations[instr].OpCodeSize; // we always expect a switch here
                         }
                         else
                         {
-                            while (GetInstructionAt(function, eip) != -1 && OperationOffsets.Count > 0)
+                            while ((instr = GetInstructionAt(function, eip)) != -1 && OperationOffsets.Count > 0)
                                 eip = OperationOffsets.Pop();
-                            if (GetInstructionAt(function, eip) != -1) break;
+                            if ((instr = GetInstructionAt(function, eip)) != -1) break;
                         }
                         continue;
                     }

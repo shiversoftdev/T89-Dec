@@ -526,6 +526,7 @@ namespace Cerberus.UI
             List<byte> tdata = new List<byte>();
             byte[] VM_36 = Logic.BlackOps4Script.GetTableData();
             byte[] VM_37 = Logic.T9_VM37Script.GetTableData();
+            byte[] VM_38 = Logic.T9_VM38Script.GetTableData();
 
             tdata.Add(0x36);
             tdata.Add(0x00);
@@ -537,6 +538,10 @@ namespace Cerberus.UI
             tdata.AddRange(BitConverter.GetBytes((ushort)VM_37.Length));
             tdata.AddRange(VM_37);
 
+            tdata.Add(0x38);
+            tdata.Add(0x00);
+            tdata.AddRange(BitConverter.GetBytes((ushort)VM_38.Length));
+            tdata.AddRange(VM_38);
             File.WriteAllBytes("vm_codes.db2", tdata.ToArray());
         }
     }
