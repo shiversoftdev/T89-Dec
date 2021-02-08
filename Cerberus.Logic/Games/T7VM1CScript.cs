@@ -12,9 +12,9 @@ namespace Cerberus.Logic
     public partial class T7VM1CScript : ScriptBase
     {
         /// <summary>
-        /// Returns the Game Name for Black Ops 4
+        /// Returns the Game Name for Black Ops 3
         /// </summary>
-        public override string Game => "T7:1C:" + (IsPS4 ? "Orbis" : "PC");
+        public override string Game => "T71C_" + (IsPS4 ? "Orbis" : "PC");
         internal bool IsPS4;
 
         public T7VM1CScript(Stream stream, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(stream, hashTable, qword_hashTable) { }
