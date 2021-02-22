@@ -40,6 +40,17 @@ namespace Cerberus.Logic
                 }
             }
         }
+
+        public static byte[] GetTableData(bool isPS4)
+        {
+            LoadTable();
+            var table = isPS4 ? SecondaryTable : PrimaryTable;
+            byte[] data = new byte[table.Length];
+            int i = 0;
+            foreach (var code in table)
+                data[i++] = (byte)code;
+            return data;
+        }
         // Black Ops 3 Stock OP Code Table PC
         private static ScriptOpCode[] PrimaryTable = null;
         // Black Ops 3 Stock OP Code Table PS4

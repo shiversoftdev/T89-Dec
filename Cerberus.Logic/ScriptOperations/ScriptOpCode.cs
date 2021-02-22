@@ -202,6 +202,7 @@ namespace Cerberus.Logic
         EvalLocalVariableCached2,
         EvalLocalVariableRefCached2,
         ClearFieldVariableOnStack,
+        DiscardWaittillVariableField, // t7 only
         Invalid                               = 0xFF,
     }
 }

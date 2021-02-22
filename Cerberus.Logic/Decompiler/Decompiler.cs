@@ -2005,6 +2005,8 @@ namespace Cerberus.Logic
         {
             switch(op.Metadata.OpCode)
             {
+                case ScriptOpCode.DiscardWaittillVariableField:
+                    return "$_";
                 case ScriptOpCode.EvalLocalArrayCached:
                     return $"{LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value]}[{Stack.Peek()}]";
                 case ScriptOpCode.EvalGlobalObjectFieldVariableRef:
@@ -2595,7 +2597,7 @@ namespace Cerberus.Logic
                                         Writer.Write("{0} {1}({2}", Stack.Pop(), "waittill_match", Stack.Pop());
                                         // Parse the variables created by a waittill
                                         var index = GetInstructionAt(operation.OpCodeOffset) + 1;
-                                        while (Function.Operations[index].Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached)
+                                        while (Function.Operations[index].Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached || Function.Operations[index].Metadata.OpCode == ScriptOpCode.DiscardWaittillVariableField)
                                         {
                                             Writer.Write(", {0}", GetVariableName(Function.Operations[index]));
                                             index++;
@@ -2625,7 +2627,7 @@ namespace Cerberus.Logic
                                         Writer.Write("{0} {1}({2}", Stack.Pop(), (operation.Metadata.OpCode == ScriptOpCode.WaitTill ? "waittill" : "waittill_timeout"), Stack.Pop());
                                         // Parse the variables created by a waittill
                                         var index = GetInstructionAt(operation.OpCodeOffset) + 1;
-                                        while (Function.Operations[index].Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached)
+                                        while (Function.Operations[index].Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached || Function.Operations[index].Metadata.OpCode == ScriptOpCode.DiscardWaittillVariableField)
                                         {
                                             Writer.Write(", {0}", GetVariableName(Function.Operations[index]));
                                             index++;

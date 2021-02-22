@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using PhilLibX;
 using PhilLibX.IO;
+using System.Runtime.CompilerServices;
 
 namespace Cerberus.Logic
 {
@@ -347,8 +348,16 @@ namespace Cerberus.Logic
                                 break;
                             case ScriptOpCode.GetAnimation:
                                 Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 8);
-                                operation.Operands.Add(new ScriptOpOperand("%" + Reader.PeekNullTerminatedString(Reader.ReadInt32())));
-                                Reader.BaseStream.Position += 4;
+                                int backPos = (int)Reader.BaseStream.Position;
+                                if(AnimBackReferences.ContainsKey(backPos))
+                                {
+                                    operation.Operands.Add(new ScriptOpOperand($"%{AnimBackReferences[backPos].OwningTree.Namespace}::{AnimBackReferences[backPos].Name}"));
+                                }
+                                else
+                                {
+                                    operation.Operands.Add(new ScriptOpOperand($"%unknown_anim"));
+                                }
+                                Reader.BaseStream.Position += 8;
                                 break;
                         }
 
@@ -489,7 +498,29 @@ namespace Cerberus.Logic
 
         public override void LoadAnimTrees()
         {
-            AnimTrees = new List<ScriptAnimTree>(Header.AnimTreeCount);
+            Reader.BaseStream.Position = Header.AnimTreeTableOffset;
+            for (int i = 0; i < Header.AnimTreeCount; i++)
+            {
+                var atr = new ScriptAnimTree();
+                var pos = Reader.BaseStream.Position;
+                atr.lpNamespace = Reader.ReadInt32();
+                atr.Namespace = Reader.PeekNullTerminatedString(atr.lpNamespace);
+                Reader.ReadInt16(); // unk padding
+                atr.Count = Reader.ReadInt16();
+                for(int j = 0; j < atr.Count; j++)
+                {
+                    var aref = new ScriptAnim();
+                    aref.OwningTree = atr;
+                    aref.lpAnimName = Reader.ReadInt32();
+                    Reader.ReadInt32();
+                    aref.Name = Reader.PeekNullTerminatedString(aref.lpAnimName);
+                    var aref_pos = Reader.ReadInt32();
+                    atr.AnimationReferences[aref_pos] = aref;
+                    AnimBackReferences[aref_pos] = aref;
+                    Reader.ReadInt32();
+                }
+                AnimTrees[(int)pos] = atr;
+            }
         }
     }
 }

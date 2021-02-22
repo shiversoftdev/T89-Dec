@@ -110,6 +110,7 @@
     </Keywords>
     
     <Keywords color="Keywords">
+      <Word>$_</Word>
       <Word>player</Word>
       <Word>vararg</Word>
       <Word>class</Word>

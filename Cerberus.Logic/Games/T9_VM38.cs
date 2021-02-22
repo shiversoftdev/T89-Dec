@@ -509,7 +509,7 @@ namespace Cerberus.Logic
 
         public override void LoadAnimTrees()
         {
-            AnimTrees = new List<ScriptAnimTree>(Header.AnimTreeCount);
+            
         }
     }
 }

@@ -14,21 +14,18 @@ namespace Cerberus.Logic
         /// <summary>
         /// Gets or Sets the Anim Tree Name
         /// </summary>
-        public string Name { get; set; }
+        public string Namespace { get; set; }
 
         /// <summary>
         /// Gets or Sets the offset to the Anim Tree Name
         /// </summary>
-        public int Offset { get; set; }
-
-        /// <summary>
-        /// Gets or Sets the list of references within the byte code
-        /// </summary>
-        public List<int> References { get; set; }
+        public int lpNamespace { get; set; }
 
         /// <summary>
         /// Gets or Sets the list of animation references
         /// </summary>
-        public List<ScriptAnim> AnimationReferences { get; set; }
+        public Dictionary<int, ScriptAnim> AnimationReferences = new Dictionary<int, ScriptAnim>();
+
+        public int Count { get; set; }
     }
 }

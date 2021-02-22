@@ -114,7 +114,7 @@ namespace Cerberus.UI
                     StringList.ItemsSource   = script.Strings;
                     ImportList.ItemsSource   = script.Imports;
                     IncludeList.ItemsSource  = script.Includes;
-                    AnimTreeList.ItemsSource = script.AnimTrees;
+                    AnimTreeList.ItemsSource = script.AnimTrees.Values;
 
                     try
                     {
@@ -527,6 +527,18 @@ namespace Cerberus.UI
             byte[] VM_36 = Logic.BlackOps4Script.GetTableData();
             byte[] VM_37 = Logic.T9_VM37Script.GetTableData();
             byte[] VM_38 = Logic.T9_VM38Script.GetTableData();
+            byte[] VM_1C_PS4 = Logic.T7VM1CScript.GetTableData(true);
+            byte[] VM_1C_PC = Logic.T7VM1CScript.GetTableData(false);
+
+            tdata.Add(0x1C);
+            tdata.Add(0x00); // pc
+            tdata.AddRange(BitConverter.GetBytes((ushort)VM_1C_PC.Length));
+            tdata.AddRange(VM_1C_PC);
+
+            tdata.Add(0x1C);
+            tdata.Add(0x01); // ps4
+            tdata.AddRange(BitConverter.GetBytes((ushort)VM_1C_PS4.Length));
+            tdata.AddRange(VM_1C_PS4);
 
             tdata.Add(0x36);
             tdata.Add(0x00);

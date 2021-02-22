@@ -16,11 +16,8 @@ namespace Cerberus.Logic
         /// <summary>
         /// Gets or Sets the offset to the Anim Name
         /// </summary>
-        public int Offset { get; set; }
+        public int lpAnimName { get; set; }
 
-        /// <summary>
-        /// Gets or Sets the pointer to where this anim is referenced
-        /// </summary>
-        public int Reference { get; set; }
+        public ScriptAnimTree OwningTree { get; set; }
     }
 }

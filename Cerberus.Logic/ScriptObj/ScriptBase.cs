@@ -73,7 +73,12 @@ namespace Cerberus.Logic
         /// <summary>
         /// Gets or Sets the list of Script Exports
         /// </summary>
-        public List<ScriptAnimTree> AnimTrees { get; set; }
+        public Dictionary<int, ScriptAnimTree> AnimTrees = new Dictionary<int, ScriptAnimTree>();
+
+        /// <summary>
+        /// List of anims for back reference decompilation
+        /// </summary>
+        public Dictionary<int, ScriptAnim> AnimBackReferences = new Dictionary<int, ScriptAnim>();
 
         public Dictionary<int, string> GlobalObjects { get; set; }
 
@@ -309,7 +314,12 @@ namespace Cerberus.Logic
 
             // We need to store the current namespace
             var nameSpace = "";
-
+            if(Header.VMRevision == 0x1C)
+            {
+                output.AppendLine("// Decompiled by Serious. Credits to Scoba for his original tool, Cerberus, which I heavily upgraded to support remaining features, other games, and other platforms.");
+                lineNumber++;
+            }
+            
             foreach (var include in Includes)
             {
                 output.AppendLine(string.Format("#using {0};", include));
@@ -323,9 +333,9 @@ namespace Cerberus.Logic
                 lineNumber++;
             }
 
-            foreach (var animTree in AnimTrees)
+            foreach (var animTree in AnimTrees.Values)
             {
-                output.AppendLine(string.Format("#using_animtree(\"{0}\");", animTree.Name));
+                output.AppendLine(string.Format("#using_animtree(\"{0}\");", animTree.Namespace));
                 lineNumber++;
             }
 
