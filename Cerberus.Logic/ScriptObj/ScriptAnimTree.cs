@@ -22,6 +22,14 @@ namespace Cerberus.Logic
         public int lpNamespace { get; set; }
 
         /// <summary>
+        /// Number of useanimtree calls to fixup
+        /// </summary>
+        public int NumATRRefs { get; set; }
+
+        // Anim tree fixup locations
+        public HashSet<int> UseAnimTreeEntries = new HashSet<int>();
+
+        /// <summary>
         /// Gets or Sets the list of animation references
         /// </summary>
         public Dictionary<int, ScriptAnim> AnimationReferences = new Dictionary<int, ScriptAnim>();

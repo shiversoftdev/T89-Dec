@@ -29,7 +29,7 @@ namespace Cerberus.Logic
     /// </summary>
     internal class Decompiler : IDisposable
     {
-        private static bool UseTernaryLogging = true, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = false,
+        private static bool UseTernaryLogging = true, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = true,
             UseJumpDetectionLogging = false, UseForLoopVerbose = false, UseIfStatementLogging = false;
         /// <summary>
         /// Operators by Op Code
@@ -129,6 +129,9 @@ namespace Cerberus.Logic
         /// </summary>
         private string CurrentReference = "";
 
+        // List of default argument values
+        private Dictionary<int, string> DefaultArguments = new Dictionary<int, string>();
+
         /// <summary>
         /// Internal Text Writer
         /// </summary>
@@ -207,6 +210,8 @@ namespace Cerberus.Logic
                 ResolveParentBlocks();
                 Stack.Clear();
                 RestoreCaseOrder();
+                MarkUnkJumps();
+                DetectDefaultArgs();
 
                 InternalWriter = new StringWriter();
                 Writer = new IndentedTextWriter(InternalWriter, "\t");
@@ -285,7 +290,6 @@ namespace Cerberus.Logic
         {
             var result = "";
 
-            // Flags, currently only 2 are known (Private/Autoexec)
             if(IsPrivate(Function.Flags))
             {
                 result += "private ";
@@ -299,10 +303,11 @@ namespace Cerberus.Logic
 
             result += Function.Name + "(";
 
-            // Build paramters (TODO: Some checks for default args, it'll be an isdefined check after the call)
             for (int i = 0; i < Function.ParameterCount; i++)
             {
-                result += string.Format("{0}{1}", LocalVariables[i], i == Function.ParameterCount - 1 ? "" : ", ");
+                var stackValue = DefaultArguments.ContainsKey(i) ? DefaultArguments[i] : LocalVariables[i];
+                result += string.Format("{0}{1}", stackValue, (i != Function.ParameterCount - 1) ? ", " : "");
+                
             }
 
             return result + ")";
@@ -460,6 +465,39 @@ namespace Cerberus.Logic
             }
         }
 
+        private void DetectDefaultArgs()
+        {
+            if (Script.Header.VMRevision != 0x1C) return; // TODO ADJUST FOR T8 and T9
+            for (int i = 1; i < Blocks.Count; i++)
+            {
+                if (!(Blocks[i] is IfBlock argBlock)) return;
+                int startIndex = GetInstructionAt(argBlock.StartOffset);
+                if (Function.Operations[startIndex].Metadata.OpCode != ScriptOpCode.EvalLocalVariableCached) return;
+                if (i == 1 && startIndex != 1) return; // prevents blocks from having prefix code. index must be 1 (after safecreate) for default params
+                string vname = GetVariableName(Function.Operations[startIndex]);
+                if (!LocalVariables.Contains(vname)) return;
+                int vIndex = LocalVariables.IndexOf(vname);
+                if (Function.Operations[startIndex + 1].Metadata.OpCode != ScriptOpCode.IsDefined ||
+                   Function.Operations[startIndex + 2].Metadata.OpCode != ScriptOpCode.JumpOnTrue
+                    ) return;
+                var jmp = Function.Operations[startIndex + 2];
+                var jloc = Script.GetJumpLocation(jmp.OpCodeOffset + jmp.OpCodeSize, (int)jmp.Operands[0].Value);
+                int endIndex = GetInstructionAt(jloc);
+                if (Function.Operations[endIndex - 1].Metadata.OpCode != ScriptOpCode.SetVariableField) return;
+                if (Function.Operations[endIndex - 2].Metadata.OpCode != ScriptOpCode.EvalLocalVariableRefCached) return;
+                var startTestIndex = FindStartIndexEx(endIndex - 3) - 1;
+                if (startTestIndex != startIndex + 2) return; // we should only have stackops between the assignment and the condition.
+                BuildCondition(startIndex + 3, false, endIndex - 2);
+                var stack = Stack.Pop();
+                DefaultArguments[vIndex] = string.Format("{0} = {1}", vname, stack);
+                argBlock.Visited = true;
+                for(int j = startIndex; j < endIndex; j++)
+                {
+                    Function.Operations[j].Visited = true;
+                }
+            }
+        }
+
         private string BuildStackEmission(int startIndex, int stopIndex, List<TernaryBlock> children, ScriptOpCode code = ScriptOpCode.Invalid)
         {
             VerboseCondition($"[{Function.Name}] Begin Stack Emission (range: {startIndex:X3} - {stopIndex:X3})", UseTernaryLogging);
@@ -558,11 +596,6 @@ namespace Cerberus.Logic
 
         private void FindElseIfStatements()
         {
-            // TODO: Improved If/else if detection, this seems to do a good job though for now
-            // Ideally I'd want this to traverse the block to ensure the else if is actually
-            // what we want, reason being is what if we have a if within the else that's at the
-            // start?
-
             for (int i = 1; i < Blocks.Count; i++)
             {
                 if (Blocks[i] is IfBlock || Blocks[i] is ElseIfBlock)
@@ -600,12 +633,19 @@ namespace Cerberus.Logic
                             }
                             else
                             {
-                                // Mark this block
-                                Blocks.Add(new ElseBlock(
+                                var elseBlock = new ElseBlock(
                                     op.OpCodeOffset + op.OpCodeSize,
                                 Script.GetJumpLocation(
                                     op.OpCodeOffset + op.OpCodeSize,
-                                    (int)op.Operands[0].Value)));
+                                    (int)op.Operands[0].Value));
+
+                                if (Blocks[i] is IfBlock _ib)
+                                {
+                                    _ib.ChildElse = elseBlock;
+                                }
+
+                                // Mark this block
+                                Blocks.Add(elseBlock);
                             }
                         }
                     }
@@ -696,10 +736,21 @@ namespace Cerberus.Logic
             // Sort it
             Blocks = Blocks.OrderBy(x => x.StartOffset).ToList();
 
-            for(int i = Blocks.Count - 1; i >= 0; i--)
+            // Move else statements directly behind an if statement to avoid weird decompilation bugs with them
+            for(int i = 0; i < Blocks.Count; i++)
             {
-                for(int j = Blocks.Count - 1; j >= 0; j--)
+                if(Blocks[i] is IfBlock ib && ib.ChildElse != null)
                 {
+                    Blocks.Remove(ib.ChildElse);
+                    Blocks.Insert(i + 1, ib.ChildElse);
+                }
+            }
+
+            for(int i = Blocks.Count - 1; i >= 0; i--) // child
+            {
+                for(int j = Blocks.Count - 1; j >= 0; j--) // parent
+                {
+                    if (Blocks[i] == Blocks[j]) continue;
                     if (Blocks[j] is CaseBlock && !(Blocks[i] is SwitchBlock) && !(Blocks[i] is CaseBlock))
                     {
                         if (Blocks[i].StartOffset >= Blocks[j].StartOffset && Blocks[i].EndOffset <= Blocks[j].EndOffset)
@@ -708,13 +759,13 @@ namespace Cerberus.Logic
                             break;
                         }
                     }
-                    else if(Blocks[i] is CaseBlock && !(Blocks[j] is SwitchBlock))
+                    else if (Blocks[i] is CaseBlock && !(Blocks[j] is SwitchBlock))
                     {
                         continue;
                     }
                     else
                     {
-                        if (Blocks[i].StartOffset > Blocks[j].StartOffset && Blocks[i].EndOffset <= Blocks[j].EndOffset)
+                        if (Blocks[i].StartOffset >= Blocks[j].StartOffset && Blocks[i].EndOffset <= Blocks[j].EndOffset)
                         {
                             Blocks[j].ChildBlockIndices.Add(i);
                             break;
@@ -842,14 +893,22 @@ namespace Cerberus.Logic
 
             if(decompilerBlock is TernaryBlock tblock)
             {
-                //WriteHeader(decompilerBlock, false); dont decompile these, they are stack operations
                 return;
             }
 
-            WriteHeader(decompilerBlock);
-            Writer.Indent = tabs;
+            if(decompilerBlock.Visited)
+            {
+                return;
+            }
 
-            for(int i = GetInstructionAt(decompilerBlock.StartOffset); i < Function.Operations.Count && Function.Operations[i].OpCodeOffset < decompilerBlock.EndOffset; i++)
+            decompilerBlock.Visited = true;
+            if(!decompilerBlock.DisableHeader)
+            {
+                WriteHeader(decompilerBlock);
+            }
+            Writer.Indent = tabs;
+            int i;
+            for (i = GetInstructionAt(decompilerBlock.StartOffset); i < Function.Operations.Count && Function.Operations[i].OpCodeOffset < decompilerBlock.EndOffset; i++)
             {
                 var operation = Function.Operations[i];
 
@@ -894,6 +953,7 @@ namespace Cerberus.Logic
                 // Pass to processor
                 ProcessInstruction(operation);
             }
+
             Writer.Indent = tabs - 1;
             WriteFooter(decompilerBlock);
         }
@@ -977,6 +1037,9 @@ namespace Cerberus.Logic
                                         // Check if we hit a JumpOn, if we do, we're probably a while(...)
                                         if (op.Metadata.OpType == ScriptOpType.JumpCondition)
                                         {
+                                            var jumpLocation = Script.GetJumpLocation(op.OpCodeOffset + Function.Operations[i].OpCodeSize, (int)op.Operands[0].Value);
+                                            var jumpedTo = GetInstructionAt(jumpLocation);
+                                            if (jumpedTo != i + 1) continue; // This fixes "for(;;) if(..." converting into a while loop
                                             hasCondition = true;
                                             break;
                                         }
@@ -1079,12 +1142,12 @@ namespace Cerberus.Logic
             return result;
         }
 
-        private string BuildCondition(int startIndex, bool invert=false)
+        private string BuildCondition(int startIndex, bool invert=false, int endIndex = -1)
         {
             var result = "";
             var requiresBraces = false;
-
-            for(int j = startIndex; j < Function.Operations.Count; j++)
+            if (endIndex == -1) endIndex = Function.Operations.Count;
+            for (int j = startIndex; j < endIndex; j++)
             {
                 var op = Function.Operations[j];
 
@@ -1281,7 +1344,7 @@ namespace Cerberus.Logic
             var index = GetBlockIndexAt(Function.Operations[i + 3].OpCodeOffset);
 
             if (!(Blocks[index] is WhileLoop loop))
-                throw new ArgumentException("Expecting While Loop At FirstArrayKey");
+                throw new ArgumentException("Expecting While Loop At FirstArrayKey: index(" + index + ")");
 
             int continueOffset;
             var variableBeginIndex = FindStartIndex(i - 4);
@@ -1312,6 +1375,29 @@ namespace Cerberus.Logic
             // Clear the instructions at the end
             var opIndex = GetInstructionAt(loop.EndOffset);
 
+            var KeyVar = Function.Operations[i + 1];
+
+            // iterate the foreach body, and try to find some reference to our key
+            // if we find a key ref, its a double foreach
+            bool UseKey = false;
+            for (int j = i + 10; j < opIndex - 2; j++)
+            {
+                switch (Function.Operations[j].Metadata.OpCode)
+                {
+                    case ScriptOpCode.EvalLocalVariableDefined:
+                    case ScriptOpCode.SetLocalVariableCached:
+                    case ScriptOpCode.SetNextArrayKeyCached:
+                    case ScriptOpCode.EvalLocalVariableCached:
+                    case ScriptOpCode.EvalLocalVariableRefCached:
+                    case ScriptOpCode.EvalLocalVariableRefCached2:
+                    case ScriptOpCode.EvalLocalArrayRefCached:
+                        if (int.Parse(Function.Operations[j].Operands[0].Value.ToString()) ==
+                            int.Parse(KeyVar.Operands[0].Value.ToString())) UseKey = true;
+                        break;
+                }
+                if (UseKey) break;
+            }
+
             // Now that we've determined it's a foreach, we need to remove the necessary
             // operations, along with determining the continue location, since Bo3 and 2 
             // are slightly different
@@ -1340,7 +1426,7 @@ namespace Cerberus.Logic
             Blocks[index] = new ForEach(loop.StartOffset, loop.EndOffset)
             {
                 ArrayName = ArrayName,
-                KeyName = null,
+                KeyName = UseKey ? GetVariableName(KeyVar) : null,
                 IteratorName = GetVariableName(Function.Operations[i + 9]),
                 ContinueOffset = continueOffset,
                 BreakOffset = loop.BreakOffset
@@ -1438,12 +1524,6 @@ namespace Cerberus.Logic
 
         private void FindForLoops()
         {
-            // TODO: Optimize this A LOT, make it better (so it doesn't fall back to shitty checks), etc.
-            // It does the job for now, and does it pretty well, but it can be better, and doesn't handle
-            // out of the ordinary cases (but I've never ran into such)
-
-            // The idea is I want to reduce it and make it better at detecting shit
-
             for(int i = 0; i < Blocks.Count; i++)
             {
                 var block = Blocks[i];
@@ -2105,6 +2185,24 @@ namespace Cerberus.Logic
             return false;
         }
 
+        private void MarkUnkJumps()
+        {
+            foreach(var op in Function.Operations)
+            {
+                if (op.Metadata.OpCode != ScriptOpCode.Jump) continue;
+                var jumpLoc = Script.GetJumpLocation(
+                            op.OpCodeOffset + op.OpCodeSize,
+                            (int)op.Operands[0].Value);
+
+                if (IsBreak(op.OpCodeOffset, jumpLoc) || IsContinue(op.OpCodeOffset, jumpLoc))
+                {
+                    continue;
+                }
+                if (op.Visited) continue;
+                JumpLocations.Add(jumpLoc);
+            }
+        }
+
         /// <summary>
         /// Processes the given instructions and returns if the instruction
         /// exits the current block
@@ -2171,11 +2269,18 @@ namespace Cerberus.Logic
                         {
                             Writer?.WriteLine("continue;");
                         }
+                        else if(jumpLoc == Function.Operations[Function.Operations.Count - 1].OpCodeOffset)
+                        {
+                            Writer?.WriteLine("return;");
+                        }
                         else
                         {
                             Verbose($"[{Function.Name}] found a jump condition [0x{operation.OpCodeOffset:X4}:0x{jumpLoc:X4}] which does not suit the conditions of break or continue");
                             Writer?.WriteLine("jump loc_{0};", jumpLoc.ToString("X8"));
-                            JumpLocations.Add(jumpLoc);
+                            if(!JumpLocations.Contains(jumpLoc))
+                            {
+                                JumpLocations.Add(jumpLoc);
+                            }
                         }
 
                         return false;

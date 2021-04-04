@@ -134,6 +134,7 @@ namespace Cerberus.Logic
             var endOffset = function.ByteCodeOffset + function.ByteCodeSize;
             Stack<int> OperationOffsets = new Stack<int>();
             int UnclosedSwitches = 0;
+            int instr;
             //Stack<int> SwitchOffsets = new Stack<int>();
             while (function.ByteCodeSize == 0 // on black ops 3+ the end of the function is garbage filled when dumped.
                 || OperationOffsets.Count > 0) 
@@ -141,6 +142,11 @@ namespace Cerberus.Logic
                 ScriptOp op;
                 try
                 {
+                    while ((instr = GetInstructionAt(function, eip)) != -1 && OperationOffsets.Count > 0)
+                        eip = OperationOffsets.Pop();
+
+                    if ((instr = GetInstructionAt(function, eip)) != -1) break;
+
                     op = LoadOperation(eip);
                     if (op == null) break;
                     function.Operations.Add(op);
@@ -156,18 +162,12 @@ namespace Cerberus.Logic
                     }
                     if(op.Metadata.OpType == ScriptOpType.Return)
                     {
-                        int instr = GetInstructionAt(function, eip);
                         endOffset = Math.Max(endOffset, eip + op.OpCodeSize);
                         if (UnclosedSwitches > 0)
                         {
+                            instr = GetInstructionAt(function, eip);
                             eip += op.OpCodeSize;
                             while ((instr = GetInstructionAt(function, eip)) != -1) eip += function.Operations[instr].OpCodeSize; // we always expect a switch here
-                        }
-                        else
-                        {
-                            while ((instr = GetInstructionAt(function, eip)) != -1 && OperationOffsets.Count > 0)
-                                eip = OperationOffsets.Pop();
-                            if ((instr = GetInstructionAt(function, eip)) != -1) break;
                         }
                         continue;
                     }
@@ -180,6 +180,7 @@ namespace Cerberus.Logic
                 }
             }
 
+            function.Operations = function.Operations.OrderBy(x => x.OpCodeOffset).ToList();
             function.ByteCodeSize = endOffset - function.ByteCodeOffset;
         }
 
@@ -484,6 +485,16 @@ namespace Cerberus.Logic
         public void Dispose()
         {
             Reader.Dispose();
+        }
+
+        public ScriptAnimTree ResolveTreeForGetint(int pos)
+        {
+            foreach(ScriptAnimTree atr in AnimTrees.Values)
+            {
+                if (atr.UseAnimTreeEntries.Contains(pos))
+                    return atr;
+            }
+            return null;
         }
 
         private static Dictionary<uint, string> t8_dword;

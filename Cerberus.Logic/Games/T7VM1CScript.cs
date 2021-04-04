@@ -45,13 +45,13 @@ namespace Cerberus.Logic
                 ByteCodeSize = Reader.ReadInt32(),//30
                 NameOffset = Reader.ReadInt32(),//34
                 StringCount = Reader.ReadInt16(),//38
-                ExportsCount = Reader.ReadInt16(),
-                ImportsCount = Reader.ReadInt16(),
-                FixupCount = Reader.ReadInt16(),
-                ProfileCount = Reader.ReadInt16(),
-                DebugStringCount = Reader.ReadInt16(),
-                IncludeCount = Reader.ReadByte(),
-                AnimTreeCount = Reader.ReadByte(),
+                ExportsCount = Reader.ReadInt16(),//3a
+                ImportsCount = Reader.ReadInt16(),//3c
+                FixupCount = Reader.ReadInt16(),//3e
+                ProfileCount = Reader.ReadInt16(),//40
+                DebugStringCount = Reader.ReadInt16(),//42
+                IncludeCount = Reader.ReadByte(),//44
+                AnimTreeCount = Reader.ReadByte(),//45
                 Flags = Reader.ReadByte()
             };
 
@@ -212,7 +212,7 @@ namespace Cerberus.Logic
             Reader.BaseStream.Position = offset;
             var opCodeIndex = Reader.ReadUInt16();
             ScriptOp operation;
-
+            ScriptAnimTree atr_ref = null;
             if (opCodeIndex == 0)
                 return null;
 
@@ -290,7 +290,13 @@ namespace Cerberus.Logic
                 case ScriptOperandType.Int32:
                     {
                         Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
-                        operation.Operands.Add(new ScriptOpOperand(Reader.ReadInt32()));
+                        if(operation.Metadata.OpCode != ScriptOpCode.GetInteger || (atr_ref = ResolveTreeForGetint((int)Reader.BaseStream.Position)) == null)
+                        {
+                            operation.Operands.Add(new ScriptOpOperand(Reader.ReadInt32()));
+                            break;
+                        }
+                        var skip = Reader.ReadInt32();
+                        operation.Operands.Add(new ScriptOpOperand("$" + atr_ref.Namespace));
                         break;
                     }
                 case ScriptOperandType.UInt32:
@@ -505,8 +511,15 @@ namespace Cerberus.Logic
                 var pos = Reader.BaseStream.Position;
                 atr.lpNamespace = Reader.ReadInt32();
                 atr.Namespace = Reader.PeekNullTerminatedString(atr.lpNamespace);
-                Reader.ReadInt16(); // unk padding
+                atr.NumATRRefs = Reader.ReadInt16(); // unk padding
                 atr.Count = Reader.ReadInt16();
+
+                for(int j = 0; j < atr.NumATRRefs; j++)
+                {
+                    var fixupPos = Reader.ReadInt32();
+                    atr.UseAnimTreeEntries.Add(fixupPos);
+                }
+
                 for(int j = 0; j < atr.Count; j++)
                 {
                     var aref = new ScriptAnim();

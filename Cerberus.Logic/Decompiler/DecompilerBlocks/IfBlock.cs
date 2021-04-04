@@ -21,6 +21,9 @@ namespace Cerberus.Logic
         /// </summary>
         public IfBlock(int startOffset, int endOffset) : base(startOffset, endOffset) { }
 
+        // Used to migrate an else statement to the proper position when necessary
+        public ElseBlock ChildElse { get; set; }
+
         /// <summary>
         /// Gets the header
         /// </summary>

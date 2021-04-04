@@ -17,6 +17,7 @@ namespace Cerberus.Logic
         public int ContinueOffset = -1;
         public int BreakOffset = -1;
         public bool RequiresBraces = true;
+        public bool DisableHeader = false;
         public bool CanSkipZeroSize = false;
         public bool Visited = false;
         public List<string> Lines = new List<string>();
