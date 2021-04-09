@@ -29,7 +29,8 @@ namespace Cerberus.Logic
     /// </summary>
     internal class Decompiler : IDisposable
     {
-        private static bool UseTernaryLogging = true, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = true,
+        private const bool DisableVerbose = true;
+        private static bool UseTernaryLogging = false, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = false,
             UseJumpDetectionLogging = false, UseForLoopVerbose = false, UseIfStatementLogging = false;
         /// <summary>
         /// Operators by Op Code
@@ -1014,10 +1015,11 @@ namespace Cerberus.Logic
                                     Function.Operations[i].OpCodeOffset + Function.Operations[i].OpCodeSize, 
                                     (int)Function.Operations[i].Operands[0].Value);
 
-                                VerboseCondition($"[{Function.Name}] !IsContinue({Function.Operations[i].OpCodeOffset:X4}, {offset:X4})", UseWhileLoopDetectionLogging);
+                                var res = !IsContinue(Function.Operations[i].OpCodeOffset, offset);
+                                VerboseCondition($"[{Function.Name}] !IsContinue({Function.Operations[i].OpCodeOffset:X4}, {offset:X4}): {res}", UseWhileLoopDetectionLogging);
                                 // Attempt to locate the block at the current location, if we fail we're
                                 // creating a new loop, otherwise this is probably continue statement
-                                if (!IsContinue(Function.Operations[i].OpCodeOffset, offset))
+                                if (res)
                                 {
                                     Function.Operations[i].Visited = true;
                                     VerboseCondition($"[{Function.Name}] confirmed 0x{Function.Operations[i].OpCodeOffset:X4} is not a continue.", UseWhileLoopDetectionLogging);
@@ -1039,7 +1041,12 @@ namespace Cerberus.Logic
                                         {
                                             var jumpLocation = Script.GetJumpLocation(op.OpCodeOffset + Function.Operations[i].OpCodeSize, (int)op.Operands[0].Value);
                                             var jumpedTo = GetInstructionAt(jumpLocation);
-                                            if (jumpedTo != i + 1) continue; // This fixes "for(;;) if(..." converting into a while loop
+                                            if (jumpedTo != i + 1 &&
+                                                // Detect if this is a for loop
+                                                ((jumpedTo != i - 2 && jumpedTo != i - 1) || Function.Operations[i - 1].Metadata.OpType != ScriptOpType.SingleOperand))
+                                            {
+                                                continue; // This fixes "for(;;) if(..." converting into a while loop
+                                            }
                                             hasCondition = true;
                                             break;
                                         }
@@ -1530,8 +1537,12 @@ namespace Cerberus.Logic
 
                 if(block is WhileLoop whileLoop)
                 {
+                    VerboseCondition($"[{Function.Name}] Checking potential for loop conditions {whileLoop.StartOffset:X}:{whileLoop.EndOffset:X}", UseForLoopVerbose);
                     if (LoopHasReferences(whileLoop))
+                    {
+                        VerboseCondition($"[{Function.Name}] Failed because of references {whileLoop.StartOffset:X}:{whileLoop.EndOffset:X}", UseForLoopVerbose);
                         continue;
+                    }
 
                     var index = GetInstructionAt(whileLoop.StartOffset);
                     var SetIndex = FindStartIndex(index - 1, true) - 1;
@@ -1551,6 +1562,7 @@ namespace Cerberus.Logic
                         {
                             if (whileLoop.StartOffset >= Blocks[blockIndex].EndOffset && whileLoop.StartOffset >= Blocks[blockIndex].StartOffset)
                             {
+                                VerboseCondition($"[{Function.Name}] Failed because of block condition offsets {whileLoop.StartOffset:X}:{whileLoop.EndOffset:X}", UseForLoopVerbose);
                                 continue;
                             }
                         }
@@ -1766,14 +1778,12 @@ namespace Cerberus.Logic
                                 }
 
                                 Blocks[i] = forLoop;
-
-                                return;
                             }
                         }
 
                         for (int j = variableBeginIndex; j < index; j++)
                         {
-                            Function.Operations[j].Visited = false;
+                            Function.Operations[j].Visited = true;
                         }
                     }
                 }
@@ -2928,6 +2938,7 @@ namespace Cerberus.Logic
         private void Verbose(object value)
         {
 #if DEBUG
+            if (DisableVerbose) return;
             Script?.VLog?.Invoke(value);
 #endif
         }
