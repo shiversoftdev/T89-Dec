@@ -320,7 +320,13 @@ namespace Cerberus.Logic
                 output.AppendLine("// Decompiled by Serious. Credits to Scoba for his original tool, Cerberus, which I heavily upgraded to support remaining features, other games, and other platforms.");
                 lineNumber++;
             }
-            
+
+            if (Header.VMRevision == 0x36)
+            {
+                output.AppendLine("// Decompiled by Serious. Credits to Scoba for his original tool, Cerberus, which I heavily upgraded to support remaining features, other games, and other platforms.");
+                lineNumber++;
+            }
+
             foreach (var include in Includes)
             {
                 output.AppendLine(string.Format("#using {0};", include));
@@ -518,6 +524,11 @@ namespace Cerberus.Logic
                 case 0x36000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
                     return new BlackOps4Script(reader, t8_dword, t8_qword).Load();
+                case 0x36FF0A0D43534780:
+                    ParseHashTables("t8_hash.map", "includes.map");
+                    var _scr = new BlackOps4Script(reader, t8_dword, t8_qword);
+                    _scr.IsPS4 = true;
+                    return _scr.Load();
                 case 0x1C000A0D43534780:
                     LoadT7Hashes("t7_hash.map");
                     return new T7VM1CScript(reader, t7_dword).Load();

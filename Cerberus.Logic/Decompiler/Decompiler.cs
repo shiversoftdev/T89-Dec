@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.CodeDom.Compiler;
 using System.Diagnostics;
+using System.Collections.Specialized;
 
 namespace Cerberus.Logic
 {
@@ -468,7 +469,49 @@ namespace Cerberus.Logic
 
         private void DetectDefaultArgs()
         {
-            if (Script.Header.VMRevision != 0x1C) return; // TODO ADJUST FOR T8 and T9
+            if (Script.Header.VMRevision == 0x1C)
+            {
+                detect_args_internal_1c();
+                return;
+            }
+            if (Script.Header.VMRevision == 0x36)
+            {
+                detect_args_internal_36();
+                return;
+            }
+            // TODO ADJUST FOR T9
+        }
+
+        private void detect_args_internal_36()
+        {
+            for (int i = 1; i < Blocks.Count; i++)
+            {
+                if (!(Blocks[i] is IfBlock argBlock)) return;
+                int startIndex = GetInstructionAt(argBlock.StartOffset);
+                if (Function.Operations[startIndex].Metadata.OpCode != ScriptOpCode.EvalLocalVariableDefined || Function.Operations[startIndex + 1].Metadata.OpCode != ScriptOpCode.JumpOnTrue) return;
+                if (i == 1 && startIndex != 1) return; // prevents blocks from having prefix code. index must be 1 (after safecreate) for default params
+                string vname = GetVariableName(Function.Operations[startIndex], true);
+                if (!LocalVariables.Contains(vname)) return;
+                int vIndex = LocalVariables.IndexOf(vname);
+                var jmp = Function.Operations[startIndex + 1];
+                var jloc = Script.GetJumpLocation(jmp.OpCodeOffset + jmp.OpCodeSize, (int)jmp.Operands[0].Value);
+                int endIndex = GetInstructionAt(jloc);
+                if (Function.Operations[endIndex - 1].Metadata.OpCode != ScriptOpCode.SetLocalVariableCached) return;
+                var startTestIndex = FindStartIndexEx(endIndex - 2) - 1;
+                if (startTestIndex != startIndex + 1) return; // we should only have stackops between the assignment and the condition.
+                BuildCondition(startIndex + 2, false, endIndex - 1);
+                var stack = Stack.Pop();
+                DefaultArguments[vIndex] = string.Format("{0} = {1}", vname, stack);
+                argBlock.Visited = true;
+                for (int j = startIndex; j < endIndex; j++)
+                {
+                    Function.Operations[j].Visited = true;
+                }
+            }
+        }
+
+        private void detect_args_internal_1c()
+        {
             for (int i = 1; i < Blocks.Count; i++)
             {
                 if (!(Blocks[i] is IfBlock argBlock)) return;
@@ -492,7 +535,7 @@ namespace Cerberus.Logic
                 var stack = Stack.Pop();
                 DefaultArguments[vIndex] = string.Format("{0} = {1}", vname, stack);
                 argBlock.Visited = true;
-                for(int j = startIndex; j < endIndex; j++)
+                for (int j = startIndex; j < endIndex; j++)
                 {
                     Function.Operations[j].Visited = true;
                 }
@@ -1777,13 +1820,12 @@ namespace Cerberus.Logic
                                     }
                                 }
 
+                                for (int j = variableBeginIndex; j < index; j++)
+                                {
+                                    Function.Operations[j].Visited = true;
+                                }
                                 Blocks[i] = forLoop;
                             }
-                        }
-
-                        for (int j = variableBeginIndex; j < index; j++)
-                        {
-                            Function.Operations[j].Visited = true;
                         }
                     }
                 }
@@ -2091,7 +2133,7 @@ namespace Cerberus.Logic
             return (LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value], LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value]);
         }
 
-        private string GetVariableName(ScriptOp op)
+        private string GetVariableName(ScriptOp op, bool bare = false)
         {
             switch(op.Metadata.OpCode)
             {
@@ -2123,6 +2165,7 @@ namespace Cerberus.Logic
                 case ScriptOpCode.EvalSelfFieldVariableRef:
                     return "level." + (string)op.Operands[0].Value;
                 case ScriptOpCode.EvalLocalVariableDefined:
+                    if(bare) return LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value];
                     return $"isdefined({LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value]})";
                 case ScriptOpCode.EvalGlobalObjectFieldVariable:
                     return $"{Script.GlobalObjects[op.OpCodeOffset + 2]}.{op.Operands[1].Value}";

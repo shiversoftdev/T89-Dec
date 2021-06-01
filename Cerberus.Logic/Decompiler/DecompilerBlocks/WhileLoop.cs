@@ -22,6 +22,7 @@
         /// </summary>
         public override string GetHeader()
         {
+            if (Comparison == "1") Comparison = "true";
             return string.Format("while({0})", Comparison);
         }
 

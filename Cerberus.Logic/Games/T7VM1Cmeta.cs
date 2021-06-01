@@ -13,7 +13,7 @@ namespace Cerberus.Logic
         {
             if(PrimaryTable == null)
             {
-                PrimaryTable = new ScriptOpCode[0x2000];
+                PrimaryTable = new ScriptOpCode[0x4000];
                 string[] lines = File.ReadAllLines("Games\\t7vm1cpc.txt");
                 foreach(string line in lines)
                 {
@@ -45,7 +45,7 @@ namespace Cerberus.Logic
         {
             LoadTable();
             var table = isPS4 ? SecondaryTable : PrimaryTable;
-            byte[] data = new byte[table.Length];
+            byte[] data = new byte[isPS4 ? table.Length : (table.Length / 2)];
             int i = 0;
             foreach (var code in table)
                 data[i++] = (byte)code;

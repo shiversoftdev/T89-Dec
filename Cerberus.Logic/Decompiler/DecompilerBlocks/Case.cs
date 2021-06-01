@@ -30,7 +30,7 @@ namespace Cerberus.Logic
         /// <summary>
         /// Gets the Header
         /// </summary>
-        public override string GetHeader() => Value == "default" ? Value : string.Format("case {0}:", Value);
+        public override string GetHeader() => Value == "default" ? (Value + ":") : string.Format("case {0}:", Value);
 
         /// <summary>
         /// Gets the footer

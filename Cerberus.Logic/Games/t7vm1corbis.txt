@@ -19,7 +19,7 @@
 0x12 = ClearArray; // op_sub_7772D0
 0x13 = WaitTillFrameEnd; // op_sub_77D190
 0x14 = GetSelf; // op_sub_7763E0
-0x15 = op_sub_770480;
+0x15 = Bit_Xor; // op_sub_770480
 0x16 = op_invalid;
 0x17 = Minus; // op_sub_771890
 0x18 = op_invalid;
@@ -318,7 +318,7 @@
 0x13d = op_sub_773960;
 0x13e = op_invalid;
 0x13f = op_invalid;
-0x140 = op_sub_770480;
+0x140 = Bit_Xor; // op_sub_770480
 0x141 = IsDefined; // op_sub_778D80
 0x142 = op_invalid;
 0x143 = ScriptMethodCall; // op_sub_774380
@@ -426,7 +426,7 @@
 0x1a9 = SetWaittillVariableFieldCached; // op_sub_777DE0
 0x1aa = op_sub_776230;
 0x1ab = EvalLocalVariableCached; // op_sub_776650
-0x1ac = op_sub_776360;
+0x1ac = GetWorldObject; // op_sub_776360
 0x1ad = op_invalid;
 0x1ae = op_invalid;
 0x1af = EvalFieldVariableRef; // op_sub_777BB0
@@ -462,7 +462,7 @@
 0x1cd = GetInteger; // op_sub_772310
 0x1ce = ClassFunctionCall; // op_sub_774150
 0x1cf = GetClassesObject; // op_sub_776380
-0x1d0 = op_sub_770480;
+0x1d0 = Bit_Xor; // op_sub_770480
 0x1d1 = GreaterThan; // op_sub_770670
 0x1d2 = LessThanOrEqualTo; // op_sub_7706A0
 0x1d3 = op_invalid;
@@ -521,7 +521,7 @@
 0x208 = ClassFunctionThreadCall; // op_sub_774C70
 0x209 = ScriptMethodThreadCall; // op_sub_774EC0
 0x20a = GetFloat; // op_sub_772340
-0x20b = op_sub_776360;
+0x20b = GetWorldObject; // op_sub_776360
 0x20c = op_invalid;
 0x20d = op_invalid;
 0x20e = op_invalid;
@@ -720,7 +720,7 @@
 0x2cf = ClassFunctionThreadCall; // op_sub_774C70
 0x2d0 = GetNegUnsignedShort; // op_sub_7722B0
 0x2d1 = EndSwitch; // op_sub_773130
-0x2d2 = op_sub_770480;
+0x2d2 = Bit_Xor; // op_sub_770480
 0x2d3 = Plus; // op_sub_7707A0
 0x2d4 = op_sub_779300;
 0x2d5 = EvalLevelFieldVariableRef; // op_sub_778B10
@@ -879,7 +879,7 @@
 0x36e = op_invalid;
 0x36f = op_invalid;
 0x370 = ScriptFunctionCallPointer; // op_sub_773E10
-0x371 = op_sub_776360;
+0x371 = GetWorldObject; // op_sub_776360
 0x372 = DecTop; // op_sub_777FE0
 0x373 = Notify; // op_sub_77DE60
 0x374 = op_invalid;
@@ -1042,11 +1042,11 @@
 0x411 = op_invalid;
 0x412 = op_sub_7723F0;
 0x413 = DecTop; // op_sub_777FE0
-0x414 = op_sub_770480;
+0x414 = Bit_Xor; // op_sub_770480
 0x415 = op_invalid;
 0x416 = GetLevel; // op_sub_7764C0
 0x417 = op_invalid;
-0x418 = op_sub_776360;
+0x418 = GetWorldObject; // op_sub_776360
 0x419 = EndOn; // op_sub_77C160
 0x41a = SizeOf; // op_sub_778240
 0x41b = ScriptFunctionCallPointer; // op_sub_773E10
@@ -1066,7 +1066,7 @@
 0x429 = NotEqual; // op_sub_770530
 0x42a = op_sub_776230;
 0x42b = EvalSelfFieldVariableRef; // op_sub_7788A0
-0x42c = op_sub_776360;
+0x42c = GetWorldObject; // op_sub_776360
 0x42d = GetHash; // op_sub_7725E0
 0x42e = NextArrayKey; // op_sub_779080
 0x42f = CastFieldObject; // op_sub_778000
@@ -1201,7 +1201,7 @@
 0x4b0 = GetAPIFunction; // op_sub_7765F0
 0x4b1 = ShiftLeft; // op_sub_770720
 0x4b2 = op_invalid;
-0x4b3 = op_sub_770480;
+0x4b3 = Bit_Xor; // op_sub_770480
 0x4b4 = op_invalid;
 0x4b5 = GetEmptyArray; // op_sub_7779F0
 0x4b6 = GreaterThanOrEqualTo; // op_sub_7706E0
@@ -1267,7 +1267,7 @@
 0x4f2 = op_invalid;
 0x4f3 = GetHash; // op_sub_7725E0
 0x4f4 = EndSwitch; // op_sub_773130
-0x4f5 = op_sub_776360;
+0x4f5 = GetWorldObject; // op_sub_776360
 0x4f6 = GetGame; // op_sub_776510
 0x4f7 = GetLevel; // op_sub_7764C0
 0x4f8 = op_invalid;
@@ -1494,7 +1494,7 @@
 0x5d5 = op_sub_776470;
 0x5d6 = GetFloat; // op_sub_772340
 0x5d7 = op_invalid;
-0x5d8 = op_sub_776360;
+0x5d8 = GetWorldObject; // op_sub_776360
 0x5d9 = op_invalid;
 0x5da = op_invalid;
 0x5db = EndOn; // op_sub_77C160
@@ -1591,10 +1591,10 @@
 0x636 = BoolNot; // op_sub_772000
 0x637 = SafeCreateLocalVariables; // op_sub_775480
 0x638 = SuperEqual; // op_sub_770570
-0x639 = op_sub_776360;
+0x639 = GetWorldObject; // op_sub_776360
 0x63a = op_invalid;
 0x63b = op_invalid;
-0x63c = op_sub_776360;
+0x63c = GetWorldObject; // op_sub_776360
 0x63d = Bit_Not; // op_sub_772110
 0x63e = op_invalid;
 0x63f = op_invalid;
@@ -1796,7 +1796,7 @@
 0x703 = EvalLocalVariableRefCached; // op_sub_777EC0
 0x704 = op_invalid;
 0x705 = NotEqual; // op_sub_770530
-0x706 = op_sub_770480;
+0x706 = Bit_Xor; // op_sub_770480
 0x707 = ClassFunctionThreadCall; // op_sub_774C70
 0x708 = FirstArrayKey; // op_sub_778E80
 0x709 = op_invalid;
@@ -1936,7 +1936,7 @@
 0x78f = op_invalid;
 0x790 = op_invalid;
 0x791 = Dec; // op_sub_770280
-0x792 = op_sub_770480;
+0x792 = Bit_Xor; // op_sub_770480
 0x793 = ScriptThreadCall; // op_sub_7748B0
 0x794 = ScriptThreadCallPointer; // op_sub_774A30
 0x795 = IsDefined; // op_sub_778D80
@@ -2479,7 +2479,7 @@
 0x9ae = op_invalid;
 0x9af = EvalArrayRef; // op_sub_7766D0
 0x9b0 = EvalLocalVariableCached; // op_sub_776650
-0x9b1 = op_sub_776360;
+0x9b1 = GetWorldObject; // op_sub_776360
 0x9b2 = op_sub_776470;
 0x9b3 = LessThanOrEqualTo; // op_sub_7706A0
 0x9b4 = EvalSelfFieldVariableRef; // op_sub_7788A0
@@ -2542,7 +2542,7 @@
 0x9ed = ScriptMethodCallPointer; // op_sub_7745A0
 0x9ee = GetString; // op_sub_772370
 0x9ef = GetObjectType; // op_sub_778590
-0x9f0 = op_sub_776360;
+0x9f0 = GetWorldObject; // op_sub_776360
 0x9f1 = GetLevelObject; // op_sub_7763A0
 0x9f2 = op_invalid;
 0x9f3 = GetHash; // op_sub_7725E0
@@ -2564,7 +2564,7 @@
 0xa03 = Bit_And; // op_sub_7704C0
 0xa04 = EvalLevelFieldVariable; // op_sub_778C40
 0xa05 = op_invalid;
-0xa06 = op_sub_770480;
+0xa06 = Bit_Xor; // op_sub_770480
 0xa07 = op_invalid;
 0xa08 = GetClassesObject; // op_sub_776380
 0xa09 = op_invalid;
@@ -2635,7 +2635,7 @@
 0xa4a = op_invalid;
 0xa4b = GetIString; // op_sub_7723B0
 0xa4c = FirstArrayKey; // op_sub_778E80
-0xa4d = op_sub_776360;
+0xa4d = GetWorldObject; // op_sub_776360
 0xa4e = op_invalid;
 0xa4f = GetSelfObject; // op_sub_777A70
 0xa50 = op_invalid;
@@ -2842,7 +2842,7 @@
 0xb19 = op_sub_777D20;
 0xb1a = EvalArray; // op_sub_7766A0
 0xb1b = op_invalid;
-0xb1c = op_sub_776360;
+0xb1c = GetWorldObject; // op_sub_776360
 0xb1d = op_sub_771F10;
 0xb1e = op_invalid;
 0xb1f = ClassFunctionCall; // op_sub_774150
@@ -2868,7 +2868,7 @@
 0xb33 = GetGame; // op_sub_776510
 0xb34 = DevblockBegin; // op_sub_772E00
 0xb35 = JumpOnTrue; // op_sub_772A30
-0xb36 = op_sub_770480;
+0xb36 = Bit_Xor; // op_sub_770480
 0xb37 = ScriptThreadCall; // op_sub_7748B0
 0xb38 = Bit_And; // op_sub_7704C0
 0xb39 = GreaterThan; // op_sub_770670
@@ -3366,7 +3366,7 @@
 0xd25 = SuperEqual; // op_sub_770570
 0xd26 = op_invalid;
 0xd27 = op_invalid;
-0xd28 = op_sub_770480;
+0xd28 = Bit_Xor; // op_sub_770480
 0xd29 = op_invalid;
 0xd2a = Divide; // op_sub_771B30
 0xd2b = GetTime; // op_sub_778E10
@@ -3443,7 +3443,7 @@
 0xd72 = JumpOnFalse; // op_sub_7728F0
 0xd73 = Dec; // op_sub_770280
 0xd74 = op_invalid;
-0xd75 = op_sub_776360;
+0xd75 = GetWorldObject; // op_sub_776360
 0xd76 = GetGame; // op_sub_776510
 0xd77 = EvalLevelFieldVariableRef; // op_sub_778B10
 0xd78 = GetLevelObject; // op_sub_7763A0
@@ -3476,7 +3476,7 @@
 0xd93 = Jump; // op_sub_772DE0
 0xd94 = op_invalid;
 0xd95 = op_invalid;
-0xd96 = op_sub_776360;
+0xd96 = GetWorldObject; // op_sub_776360
 0xd97 = Divide; // op_sub_771B30
 0xd98 = op_invalid;
 0xd99 = op_invalid;
@@ -3653,7 +3653,7 @@
 0xe44 = EvalSelfFieldVariable; // op_sub_7789D0
 0xe45 = op_sub_777D20;
 0xe46 = FirstArrayKey; // op_sub_778E80
-0xe47 = op_sub_770480;
+0xe47 = Bit_Xor; // op_sub_770480
 0xe48 = op_invalid;
 0xe49 = Inc; // op_sub_7700C0
 0xe4a = Notify; // op_sub_77DE60
@@ -3789,7 +3789,7 @@
 0xecc = GetLevel; // op_sub_7764C0
 0xecd = Plus; // op_sub_7707A0
 0xece = GetIString; // op_sub_7723B0
-0xecf = op_sub_776360;
+0xecf = GetWorldObject; // op_sub_776360
 0xed0 = GetInteger; // op_sub_772310
 0xed1 = op_invalid;
 0xed2 = Multiply; // op_sub_7719E0
@@ -3923,7 +3923,7 @@
 0xf52 = op_invalid;
 0xf53 = Jump; // op_sub_772DE0
 0xf54 = JumpOnTrue; // op_sub_772A30
-0xf55 = op_sub_776360;
+0xf55 = GetWorldObject; // op_sub_776360
 0xf56 = GetHash; // op_sub_7725E0
 0xf57 = EvalSelfFieldVariableRef; // op_sub_7788A0
 0xf58 = op_invalid;
@@ -3931,7 +3931,7 @@
 0xf5a = op_sub_777D20;
 0xf5b = GetTime; // op_sub_778E10
 0xf5c = VectorConstant; // op_sub_772610
-0xf5d = op_sub_770480;
+0xf5d = Bit_Xor; // op_sub_770480
 0xf5e = op_invalid;
 0xf5f = WaitTillFrameEnd; // op_sub_77D190
 0xf60 = GetAnimation; // op_sub_7765A0
@@ -4063,7 +4063,7 @@
 0xfde = op_invalid;
 0xfdf = LessThanOrEqualTo; // op_sub_7706A0
 0xfe0 = op_invalid;
-0xfe1 = op_sub_776360;
+0xfe1 = GetWorldObject; // op_sub_776360
 0xfe2 = op_sub_779300;
 0xfe3 = SetVariableField; // op_sub_777EF0
 0xfe4 = EvalLocalVariableRefCached; // op_sub_777EC0
@@ -4105,7 +4105,7 @@
 0x1008 = op_invalid;
 0x1009 = BoolNot; // op_sub_772000
 0x100a = op_invalid;
-0x100b = op_sub_770480;
+0x100b = Bit_Xor; // op_sub_770480
 0x100c = GreaterThan; // op_sub_770670
 0x100d = Notify; // op_sub_77DE60
 0x100e = Divide; // op_sub_771B30
@@ -4184,7 +4184,7 @@
 0x1057 = EvalLevelFieldVariableRef; // op_sub_778B10
 0x1058 = op_sub_770760;
 0x1059 = GetTime; // op_sub_778E10
-0x105a = op_sub_770480;
+0x105a = Bit_Xor; // op_sub_770480
 0x105b = op_invalid;
 0x105c = op_invalid;
 0x105d = JumpOnTrueExpr; // op_sub_772CA0
@@ -4326,7 +4326,7 @@
 0x10e5 = ScriptThreadCall; // op_sub_7748B0
 0x10e6 = op_invalid;
 0x10e7 = Plus; // op_sub_7707A0
-0x10e8 = op_sub_776360;
+0x10e8 = GetWorldObject; // op_sub_776360
 0x10e9 = ShiftLeft; // op_sub_770720
 0x10ea = GetEmptyArray; // op_sub_7779F0
 0x10eb = SafeCreateLocalVariables; // op_sub_775480
@@ -4557,7 +4557,7 @@
 0x11cc = op_invalid;
 0x11cd = op_invalid;
 0x11ce = GetLevelObject; // op_sub_7763A0
-0x11cf = op_sub_770480;
+0x11cf = Bit_Xor; // op_sub_770480
 0x11d0 = FirstArrayKey; // op_sub_778E80
 0x11d1 = DecTop; // op_sub_777FE0
 0x11d2 = LessThan; // op_sub_770640
@@ -4743,7 +4743,7 @@
 0x1286 = op_invalid;
 0x1287 = Dec; // op_sub_770280
 0x1288 = JumpOnFalse; // op_sub_7728F0
-0x1289 = op_sub_770480;
+0x1289 = Bit_Xor; // op_sub_770480
 0x128a = op_invalid;
 0x128b = EvalSelfFieldVariable; // op_sub_7789D0
 0x128c = op_invalid;
@@ -4774,7 +4774,7 @@
 0x12a5 = ScriptThreadCallPointer; // op_sub_774A30
 0x12a6 = GetSelf; // op_sub_7763E0
 0x12a7 = op_sub_776230;
-0x12a8 = op_sub_770480;
+0x12a8 = Bit_Xor; // op_sub_770480
 0x12a9 = op_invalid;
 0x12aa = op_invalid;
 0x12ab = op_invalid;
@@ -4995,7 +4995,7 @@
 0x1382 = ScriptFunctionCallPointer; // op_sub_773E10
 0x1383 = op_sub_777D20;
 0x1384 = GetSelf; // op_sub_7763E0
-0x1385 = op_sub_776360;
+0x1385 = GetWorldObject; // op_sub_776360
 0x1386 = SuperNotEqual; // op_sub_7705D0
 0x1387 = DevblockBegin; // op_sub_772E00
 0x1388 = EvalArray; // op_sub_7766A0
@@ -5027,7 +5027,7 @@
 0x13a2 = GetZero; // op_sub_772200
 0x13a3 = SetVariableField; // op_sub_777EF0
 0x13a4 = op_invalid;
-0x13a5 = op_sub_776360;
+0x13a5 = GetWorldObject; // op_sub_776360
 0x13a6 = op_invalid;
 0x13a7 = op_invalid;
 0x13a8 = GetZero; // op_sub_772200
@@ -5073,7 +5073,7 @@
 0x13d0 = EvalLocalVariableRefCached; // op_sub_777EC0
 0x13d1 = EvalLevelFieldVariable; // op_sub_778C40
 0x13d2 = ScriptFunctionCall; // op_sub_773C80
-0x13d3 = op_sub_776360;
+0x13d3 = GetWorldObject; // op_sub_776360
 0x13d4 = op_invalid;
 0x13d5 = op_invalid;
 0x13d6 = op_sub_7722E0;
@@ -5445,7 +5445,7 @@
 0x1544 = op_invalid;
 0x1545 = op_invalid;
 0x1546 = op_invalid;
-0x1547 = op_sub_770480;
+0x1547 = Bit_Xor; // op_sub_770480
 0x1548 = op_invalid;
 0x1549 = ScriptMethodThreadCallPointer; // op_sub_7750F0
 0x154a = ShiftLeft; // op_sub_770720
@@ -5474,7 +5474,7 @@
 0x1561 = op_invalid;
 0x1562 = SetVariableField; // op_sub_777EF0
 0x1563 = op_invalid;
-0x1564 = op_sub_776360;
+0x1564 = GetWorldObject; // op_sub_776360
 0x1565 = op_invalid;
 0x1566 = GetHash; // op_sub_7725E0
 0x1567 = Bit_Not; // op_sub_772110
@@ -5605,7 +5605,7 @@
 0x15e4 = Jump; // op_sub_772DE0
 0x15e5 = Divide; // op_sub_771B30
 0x15e6 = op_invalid;
-0x15e7 = op_sub_770480;
+0x15e7 = Bit_Xor; // op_sub_770480
 0x15e8 = Multiply; // op_sub_7719E0
 0x15e9 = op_invalid;
 0x15ea = ScriptMethodCallPointer; // op_sub_7745A0
@@ -5647,7 +5647,7 @@
 0x160e = op_invalid;
 0x160f = GetTime; // op_sub_778E10
 0x1610 = EvalFieldVariableRef; // op_sub_777BB0
-0x1611 = op_sub_776360;
+0x1611 = GetWorldObject; // op_sub_776360
 0x1612 = op_invalid;
 0x1613 = SizeOf; // op_sub_778240
 0x1614 = op_invalid;
@@ -5669,7 +5669,7 @@
 0x1624 = op_invalid;
 0x1625 = op_invalid;
 0x1626 = Notify; // op_sub_77DE60
-0x1627 = op_sub_770480;
+0x1627 = Bit_Xor; // op_sub_770480
 0x1628 = op_invalid;
 0x1629 = GetUndefined; // op_sub_7721E0
 0x162a = op_sub_776230;
@@ -5689,7 +5689,7 @@
 0x1638 = EvalSelfFieldVariable; // op_sub_7789D0
 0x1639 = op_invalid;
 0x163a = WaitTillFrameEnd; // op_sub_77D190
-0x163b = op_sub_776360;
+0x163b = GetWorldObject; // op_sub_776360
 0x163c = GetHash; // op_sub_7725E0
 0x163d = op_invalid;
 0x163e = GetSelf; // op_sub_7763E0
@@ -5779,7 +5779,7 @@
 0x1692 = op_invalid;
 0x1693 = op_invalid;
 0x1694 = IsDefined; // op_sub_778D80
-0x1695 = op_sub_776360;
+0x1695 = GetWorldObject; // op_sub_776360
 0x1696 = BoolNot; // op_sub_772000
 0x1697 = op_invalid;
 0x1698 = op_invalid;
@@ -5822,7 +5822,7 @@
 0x16bd = op_invalid;
 0x16be = op_invalid;
 0x16bf = op_invalid;
-0x16c0 = op_sub_776360;
+0x16c0 = GetWorldObject; // op_sub_776360
 0x16c1 = JumpOnFalse; // op_sub_7728F0
 0x16c2 = GreaterThanOrEqualTo; // op_sub_7706E0
 0x16c3 = SizeOf; // op_sub_778240
@@ -5880,7 +5880,7 @@
 0x16f7 = FirstArrayKey; // op_sub_778E80
 0x16f8 = GetClassesObject; // op_sub_776380
 0x16f9 = GreaterThan; // op_sub_770670
-0x16fa = op_sub_776360;
+0x16fa = GetWorldObject; // op_sub_776360
 0x16fb = op_invalid;
 0x16fc = op_sub_7722E0;
 0x16fd = GreaterThan; // op_sub_770670
@@ -5908,7 +5908,7 @@
 0x1713 = JumpOnTrue; // op_sub_772A30
 0x1714 = FirstArrayKey; // op_sub_778E80
 0x1715 = op_invalid;
-0x1716 = op_sub_770480;
+0x1716 = Bit_Xor; // op_sub_770480
 0x1717 = NextArrayKey; // op_sub_779080
 0x1718 = op_invalid;
 0x1719 = CastFieldObject; // op_sub_778000
@@ -5992,7 +5992,7 @@
 0x1767 = LessThanOrEqualTo; // op_sub_7706A0
 0x1768 = IsDefined; // op_sub_778D80
 0x1769 = Multiply; // op_sub_7719E0
-0x176a = op_sub_770480;
+0x176a = Bit_Xor; // op_sub_770480
 0x176b = GetUndefined; // op_sub_7721E0
 0x176c = op_invalid;
 0x176d = op_invalid;
@@ -6060,7 +6060,7 @@
 0x17ab = EvalLevelFieldVariableRef; // op_sub_778B10
 0x17ac = op_invalid;
 0x17ad = SetVariableField; // op_sub_777EF0
-0x17ae = op_sub_770480;
+0x17ae = Bit_Xor; // op_sub_770480
 0x17af = op_invalid;
 0x17b0 = op_invalid;
 0x17b1 = ScriptThreadCall; // op_sub_7748B0
@@ -6299,7 +6299,7 @@
 0x189a = ClearArray; // op_sub_7772D0
 0x189b = op_invalid;
 0x189c = GetAPIFunction; // op_sub_7765F0
-0x189d = op_sub_770480;
+0x189d = Bit_Xor; // op_sub_770480
 0x189e = EvalSelfFieldVariableRef; // op_sub_7788A0
 0x189f = op_invalid;
 0x18a0 = ScriptMethodThreadCallPointer; // op_sub_7750F0
@@ -6356,7 +6356,7 @@
 0x18d3 = SizeOf; // op_sub_778240
 0x18d4 = op_invalid;
 0x18d5 = op_invalid;
-0x18d6 = op_sub_776360;
+0x18d6 = GetWorldObject; // op_sub_776360
 0x18d7 = ScriptMethodCallPointer; // op_sub_7745A0
 0x18d8 = GetFloat; // op_sub_772340
 0x18d9 = NotEqual; // op_sub_770530
@@ -6671,7 +6671,7 @@
 0x1a0e = ClassFunctionCall; // op_sub_774150
 0x1a0f = op_invalid;
 0x1a10 = op_invalid;
-0x1a11 = op_sub_770480;
+0x1a11 = Bit_Xor; // op_sub_770480
 0x1a12 = ClearArray; // op_sub_7772D0
 0x1a13 = BoolNot; // op_sub_772000
 0x1a14 = FirstArrayKey; // op_sub_778E80
@@ -6878,7 +6878,7 @@
 0x1add = GetClassesObject; // op_sub_776380
 0x1ade = LessThanOrEqualTo; // op_sub_7706A0
 0x1adf = op_invalid;
-0x1ae0 = op_sub_770480;
+0x1ae0 = Bit_Xor; // op_sub_770480
 0x1ae1 = NotEqual; // op_sub_770530
 0x1ae2 = GetZero; // op_sub_772200
 0x1ae3 = op_invalid;
@@ -6912,10 +6912,10 @@
 0x1aff = op_invalid;
 0x1b00 = op_invalid;
 0x1b01 = GetString; // op_sub_772370
-0x1b02 = op_sub_770480;
+0x1b02 = Bit_Xor; // op_sub_770480
 0x1b03 = op_invalid;
 0x1b04 = op_invalid;
-0x1b05 = op_sub_770480;
+0x1b05 = Bit_Xor; // op_sub_770480
 0x1b06 = VectorConstant; // op_sub_772610
 0x1b07 = Equal; // op_sub_770500
 0x1b08 = Notify; // op_sub_77DE60
@@ -7160,7 +7160,7 @@
 0x1bf7 = op_invalid;
 0x1bf8 = WaitTillFrameEnd; // op_sub_77D190
 0x1bf9 = op_invalid;
-0x1bfa = op_sub_770480;
+0x1bfa = Bit_Xor; // op_sub_770480
 0x1bfb = op_invalid;
 0x1bfc = EvalArrayRef; // op_sub_7766D0
 0x1bfd = ScriptMethodCallPointer; // op_sub_7745A0
@@ -7250,7 +7250,7 @@
 0x1c51 = op_invalid;
 0x1c52 = op_invalid;
 0x1c53 = JumpOnTrueExpr; // op_sub_772CA0
-0x1c54 = op_sub_776360;
+0x1c54 = GetWorldObject; // op_sub_776360
 0x1c55 = VectorConstant; // op_sub_772610
 0x1c56 = ScriptMethodThreadCall; // op_sub_774EC0
 0x1c57 = EvalFieldVariableRef; // op_sub_777BB0
@@ -7292,7 +7292,7 @@
 0x1c7b = op_invalid;
 0x1c7c = Bit_And; // op_sub_7704C0
 0x1c7d = ScriptMethodCall; // op_sub_774380
-0x1c7e = op_sub_770480;
+0x1c7e = Bit_Xor; // op_sub_770480
 0x1c7f = GetGame; // op_sub_776510
 0x1c80 = op_invalid;
 0x1c81 = EvalLocalVariableRefCached; // op_sub_777EC0
@@ -7395,7 +7395,7 @@
 0x1ce2 = EvalFieldVariableRef; // op_sub_777BB0
 0x1ce3 = ClassFunctionThreadCall; // op_sub_774C70
 0x1ce4 = GetSelf; // op_sub_7763E0
-0x1ce5 = op_sub_776360;
+0x1ce5 = GetWorldObject; // op_sub_776360
 0x1ce6 = op_invalid;
 0x1ce7 = GetByte; // op_sub_772220
 0x1ce8 = ScriptMethodThreadCallPointer; // op_sub_7750F0
@@ -7439,7 +7439,7 @@
 0x1d0e = op_invalid;
 0x1d0f = op_invalid;
 0x1d10 = ClassFunctionCall; // op_sub_774150
-0x1d11 = op_sub_770480;
+0x1d11 = Bit_Xor; // op_sub_770480
 0x1d12 = op_invalid;
 0x1d13 = Modulus; // op_sub_771E70
 0x1d14 = JumpOnFalseExpr; // op_sub_772B60
@@ -7567,7 +7567,7 @@
 0x1d8e = ClearArray; // op_sub_7772D0
 0x1d8f = op_invalid;
 0x1d90 = EvalArrayRef; // op_sub_7766D0
-0x1d91 = op_sub_776360;
+0x1d91 = GetWorldObject; // op_sub_776360
 0x1d92 = op_sub_777D20;
 0x1d93 = Inc; // op_sub_7700C0
 0x1d94 = ScriptFunctionCallPointer; // op_sub_773E10
@@ -7784,7 +7784,7 @@
 0x1e67 = op_invalid;
 0x1e68 = GetTime; // op_sub_778E10
 0x1e69 = op_invalid;
-0x1e6a = op_sub_770480;
+0x1e6a = Bit_Xor; // op_sub_770480
 0x1e6b = Return; // op_sub_773B00
 0x1e6c = VectorConstant; // op_sub_772610
 0x1e6d = op_invalid;
@@ -7937,7 +7937,7 @@
 0x1f00 = GetByte; // op_sub_772220
 0x1f01 = op_sub_776470;
 0x1f02 = op_invalid;
-0x1f03 = op_sub_770480;
+0x1f03 = Bit_Xor; // op_sub_770480
 0x1f04 = Vector; // op_sub_772420
 0x1f05 = GetHash; // op_sub_7725E0
 0x1f06 = GreaterThan; // op_sub_770670
@@ -7962,7 +7962,7 @@
 0x1f19 = EvalFieldVariable; // op_sub_777B70
 0x1f1a = EvalLevelFieldVariable; // op_sub_778C40
 0x1f1b = GetAPIFunction; // op_sub_7765F0
-0x1f1c = op_sub_776360;
+0x1f1c = GetWorldObject; // op_sub_776360
 0x1f1d = op_invalid;
 0x1f1e = Jump; // op_sub_772DE0
 0x1f1f = GreaterThanOrEqualTo; // op_sub_7706E0
@@ -8126,7 +8126,7 @@
 0x1fbd = op_invalid;
 0x1fbe = op_invalid;
 0x1fbf = ClassFunctionCall; // op_sub_774150
-0x1fc0 = op_sub_770480;
+0x1fc0 = Bit_Xor; // op_sub_770480
 0x1fc1 = op_invalid;
 0x1fc2 = ScriptThreadCall; // op_sub_7748B0
 0x1fc3 = VectorConstant; // op_sub_772610
@@ -8288,7 +8288,7 @@
 0x205f = op_invalid;
 0x2060 = Dec; // op_sub_770280
 0x2061 = JumpOnTrue; // op_sub_772A30
-0x2062 = op_sub_776360;
+0x2062 = GetWorldObject; // op_sub_776360
 0x2063 = NotEqual; // op_sub_770530
 0x2064 = ClassFunctionCall; // op_sub_774150
 0x2065 = op_invalid;
@@ -8327,7 +8327,7 @@
 0x2086 = GetLevelObject; // op_sub_7763A0
 0x2087 = op_invalid;
 0x2088 = EvalSelfFieldVariableRef; // op_sub_7788A0
-0x2089 = op_sub_776360;
+0x2089 = GetWorldObject; // op_sub_776360
 0x208a = EvalFieldVariable; // op_sub_777B70
 0x208b = SetVariableField; // op_sub_777EF0
 0x208c = JumpOnTrue; // op_sub_772A30
@@ -8393,7 +8393,7 @@
 0x20c8 = Bit_Or; // op_sub_770440
 0x20c9 = WaitTillFrameEnd; // op_sub_77D190
 0x20ca = op_invalid;
-0x20cb = op_sub_776360;
+0x20cb = GetWorldObject; // op_sub_776360
 0x20cc = op_sub_7723F0;
 0x20cd = EvalArrayRef; // op_sub_7766D0
 0x20ce = GetSelf; // op_sub_7763E0
@@ -8489,7 +8489,7 @@
 0x2128 = op_invalid;
 0x2129 = op_invalid;
 0x212a = FirstArrayKey; // op_sub_778E80
-0x212b = op_sub_776360;
+0x212b = GetWorldObject; // op_sub_776360
 0x212c = DecTop; // op_sub_777FE0
 0x212d = GetAPIFunction; // op_sub_7765F0
 0x212e = SizeOf; // op_sub_778240
@@ -8850,7 +8850,7 @@
 0x2291 = JumpOnTrueExpr; // op_sub_772CA0
 0x2292 = GetLevelObject; // op_sub_7763A0
 0x2293 = op_invalid;
-0x2294 = op_sub_776360;
+0x2294 = GetWorldObject; // op_sub_776360
 0x2295 = ScriptMethodCall; // op_sub_774380
 0x2296 = op_invalid;
 0x2297 = Equal; // op_sub_770500
@@ -8960,7 +8960,7 @@
 0x22ff = FirstArrayKey; // op_sub_778E80
 0x2300 = ScriptMethodCallPointer; // op_sub_7745A0
 0x2301 = GetAPIFunction; // op_sub_7765F0
-0x2302 = op_sub_776360;
+0x2302 = GetWorldObject; // op_sub_776360
 0x2303 = EvalArray; // op_sub_7766A0
 0x2304 = GetGameRef; // op_sub_7765D0
 0x2305 = GetObjectType; // op_sub_778590
@@ -9225,7 +9225,7 @@
 0x2408 = op_invalid;
 0x2409 = GetNegByte; // op_sub_772250
 0x240a = Dec; // op_sub_770280
-0x240b = op_sub_776360;
+0x240b = GetWorldObject; // op_sub_776360
 0x240c = EvalFieldVariableRef; // op_sub_777BB0
 0x240d = GetHash; // op_sub_7725E0
 0x240e = op_invalid;
@@ -9369,7 +9369,7 @@
 0x2498 = op_invalid;
 0x2499 = SizeOf; // op_sub_778240
 0x249a = Inc; // op_sub_7700C0
-0x249b = op_sub_776360;
+0x249b = GetWorldObject; // op_sub_776360
 0x249c = ScriptThreadCall; // op_sub_7748B0
 0x249d = op_invalid;
 0x249e = op_sub_776230;
@@ -9392,7 +9392,7 @@
 0x24af = op_invalid;
 0x24b0 = EvalFieldVariableRef; // op_sub_777BB0
 0x24b1 = op_invalid;
-0x24b2 = op_sub_770480;
+0x24b2 = Bit_Xor; // op_sub_770480
 0x24b3 = ClearFieldVariable; // op_sub_777BF0
 0x24b4 = op_sub_776260;
 0x24b5 = SetWaittillVariableFieldCached; // op_sub_777DE0
@@ -9435,7 +9435,7 @@
 0x24da = ClassFunctionThreadCall; // op_sub_774C70
 0x24db = GetAPIFunction; // op_sub_7765F0
 0x24dc = GetGame; // op_sub_776510
-0x24dd = op_sub_770480;
+0x24dd = Bit_Xor; // op_sub_770480
 0x24de = op_invalid;
 0x24df = FirstArrayKey; // op_sub_778E80
 0x24e0 = op_invalid;
@@ -9560,7 +9560,7 @@
 0x2557 = op_invalid;
 0x2558 = op_invalid;
 0x2559 = WaitTillMatch; // op_sub_77D460
-0x255a = op_sub_770480;
+0x255a = Bit_Xor; // op_sub_770480
 0x255b = EvalArray; // op_sub_7766A0
 0x255c = op_sub_776470;
 0x255d = GetAnim; // op_sub_776550
@@ -9873,7 +9873,7 @@
 0x2690 = Bit_Not; // op_sub_772110
 0x2691 = op_invalid;
 0x2692 = op_sub_771F10;
-0x2693 = op_sub_770480;
+0x2693 = Bit_Xor; // op_sub_770480
 0x2694 = GetSelfObject; // op_sub_777A70
 0x2695 = ClearArray; // op_sub_7772D0
 0x2696 = GetInteger; // op_sub_772310
@@ -10072,7 +10072,7 @@
 0x2757 = Return; // op_sub_773B00
 0x2758 = JumpOnTrue; // op_sub_772A30
 0x2759 = op_invalid;
-0x275a = op_sub_776360;
+0x275a = GetWorldObject; // op_sub_776360
 0x275b = SuperNotEqual; // op_sub_7705D0
 0x275c = op_sub_777D20;
 0x275d = op_invalid;
@@ -10201,7 +10201,7 @@
 0x27d8 = NotEqual; // op_sub_770530
 0x27d9 = op_sub_777D20;
 0x27da = GreaterThan; // op_sub_770670
-0x27db = op_sub_776360;
+0x27db = GetWorldObject; // op_sub_776360
 0x27dc = ScriptThreadCallPointer; // op_sub_774A30
 0x27dd = GetUnsignedShort; // op_sub_772280
 0x27de = op_sub_777D20;
@@ -10220,7 +10220,7 @@
 0x27eb = Bit_And; // op_sub_7704C0
 0x27ec = op_invalid;
 0x27ed = GetObjectType; // op_sub_778590
-0x27ee = op_sub_770480;
+0x27ee = Bit_Xor; // op_sub_770480
 0x27ef = FirstArrayKey; // op_sub_778E80
 0x27f0 = EvalArray; // op_sub_7766A0
 0x27f1 = GetAnim; // op_sub_776550
@@ -10302,7 +10302,7 @@
 0x283d = EvalSelfFieldVariable; // op_sub_7789D0
 0x283e = BoolNot; // op_sub_772000
 0x283f = op_invalid;
-0x2840 = op_sub_776360;
+0x2840 = GetWorldObject; // op_sub_776360
 0x2841 = GetTime; // op_sub_778E10
 0x2842 = op_invalid;
 0x2843 = Notify; // op_sub_77DE60
@@ -10321,7 +10321,7 @@
 0x2850 = GetClassesObject; // op_sub_776380
 0x2851 = WaitTillMatch; // op_sub_77D460
 0x2852 = LessThanOrEqualTo; // op_sub_7706A0
-0x2853 = op_sub_776360;
+0x2853 = GetWorldObject; // op_sub_776360
 0x2854 = op_invalid;
 0x2855 = Vector; // op_sub_772420
 0x2856 = op_invalid;
@@ -10365,7 +10365,7 @@
 0x287c = op_invalid;
 0x287d = Plus; // op_sub_7707A0
 0x287e = op_invalid;
-0x287f = op_sub_770480;
+0x287f = Bit_Xor; // op_sub_770480
 0x2880 = op_sub_7722E0;
 0x2881 = WaitTill; // op_sub_77DE50
 0x2882 = op_invalid;
@@ -10386,7 +10386,7 @@
 0x2891 = ScriptMethodCallPointer; // op_sub_7745A0
 0x2892 = op_sub_776260;
 0x2893 = ScriptMethodCallPointer; // op_sub_7745A0
-0x2894 = op_sub_770480;
+0x2894 = Bit_Xor; // op_sub_770480
 0x2895 = IsDefined; // op_sub_778D80
 0x2896 = op_invalid;
 0x2897 = Return; // op_sub_773B00
@@ -10553,7 +10553,7 @@
 0x2938 = op_sub_770760;
 0x2939 = op_invalid;
 0x293a = ScriptThreadCall; // op_sub_7748B0
-0x293b = op_sub_776360;
+0x293b = GetWorldObject; // op_sub_776360
 0x293c = GetAPIFunction; // op_sub_7765F0
 0x293d = op_invalid;
 0x293e = op_invalid;
@@ -10634,7 +10634,7 @@
 0x2989 = WaitTillMatch; // op_sub_77D460
 0x298a = op_sub_777D20;
 0x298b = EndOn; // op_sub_77C160
-0x298c = op_sub_776360;
+0x298c = GetWorldObject; // op_sub_776360
 0x298d = GetString; // op_sub_772370
 0x298e = GetZero; // op_sub_772200
 0x298f = Notify; // op_sub_77DE60
@@ -10737,7 +10737,7 @@
 0x29f0 = WaitTillFrameEnd; // op_sub_77D190
 0x29f1 = WaitTillFrameEnd; // op_sub_77D190
 0x29f2 = SizeOf; // op_sub_778240
-0x29f3 = op_sub_770480;
+0x29f3 = Bit_Xor; // op_sub_770480
 0x29f4 = GetInteger; // op_sub_772310
 0x29f5 = op_invalid;
 0x29f6 = op_sub_770760;
@@ -11041,7 +11041,7 @@
 0x2b20 = EvalSelfFieldVariable; // op_sub_7789D0
 0x2b21 = GetHash; // op_sub_7725E0
 0x2b22 = GetIString; // op_sub_7723B0
-0x2b23 = op_sub_770480;
+0x2b23 = Bit_Xor; // op_sub_770480
 0x2b24 = op_invalid;
 0x2b25 = op_sub_776470;
 0x2b26 = op_invalid;
@@ -11098,7 +11098,7 @@
 0x2b59 = EvalSelfFieldVariable; // op_sub_7789D0
 0x2b5a = Switch; // op_sub_772E20
 0x2b5b = GetAPIFunction; // op_sub_7765F0
-0x2b5c = op_sub_770480;
+0x2b5c = Bit_Xor; // op_sub_770480
 0x2b5d = GetZero; // op_sub_772200
 0x2b5e = Jump; // op_sub_772DE0
 0x2b5f = EndOn; // op_sub_77C160
@@ -11245,7 +11245,7 @@
 0x2bec = op_invalid;
 0x2bed = op_invalid;
 0x2bee = FirstArrayKey; // op_sub_778E80
-0x2bef = op_sub_770480;
+0x2bef = Bit_Xor; // op_sub_770480
 0x2bf0 = ScriptFunctionCall; // op_sub_773C80
 0x2bf1 = GetUndefined; // op_sub_7721E0
 0x2bf2 = op_sub_776230;
@@ -11354,7 +11354,7 @@
 0x2c59 = Return; // op_sub_773B00
 0x2c5a = ScriptFunctionCallPointer; // op_sub_773E10
 0x2c5b = ScriptMethodThreadCallPointer; // op_sub_7750F0
-0x2c5c = op_sub_776360;
+0x2c5c = GetWorldObject; // op_sub_776360
 0x2c5d = op_invalid;
 0x2c5e = op_sub_771F10;
 0x2c5f = CastFieldObject; // op_sub_778000
@@ -11377,7 +11377,7 @@
 0x2c70 = Bit_Not; // op_sub_772110
 0x2c71 = WaitTillMatch; // op_sub_77D460
 0x2c72 = GetLevel; // op_sub_7764C0
-0x2c73 = op_sub_770480;
+0x2c73 = Bit_Xor; // op_sub_770480
 0x2c74 = op_invalid;
 0x2c75 = GetIString; // op_sub_7723B0
 0x2c76 = GetGame; // op_sub_776510
@@ -11476,7 +11476,7 @@
 0x2cd3 = Minus; // op_sub_771890
 0x2cd4 = GetLevel; // op_sub_7764C0
 0x2cd5 = NextArrayKey; // op_sub_779080
-0x2cd6 = op_sub_776360;
+0x2cd6 = GetWorldObject; // op_sub_776360
 0x2cd7 = op_invalid;
 0x2cd8 = GetLevel; // op_sub_7764C0
 0x2cd9 = VectorConstant; // op_sub_772610
@@ -11548,7 +11548,7 @@
 0x2d1b = EvalLevelFieldVariable; // op_sub_778C40
 0x2d1c = Vector; // op_sub_772420
 0x2d1d = Bit_And; // op_sub_7704C0
-0x2d1e = op_sub_770480;
+0x2d1e = Bit_Xor; // op_sub_770480
 0x2d1f = ScriptThreadCallPointer; // op_sub_774A30
 0x2d20 = op_invalid;
 0x2d21 = op_invalid;
@@ -11746,7 +11746,7 @@
 0x2de1 = op_sub_776260;
 0x2de2 = op_sub_773960;
 0x2de3 = DecTop; // op_sub_777FE0
-0x2de4 = op_sub_776360;
+0x2de4 = GetWorldObject; // op_sub_776360
 0x2de5 = op_invalid;
 0x2de6 = op_invalid;
 0x2de7 = op_invalid;
@@ -11791,7 +11791,7 @@
 0x2e0e = GetSelf; // op_sub_7763E0
 0x2e0f = op_invalid;
 0x2e10 = op_sub_7722E0;
-0x2e11 = op_sub_770480;
+0x2e11 = Bit_Xor; // op_sub_770480
 0x2e12 = NotEqual; // op_sub_770530
 0x2e13 = GetAnimObject; // op_sub_7763C0
 0x2e14 = op_invalid;
@@ -11802,7 +11802,7 @@
 0x2e19 = LessThanOrEqualTo; // op_sub_7706A0
 0x2e1a = GetTime; // op_sub_778E10
 0x2e1b = GetString; // op_sub_772370
-0x2e1c = op_sub_770480;
+0x2e1c = Bit_Xor; // op_sub_770480
 0x2e1d = Divide; // op_sub_771B30
 0x2e1e = BoolNot; // op_sub_772000
 0x2e1f = SizeOf; // op_sub_778240
@@ -12000,7 +12000,7 @@
 0x2edf = EvalLevelFieldVariableRef; // op_sub_778B10
 0x2ee0 = op_invalid;
 0x2ee1 = op_sub_770760;
-0x2ee2 = op_sub_776360;
+0x2ee2 = GetWorldObject; // op_sub_776360
 0x2ee3 = Bit_And; // op_sub_7704C0
 0x2ee4 = LessThanOrEqualTo; // op_sub_7706A0
 0x2ee5 = Jump; // op_sub_772DE0
@@ -12372,7 +12372,7 @@
 0x3053 = GetGame; // op_sub_776510
 0x3054 = EvalFieldVariableRef; // op_sub_777BB0
 0x3055 = op_invalid;
-0x3056 = op_sub_776360;
+0x3056 = GetWorldObject; // op_sub_776360
 0x3057 = JumpOnFalse; // op_sub_7728F0
 0x3058 = op_sub_777D20;
 0x3059 = Divide; // op_sub_771B30
@@ -12384,7 +12384,7 @@
 0x305f = op_invalid;
 0x3060 = op_invalid;
 0x3061 = ShiftLeft; // op_sub_770720
-0x3062 = op_sub_776360;
+0x3062 = GetWorldObject; // op_sub_776360
 0x3063 = op_sub_7723F0;
 0x3064 = op_invalid;
 0x3065 = GetString; // op_sub_772370
@@ -12592,7 +12592,7 @@
 0x312f = op_sub_776620;
 0x3130 = SafeCreateLocalVariables; // op_sub_775480
 0x3131 = ClassFunctionThreadCall; // op_sub_774C70
-0x3132 = op_sub_770480;
+0x3132 = Bit_Xor; // op_sub_770480
 0x3133 = ScriptMethodCall; // op_sub_774380
 0x3134 = Inc; // op_sub_7700C0
 0x3135 = ClearArray; // op_sub_7772D0
@@ -13005,7 +13005,7 @@
 0x32cc = GetInteger; // op_sub_772310
 0x32cd = Multiply; // op_sub_7719E0
 0x32ce = Jump; // op_sub_772DE0
-0x32cf = op_sub_770480;
+0x32cf = Bit_Xor; // op_sub_770480
 0x32d0 = ClearArray; // op_sub_7772D0
 0x32d1 = GetZero; // op_sub_772200
 0x32d2 = ClassFunctionCall; // op_sub_774150
@@ -13288,10 +13288,10 @@
 0x33e7 = op_sub_7722E0;
 0x33e8 = op_invalid;
 0x33e9 = ClassFunctionCall; // op_sub_774150
-0x33ea = op_sub_776360;
+0x33ea = GetWorldObject; // op_sub_776360
 0x33eb = op_sub_777D20;
 0x33ec = Plus; // op_sub_7707A0
-0x33ed = op_sub_770480;
+0x33ed = Bit_Xor; // op_sub_770480
 0x33ee = ScriptMethodCallPointer; // op_sub_7745A0
 0x33ef = GetInteger; // op_sub_772310
 0x33f0 = JumpOnFalse; // op_sub_7728F0
@@ -13353,7 +13353,7 @@
 0x3428 = op_invalid;
 0x3429 = op_invalid;
 0x342a = GetSelf; // op_sub_7763E0
-0x342b = op_sub_776360;
+0x342b = GetWorldObject; // op_sub_776360
 0x342c = op_invalid;
 0x342d = GetUndefined; // op_sub_7721E0
 0x342e = GetIString; // op_sub_7723B0
@@ -13426,7 +13426,7 @@
 0x3471 = Bit_Not; // op_sub_772110
 0x3472 = GetTime; // op_sub_778E10
 0x3473 = ScriptMethodCall; // op_sub_774380
-0x3474 = op_sub_776360;
+0x3474 = GetWorldObject; // op_sub_776360
 0x3475 = op_invalid;
 0x3476 = Notify; // op_sub_77DE60
 0x3477 = GetAnim; // op_sub_776550
@@ -13535,7 +13535,7 @@
 0x34de = VectorConstant; // op_sub_772610
 0x34df = ScriptMethodCallPointer; // op_sub_7745A0
 0x34e0 = SuperEqual; // op_sub_770570
-0x34e1 = op_sub_770480;
+0x34e1 = Bit_Xor; // op_sub_770480
 0x34e2 = GetZero; // op_sub_772200
 0x34e3 = ClassFunctionCall; // op_sub_774150
 0x34e4 = GreaterThan; // op_sub_770670
@@ -13716,7 +13716,7 @@
 0x3593 = op_invalid;
 0x3594 = op_invalid;
 0x3595 = op_invalid;
-0x3596 = op_sub_770480;
+0x3596 = Bit_Xor; // op_sub_770480
 0x3597 = op_invalid;
 0x3598 = op_invalid;
 0x3599 = op_invalid;
@@ -13957,7 +13957,7 @@
 0x3684 = DevblockBegin; // op_sub_772E00
 0x3685 = GetFloat; // op_sub_772340
 0x3686 = Inc; // op_sub_7700C0
-0x3687 = op_sub_776360;
+0x3687 = GetWorldObject; // op_sub_776360
 0x3688 = op_invalid;
 0x3689 = GetNegUnsignedShort; // op_sub_7722B0
 0x368a = op_sub_770760;
@@ -14736,7 +14736,7 @@
 0x398f = JumpOnTrueExpr; // op_sub_772CA0
 0x3990 = op_invalid;
 0x3991 = op_invalid;
-0x3992 = op_sub_770480;
+0x3992 = Bit_Xor; // op_sub_770480
 0x3993 = GetAPIFunction; // op_sub_7765F0
 0x3994 = EvalFieldVariableRef; // op_sub_777BB0
 0x3995 = op_sub_776620;
@@ -15042,12 +15042,12 @@
 0x3ac1 = Dec; // op_sub_770280
 0x3ac2 = GreaterThan; // op_sub_770670
 0x3ac3 = Jump; // op_sub_772DE0
-0x3ac4 = op_sub_770480;
+0x3ac4 = Bit_Xor; // op_sub_770480
 0x3ac5 = op_invalid;
 0x3ac6 = EvalArray; // op_sub_7766A0
 0x3ac7 = JumpOnTrue; // op_sub_772A30
 0x3ac8 = ShiftLeft; // op_sub_770720
-0x3ac9 = op_sub_770480;
+0x3ac9 = Bit_Xor; // op_sub_770480
 0x3aca = Inc; // op_sub_7700C0
 0x3acb = ScriptMethodThreadCall; // op_sub_774EC0
 0x3acc = JumpOnTrue; // op_sub_772A30
@@ -15074,7 +15074,7 @@
 0x3ae1 = Notify; // op_sub_77DE60
 0x3ae2 = op_invalid;
 0x3ae3 = op_invalid;
-0x3ae4 = op_sub_770480;
+0x3ae4 = Bit_Xor; // op_sub_770480
 0x3ae5 = SuperEqual; // op_sub_770570
 0x3ae6 = Divide; // op_sub_771B30
 0x3ae7 = GetSelf; // op_sub_7763E0
@@ -15593,7 +15593,7 @@
 0x3ce8 = op_sub_770760;
 0x3ce9 = op_invalid;
 0x3cea = SetWaittillVariableFieldCached; // op_sub_777DE0
-0x3ceb = op_sub_770480;
+0x3ceb = Bit_Xor; // op_sub_770480
 0x3cec = op_invalid;
 0x3ced = Bit_And; // op_sub_7704C0
 0x3cee = Switch; // op_sub_772E20
@@ -15685,7 +15685,7 @@
 0x3d44 = op_invalid;
 0x3d45 = op_invalid;
 0x3d46 = CastFieldObject; // op_sub_778000
-0x3d47 = op_sub_776360;
+0x3d47 = GetWorldObject; // op_sub_776360
 0x3d48 = Minus; // op_sub_771890
 0x3d49 = op_invalid;
 0x3d4a = CastFieldObject; // op_sub_778000
@@ -15968,7 +15968,7 @@
 0x3e5f = ScriptThreadCallPointer; // op_sub_774A30
 0x3e60 = ScriptFunctionCall; // op_sub_773C80
 0x3e61 = Multiply; // op_sub_7719E0
-0x3e62 = op_sub_776360;
+0x3e62 = GetWorldObject; // op_sub_776360
 0x3e63 = op_sub_779300;
 0x3e64 = GetAnim; // op_sub_776550
 0x3e65 = BoolNot; // op_sub_772000
@@ -16090,7 +16090,7 @@
 0x3ed9 = Modulus; // op_sub_771E70
 0x3eda = Equal; // op_sub_770500
 0x3edb = EvalSelfFieldVariableRef; // op_sub_7788A0
-0x3edc = op_sub_770480;
+0x3edc = Bit_Xor; // op_sub_770480
 0x3edd = Bit_Or; // op_sub_770440
 0x3ede = op_invalid;
 0x3edf = GetAnimObject; // op_sub_7763C0
@@ -16166,7 +16166,7 @@
 0x3f25 = op_sub_771F10;
 0x3f26 = JumpOnTrue; // op_sub_772A30
 0x3f27 = op_invalid;
-0x3f28 = op_sub_776360;
+0x3f28 = GetWorldObject; // op_sub_776360
 0x3f29 = EvalLevelFieldVariableRef; // op_sub_778B10
 0x3f2a = DevblockBegin; // op_sub_772E00
 0x3f2b = op_invalid;
@@ -16250,7 +16250,7 @@
 0x3f79 = GetByte; // op_sub_772220
 0x3f7a = op_sub_771F10;
 0x3f7b = SuperEqual; // op_sub_770570
-0x3f7c = op_sub_770480;
+0x3f7c = Bit_Xor; // op_sub_770480
 0x3f7d = op_invalid;
 0x3f7e = ScriptFunctionCall; // op_sub_773C80
 0x3f7f = EvalSelfFieldVariable; // op_sub_7789D0

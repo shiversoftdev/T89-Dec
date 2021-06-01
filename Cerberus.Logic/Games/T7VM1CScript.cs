@@ -15,8 +15,9 @@ namespace Cerberus.Logic
         /// <summary>
         /// Returns the Game Name for Black Ops 3
         /// </summary>
-        public override string Game => "T71C_" + (IsPS4 ? "Orbis" : "PC");
+        public override string Game => "T71C_" + (IsPS4 ? "Orbis" : "PC") + (IsCustoms ? "_Custom" : "");
         internal bool IsPS4;
+        internal bool IsCustoms = false;
 
         public T7VM1CScript(Stream stream, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(stream, hashTable, qword_hashTable) { }
         public T7VM1CScript(BinaryReader reader, Dictionary<uint, string> hashTable) : base(reader, hashTable, null) { }
@@ -216,9 +217,14 @@ namespace Cerberus.Logic
             if (opCodeIndex == 0)
                 return null;
 
-            if ((IsPS4 || (opCodeIndex & 0x2000) == 0) && opCodeIndex < 0x4000)
+            if (opCodeIndex < 0x4000)
             {
                 ScriptOpCode[] Table = null;
+
+                if((opCodeIndex & 0x2000) > 0 && !IsPS4)
+                {
+                    IsCustoms = true;
+                }
 
                 Table = IsPS4 ? SecondaryTable : PrimaryTable;
 

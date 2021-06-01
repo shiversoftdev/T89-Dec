@@ -25,22 +25,35 @@ namespace Cerberus.Logic
                         PrimaryTable[index] = ScriptOpCode.Invalid;
                 }
             }
+            if (SecondaryTable == null)
+            {
+                SecondaryTable = new ScriptOpCode[0x1000];
+                string[] lines = File.ReadAllLines("Games\\t8_orbis.txt");
+                foreach (string line in lines)
+                {
+                    string[] split = line.Split('=');
+                    split[1] = split[1].Substring(0, split[1].IndexOf(';')).Trim();
+                    split[0] = split[0].Replace("0x", "");
+                    int index = int.Parse(split[0], System.Globalization.NumberStyles.HexNumber);
+                    if (!Enum.TryParse(split[1], true, out SecondaryTable[index]))
+                        SecondaryTable[index] = ScriptOpCode.Invalid;
+                }
+            }
         }
-        public static byte[] GetTableData()
+        public static byte[] GetTableData(bool isPS4)
         {
             LoadTable();
-            byte[] data = new byte[PrimaryTable.Length];
+            var table = isPS4 ? SecondaryTable : PrimaryTable;
+            byte[] data = new byte[table.Length];
             int i = 0;
-            foreach (var code in PrimaryTable)
+            foreach (var code in table)
                 data[i++] = (byte)code;
             return data;
         }
-        // Black Ops 4 Stock OP Code Table (Stock GSCs)
+        // t8 pc
         private static ScriptOpCode[] PrimaryTable = null;
 
-        private static ScriptOpCode[] SecondaryTable =
-        {
-            
-        };
+        // t8 ps4
+        private static ScriptOpCode[] SecondaryTable = null;
     }
 }

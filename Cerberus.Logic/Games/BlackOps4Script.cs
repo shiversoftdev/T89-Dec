@@ -14,7 +14,8 @@ namespace Cerberus.Logic
         /// <summary>
         /// Returns the Game Name for Black Ops 4
         /// </summary>
-        public override string Game => "Black Ops 4";
+        public override string Game => "Black Ops 4 - " + (IsPS4 ? "Orbis" : "Windows");
+        internal bool IsPS4;
 
         public BlackOps4Script(Stream stream, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(stream, hashTable, qword_hashTable) { }
         public BlackOps4Script(BinaryReader reader, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(reader, hashTable, qword_hashTable) { }
@@ -231,7 +232,7 @@ namespace Cerberus.Logic
             {
                 ScriptOpCode[] Table = null;
 
-                if ((opCodeIndex & 0x1000) > 0)
+                if (IsPS4)
                     Table = SecondaryTable;
                 else
                     Table = PrimaryTable;
@@ -485,7 +486,7 @@ namespace Cerberus.Logic
 
                     if(switchValue == 0 && i == switchCount - 1)
                     {
-                        switchString = "default:";
+                        switchString = "default";
                     }
                     else
                     {
