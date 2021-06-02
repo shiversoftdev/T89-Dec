@@ -48,7 +48,10 @@ namespace Cerberus.Logic
             byte[] data = new byte[isPS4 ? table.Length : (table.Length / 2)];
             int i = 0;
             foreach (var code in table)
+            {
                 data[i++] = (byte)code;
+                if (i == data.Length) break;
+            }
             return data;
         }
         // Black Ops 3 Stock OP Code Table PC
