@@ -73,7 +73,7 @@
 0x48 = op_invalid;
 0x49 = WaitTillFrameEnd; // op_sub_A941C0
 0x4a = op_sub_A80140;
-0x4b = EvalLocalVariableRefCached; // op_sub_A90130
+0x4b = EvalLocalVariableRefCached2; // op_sub_A90130
 0x4c = ClassFunctionThreadCall; // op_sub_A84720
 0x4d = SetVariableFieldRef; // op_sub_A8FEB0
 0x4e = op_invalid;
@@ -177,7 +177,7 @@
 0xb0 = op_invalid;
 0xb1 = GetAPIFunction; // op_sub_A8A090
 0xb2 = DevblockBegin; // op_sub_A81170
-0xb3 = EvalLocalVariableRefCached; // op_sub_A90130
+0xb3 = EvalLocalVariableRefCached2; // op_sub_A90130
 0xb4 = op_invalid;
 0xb5 = op_invalid;
 0xb6 = op_sub_A8B3C0;
@@ -293,7 +293,7 @@
 0x124 = op_sub_A8CB20;
 0x125 = ScriptMethodCall; // op_sub_A83980
 0x126 = Bit_Not; // op_sub_A7FFB0
-0x127 = EvalLocalVariableRefCached; // op_sub_A90130
+0x127 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x128 = JumpOnGreaterThan; // op_sub_A81690
 0x129 = op_sub_A8E830;
 0x12a = op_invalid;
@@ -395,7 +395,7 @@
 0x18a = op_invalid;
 0x18b = op_invalid;
 0x18c = op_invalid;
-0x18d = EvalLocalVariableRefCached; // op_sub_A90130
+0x18d = EvalLocalVariableRefCached2; // op_sub_A90130
 0x18e = op_invalid;
 0x18f = op_invalid;
 0x190 = op_invalid;
@@ -465,7 +465,7 @@
 0x1d0 = WaitTillFrameEnd; // op_sub_A941C0
 0x1d1 = op_invalid;
 0x1d2 = VectorScale; // op_sub_A80600
-0x1d3 = EvalLocalVariableRefCached; // op_sub_A90130
+0x1d3 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x1d4 = SuperEqual; // op_sub_A7E060
 0x1d5 = GetAPIFunction; // op_sub_A8A090
 0x1d6 = op_invalid;
@@ -474,7 +474,7 @@
 0x1d9 = op_invalid;
 0x1da = op_invalid;
 0x1db = op_invalid;
-0x1dc = EvalLocalVariableRefCached; // op_sub_A90130
+0x1dc = EvalLocalVariableRefCached2; // op_sub_A90130
 0x1dd = SetVariableField; // op_sub_A8B7A0
 0x1de = Dec; // op_sub_A7DB80
 0x1df = EvalFieldVariableOnStack; // op_sub_A8B270
@@ -549,7 +549,7 @@
 0x224 = op_invalid;
 0x225 = CastVariableName; // op_sub_A7FBF0
 0x226 = ClassFunctionThreadCall; // op_sub_A84720
-0x227 = EvalLocalVariableRefCached; // op_sub_A90130
+0x227 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x228 = op_invalid;
 0x229 = op_invalid;
 0x22a = op_sub_A8B0F0;
@@ -675,7 +675,7 @@
 0x2a2 = op_invalid;
 0x2a3 = DevblockBegin; // op_sub_A81170
 0x2a4 = op_invalid;
-0x2a5 = EvalLocalVariableRefCached; // op_sub_A90130
+0x2a5 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x2a6 = op_sub_A80140;
 0x2a7 = op_sub_A80170;
 0x2a8 = WaitFrame; // op_sub_A93F60
@@ -1050,7 +1050,7 @@
 0x419 = op_sub_A84570;
 0x41a = op_invalid;
 0x41b = SuperNotEqual; // op_sub_A7E110
-0x41c = EvalLocalVariableRefCached; // op_sub_A90130
+0x41c = EvalLocalVariableRefCached2; // op_sub_A90130
 0x41d = op_invalid;
 0x41e = op_invalid;
 0x41f = VectorScale; // op_sub_A80600
@@ -1235,7 +1235,7 @@
 0x4d2 = op_invalid;
 0x4d3 = Notify; // op_sub_A96F40
 0x4d4 = Wait; // op_sub_A93B00
-0x4d5 = EvalLocalVariableRefCached; // op_sub_A90130
+0x4d5 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x4d6 = op_sub_A8CB20;
 0x4d7 = op_invalid;
 0x4d8 = op_invalid;
@@ -1374,7 +1374,7 @@
 0x55d = EvalArrayRef; // op_sub_A8A170
 0x55e = Dec; // op_sub_A7DB80
 0x55f = op_invalid;
-0x560 = EvalLocalVariableRefCached; // op_sub_A90130
+0x560 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x561 = Bit_Xor; // op_sub_A7DF70
 0x562 = ScriptMethodCallPointer; // op_sub_A83AF0
 0x563 = op_invalid;
@@ -1464,7 +1464,7 @@
 0x5b7 = op_sub_A8B0F0;
 0x5b8 = op_invalid;
 0x5b9 = GetByte; // op_sub_A80030
-0x5ba = EvalLocalVariableRefCached; // op_sub_A90130
+0x5ba = EvalLocalVariableRefCached2; // op_sub_A90130
 0x5bb = op_invalid;
 0x5bc = GetObjectType; // op_sub_A8C000
 0x5bd = op_invalid;
@@ -1558,7 +1558,7 @@
 0x615 = ScriptMethodThreadCall; // op_sub_A84AB0
 0x616 = op_sub_A8B3E0;
 0x617 = GetString; // op_sub_A801D0
-0x618 = EvalLocalVariableRefCached; // op_sub_A90130
+0x618 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x619 = GetAPIFunction; // op_sub_A8A090
 0x61a = EvalLocalVariableDefined; // op_sub_A902A0
 0x61b = SuperNotEqual; // op_sub_A7E110
@@ -2243,7 +2243,7 @@
 0x8c2 = op_sub_A848E0;
 0x8c3 = op_invalid;
 0x8c4 = GetHash; // op_sub_A80510
-0x8c5 = EvalLocalVariableRefCached; // op_sub_A90130
+0x8c5 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x8c6 = op_invalid;
 0x8c7 = GetString; // op_sub_A801D0
 0x8c8 = EvalFieldVariable; // op_sub_A8B1C0
@@ -2278,7 +2278,7 @@
 0x8e5 = EvalFieldVariableOnStackRef; // op_sub_A8B360
 0x8e6 = op_invalid;
 0x8e7 = NotEqual; // op_sub_A7E020
-0x8e8 = EvalLocalVariableRefCached; // op_sub_A90130
+0x8e8 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x8e9 = op_sub_A8CB20;
 0x8ea = op_invalid;
 0x8eb = NotEqual; // op_sub_A7E020
@@ -2377,7 +2377,7 @@
 0x948 = CastAndEvalFieldVariable; // op_sub_A8FCC0
 0x949 = op_invalid;
 0x94a = Divide; // op_sub_A7F930
-0x94b = EvalLocalVariableRefCached; // op_sub_A90130
+0x94b = EvalLocalVariableRefCached2; // op_sub_A90130
 0x94c = ScriptThreadCall; // op_sub_A83FE0
 0x94d = op_invalid;
 0x94e = op_invalid;
@@ -2418,7 +2418,7 @@
 0x971 = op_invalid;
 0x972 = Jump; // op_sub_A81110
 0x973 = ClassFunctionThreadCall; // op_sub_A84720
-0x974 = EvalLocalVariableRefCached; // op_sub_A90130
+0x974 = EvalLocalVariableRefCached2; // op_sub_A90130
 0x975 = CastFieldObject; // op_sub_A8BB60
 0x976 = Minus; // op_sub_A7F6C0
 0x977 = op_sub_A80140;
@@ -2621,7 +2621,7 @@
 0xa3c = EvalArrayRef; // op_sub_A8A170
 0xa3d = op_invalid;
 0xa3e = GetFunction; // op_sub_A8A0C0
-0xa3f = EvalLocalVariableRefCached; // op_sub_A90130
+0xa3f = EvalLocalVariableRefCached2; // op_sub_A90130
 0xa40 = VectorConstant; // op_sub_A80540
 0xa41 = AddToStruct; // op_sub_A8D800
 0xa42 = op_invalid;
@@ -2636,7 +2636,7 @@
 0xa4b = op_invalid;
 0xa4c = op_invalid;
 0xa4d = AddToArray; // op_sub_A8DA20
-0xa4e = EvalLocalVariableRefCached; // op_sub_A90130
+0xa4e = EvalLocalVariableRefCached2; // op_sub_A90130
 0xa4f = op_invalid;
 0xa50 = op_sub_A84570;
 0xa51 = EvalArrayRef; // op_sub_A8A170
@@ -2664,12 +2664,12 @@
 0xa67 = op_invalid;
 0xa68 = ClearArray; // op_sub_A8A6F0
 0xa69 = op_invalid;
-0xa6a = EvalLocalVariableRefCached; // op_sub_A90130
+0xa6a = EvalLocalVariableRefCached2; // op_sub_A90130
 0xa6b = SetLocalVariableCached; // op_sub_A8DC10
 0xa6c = op_invalid;
 0xa6d = ClassFunctionThreadCall; // op_sub_A84720
 0xa6e = GetObjectType; // op_sub_A8C000
-0xa6f = EvalLocalVariableRefCached; // op_sub_A90130
+0xa6f = EvalLocalVariableRefCached2; // op_sub_A90130
 0xa70 = AddToStruct; // op_sub_A8D800
 0xa71 = op_sub_A8E220;
 0xa72 = op_sub_A964B0;
@@ -2822,7 +2822,7 @@
 0xb05 = op_sub_A848E0;
 0xb06 = SetNextArrayKeyCached; // op_sub_A8F1E0
 0xb07 = op_invalid;
-0xb08 = EvalLocalVariableRefCached; // op_sub_A90130
+0xb08 = EvalLocalVariableRefCached2; // op_sub_A90130
 0xb09 = GetString; // op_sub_A801D0
 0xb0a = op_sub_A8E220;
 0xb0b = op_invalid;
@@ -2919,7 +2919,7 @@
 0xb66 = ScriptMethodCallPointer; // op_sub_A83AF0
 0xb67 = WaitFrame; // op_sub_A93F60
 0xb68 = op_invalid;
-0xb69 = EvalLocalVariableRefCached; // op_sub_A90130
+0xb69 = EvalLocalVariableRefCached2; // op_sub_A90130
 0xb6a = op_sub_A89EB0;
 0xb6b = EvalFieldVariable; // op_sub_A8B1C0
 0xb6c = op_invalid;
@@ -2970,7 +2970,7 @@
 0xb99 = ClearFieldVariable; // op_sub_A8B390
 0xb9a = op_invalid;
 0xb9b = ScriptMethodThreadCall2; // op_sub_A84C40
-0xb9c = EvalLocalVariableRefCached; // op_sub_A90130
+0xb9c = EvalLocalVariableRefCached2; // op_sub_A90130
 0xb9d = GetByte; // op_sub_A80030
 0xb9e = Plus; // op_sub_A7E330
 0xb9f = op_sub_A84150;
@@ -3067,7 +3067,7 @@
 0xbfa = EvalLocalVariableCached2; // op_sub_A900C0
 0xbfb = DevblockBegin; // op_sub_A81170
 0xbfc = SizeOf; // op_sub_A8BC60
-0xbfd = EvalLocalVariableRefCached; // op_sub_A90130
+0xbfd = EvalLocalVariableRefCached2; // op_sub_A90130
 0xbfe = op_invalid;
 0xbff = GetNegUnsignedShort; // op_sub_A800B0
 0xc00 = op_invalid;
@@ -3183,7 +3183,7 @@
 0xc6e = op_invalid;
 0xc6f = JumpOnTrue; // op_sub_A80D10
 0xc70 = op_invalid;
-0xc71 = EvalLocalVariableRefCached; // op_sub_A90130
+0xc71 = EvalLocalVariableRefCached2; // op_sub_A90130
 0xc72 = op_invalid;
 0xc73 = op_sub_A852A0;
 0xc74 = ScriptThreadCallPointer; // op_sub_A843E0
@@ -3302,7 +3302,7 @@
 0xce5 = op_invalid;
 0xce6 = op_invalid;
 0xce7 = op_invalid;
-0xce8 = EvalLocalVariableRefCached; // op_sub_A90130
+0xce8 = EvalLocalVariableRefCached2; // op_sub_A90130
 0xce9 = WaitTillFrameEnd; // op_sub_A941C0
 0xcea = op_invalid;
 0xceb = op_invalid;
@@ -3580,7 +3580,7 @@
 0xdfb = op_invalid;
 0xdfc = Notify; // op_sub_A96F40
 0xdfd = Modulus; // op_sub_A7FB60
-0xdfe = EvalLocalVariableRefCached; // op_sub_A90130
+0xdfe = EvalLocalVariableRefCached2; // op_sub_A90130
 0xdff = SizeOf; // op_sub_A8BC60
 0xe00 = ShiftRight; // op_sub_A7E2F0
 0xe01 = op_sub_A964B0;
@@ -3952,7 +3952,7 @@
 0xf6f = op_invalid;
 0xf70 = op_invalid;
 0xf71 = op_invalid;
-0xf72 = EvalLocalVariableRefCached; // op_sub_A90130
+0xf72 = EvalLocalVariableRefCached2; // op_sub_A90130
 0xf73 = op_sub_A852A0;
 0xf74 = op_invalid;
 0xf75 = op_invalid;

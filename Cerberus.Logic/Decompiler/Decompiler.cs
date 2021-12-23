@@ -1143,6 +1143,7 @@ namespace Cerberus.Logic
 
             var startIndex = GetInstructionAt(startOp.OpCodeOffset + startOp.OpCodeSize);
             var endIndex = GetInstructionAt(endOffset);
+
             // Attempt to build it
             for (int j = startIndex; j < endIndex; j++)
             {
@@ -1181,7 +1182,7 @@ namespace Cerberus.Logic
                 op.Visited = true;
             }
 
-            //Debug.Assert(Stack.Count > 0);
+            // Debug.Assert(Stack.Count > 0);
             var result = Stack.Pop();
 
             // Determine if it needs braces (nested expressions)
@@ -1618,6 +1619,8 @@ namespace Cerberus.Logic
                             ProcessInstruction(Function.Operations[j]);
                         }
 
+                        bool b_revert = true;
+
                         // First let's see if this is the variable we can use
                         var variableName = CurrentReference;
 
@@ -1825,6 +1828,15 @@ namespace Cerberus.Logic
                                     Function.Operations[j].Visited = true;
                                 }
                                 Blocks[i] = forLoop;
+                                b_revert = false;
+                            }
+                        }
+
+                        if(b_revert)
+                        {
+                            for (int j = variableBeginIndex; j < index; j++)
+                            {
+                                Function.Operations[j].Visited = false;
                             }
                         }
                     }
@@ -1871,9 +1883,6 @@ namespace Cerberus.Logic
                                 return true;
                             case ScriptOpCode.Inc:
                                 loop.Modifier = string.Format("{0}++", CurrentReference);
-                                return true;
-                            case ScriptOpCode.Bit_Not:
-                                loop.Modifier = string.Format("~{0}", CurrentReference);
                                 return true;
                             case ScriptOpCode.IncCached:
                                 loop.Modifier = string.Format("{0}++", LocalVariables[LocalVariables.Count - (int)op.Operands[0].Value - 1]);
@@ -2340,7 +2349,8 @@ namespace Cerberus.Logic
                     }
                 case ScriptOpType.JumpExpression:
                     {
-                        Stack.Push(Stack.Pop() + (operation.Metadata.OpCode == ScriptOpCode.JumpOnFalseExpr ? " && " : " || ") + BuildExpression(operation));
+                        string tmp = Stack.Pop() + (operation.Metadata.OpCode == ScriptOpCode.JumpOnFalseExpr ? " && " : " || ");
+                        Stack.Push(tmp + BuildExpression(operation));
                         break;
                     }
                 case ScriptOpType.ObjectReference:
@@ -2517,6 +2527,14 @@ namespace Cerberus.Logic
                     {
                         var right = Stack.Pop();
                         var left = Stack.Pop();
+                        if(hasOperatorInString(right))
+                        {
+                            right = $"({right})";
+                        }
+                        if (hasOperatorInString(left))
+                        {
+                            left = $"({left})";
+                        }
                         Stack.Push(string.Format("{0}{1}{2}", left, Operators[operation.Metadata.OpCode], right));
                         break;
                     }
@@ -2524,6 +2542,14 @@ namespace Cerberus.Logic
                     {
                         var right = Stack.Pop();
                         var left = Stack.Pop();
+                        if (hasOperatorInString(right))
+                        {
+                            right = $"({right})";
+                        }
+                        if (hasOperatorInString(left))
+                        {
+                            left = $"({left})";
+                        }
                         Stack.Push(string.Format("{0}{1}{2}", left, Operators[operation.Metadata.OpCode], right));
                         break;
                     }
@@ -2545,8 +2571,9 @@ namespace Cerberus.Logic
                                 }
                             case ScriptOpCode.Bit_Not:
                                 {
-                                    Writer?.WriteLine("~" + CurrentReference + ";");
-                                    CurrentReference = "";
+                                    var right = Stack.Pop();
+                                    string fmt = hasOperatorInString(right) ? "~({0})" : "~{0}";
+                                    Stack.Push(string.Format(fmt, right));
                                     break;
                                 }
                             case ScriptOpCode.IncCached:
@@ -2967,6 +2994,44 @@ namespace Cerberus.Logic
             }
 
             return true;
+        }
+
+        private bool hasOperatorInString(string stackEntry)
+        {
+            if (stackEntry.Length < 1)
+            {
+                return false;
+            }
+
+            if(stackEntry[0] == '(' && stackEntry[stackEntry.Length - 1] == ')')
+            {
+                return false;
+            }
+
+            if(stackEntry[0] == '-')
+            {
+                return false;
+            }
+
+            for(int i = 0; i < stackEntry.Length; i++)
+            {
+                switch(stackEntry[i])
+                {
+                    case '+':
+                    case '-':
+                    case '/':
+                    case '*':
+                    case '~':
+                    case '|':
+                    case '>':
+                    case '<':
+                    case '%':
+                    case '^':
+                    case '&':
+                        return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>

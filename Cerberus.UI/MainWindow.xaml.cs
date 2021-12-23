@@ -541,6 +541,18 @@ namespace Cerberus.UI
             tdata.AddRange(BitConverter.GetBytes((ushort)VM_1C_PS4.Length));
             tdata.AddRange(VM_1C_PS4);
 
+            // only give enough opcodes to compile
+            //HashSet<byte> codes = new HashSet<byte>();
+            //for(int i = 0; i < VM_36_PC.Length; i++)
+            //{
+            //    if(codes.Contains(VM_36_PC[i]))
+            //    {
+            //        VM_36_PC[i] = 0xFF;
+            //        continue;
+            //    }
+            //    codes.Add(VM_36_PC[i]);
+            //}
+
             tdata.Add(0x36);
             tdata.Add(0x00);
             tdata.AddRange(BitConverter.GetBytes((ushort)VM_36_PC.Length));
