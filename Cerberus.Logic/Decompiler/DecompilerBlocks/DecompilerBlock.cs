@@ -23,6 +23,7 @@ namespace Cerberus.Logic
         public List<string> Lines = new List<string>();
 
         public List<int> ChildBlockIndices = new List<int>();
+        public List<int> ParentBlockIndices = new List<int>();
 
         public DecompilerBlock(int startOffset, int endOffset)
         {

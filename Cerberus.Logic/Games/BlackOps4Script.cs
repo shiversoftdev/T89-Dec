@@ -399,7 +399,7 @@ namespace Cerberus.Logic
                         else
                         {
                             // Skip param count, it isn't stored here until in memory
-                            Reader.BaseStream.Position += 1;
+                            Reader.BaseStream.Position++;
                             Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 8);
                             operation.Operands.Add(new ScriptOpOperand(GetHashValue(Reader.ReadUInt32(), "function_")));
                             Reader.BaseStream.Position += 4;
@@ -512,6 +512,94 @@ namespace Cerberus.Logic
         public override void LoadAnimTrees()
         {
             
+        }
+
+        public override void LoadClasses()
+        {
+            // Script.GlobalObjects[op.OpCodeOffset + 2]
+            // collect all class defs
+            foreach (var function in Exports)
+            {
+                var ops = function.Operations;
+                if (ops.Count < 8)
+                {
+                    continue;
+                }
+
+                if (ops[0].Metadata.OpCode != ScriptOpCode.CheckClearParams)
+                {
+                    continue;
+                }
+
+                if (ops[4].Metadata.OpCode != ScriptOpCode.GetGlobalObjectRef || GlobalObjects[ops[4].OpCodeOffset + 2] != "classes")
+                {
+                    continue;
+                }
+
+                if (ops[6].Metadata.OpCode != ScriptOpCode.EvalArrayRef)
+                {
+                    continue;
+                }
+
+                var className = ops[5].Operands[0].Value.ToString();
+
+                if (!Classes.ContainsKey(className))
+                {
+                    Classes[className] = new Scr_Class();
+                    Classes[className].Name = className;
+                }
+
+                List<ScriptExport> includedExports = new List<ScriptExport>();
+                var scriptClass = Classes[className];
+                scriptClass.Name = scriptClass.Name.Replace("var_", "class_");
+
+                scriptClass.Autogen = function;
+                for (int i = 8; i < ops.Count; i += 9)
+                {
+                    if (ops[i].Metadata.OpCode != ScriptOpCode.GetAPIFunction)
+                    {
+                        break;
+                    }
+                    var import = GetImport(ops[i].OpCodeOffset);
+                    if (import.Namespace.Replace("namespace_", "") != scriptClass.Name.Replace("class_", ""))
+                    {
+                        scriptClass.SuperClasses.Add(import.Namespace.Replace("namespace_", "class_"));
+                        continue;
+                    }
+                    if (import.Name == "__constructor")
+                    {
+                        scriptClass.Constructor = GetExport(import.Namespace, import.Name);
+                        scriptClass.Constructor.IsClassFunction = true;
+                        includedExports.Add(scriptClass.Constructor);
+                        continue;
+                    }
+                    if (import.Name == "__destructor")
+                    {
+                        scriptClass.Destructor = GetExport(import.Namespace, import.Name);
+                        scriptClass.Destructor.IsClassFunction = true;
+                        includedExports.Add(scriptClass.Destructor);
+                        continue;
+                    }
+                    scriptClass.IncludedExports[import.Name] = GetExport(import.Namespace, import.Name);
+                    scriptClass.IncludedExports[import.Name].IsClassFunction = true;
+                    includedExports.Add(scriptClass.IncludedExports[import.Name]);
+                }
+
+                // collect vars
+                foreach (var export in includedExports)
+                {
+                    var ex_ops = export.Operations;
+
+                    foreach (var op in ex_ops)
+                    {
+                        if (op.Metadata.OpCode != ScriptOpCode.EvalSelfFieldVariable && op.Metadata.OpCode != ScriptOpCode.EvalSelfFieldVariableRef)
+                        {
+                            continue;
+                        }
+                        scriptClass.Vars.Add((string)op.Operands[0].Value);
+                    }
+                }
+            }
         }
     }
 }

@@ -6,9 +6,11 @@ namespace Cerberus.Logic
     /// </summary>
     internal class DevBlock : DecompilerBlock
     {
-        public DevBlock(int startOffset, int endOffset) : base(startOffset, endOffset)
+        public bool ParentDetected { get; private set; }
+        public DevBlock(int startOffset, int endOffset, bool parentDetected) : base(startOffset, endOffset)
         {
             RequiresBraces = false;
+            ParentDetected = parentDetected;
         }
 
         /// <summary>

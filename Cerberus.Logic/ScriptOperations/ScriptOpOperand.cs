@@ -14,6 +14,9 @@ namespace Cerberus.Logic
         /// </summary>
         public object Value { get; set; }
 
+        public bool IsByRef;
+        public bool IsVarArg;
+
         /// <summary>
         /// Creates a Script Operand with the given value
         /// </summary>

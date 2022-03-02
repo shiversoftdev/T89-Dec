@@ -9,6 +9,7 @@ namespace Cerberus.Logic
     internal class ElseIfBlock : DecompilerBlock
     {
         public string Comparison { get; set; }
+        public DecompilerBlock ChildElse { get; set; }
 
         public ElseIfBlock(int startOffset, int endOffset) : base(startOffset, endOffset)
         {

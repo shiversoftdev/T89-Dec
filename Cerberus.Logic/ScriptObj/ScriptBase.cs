@@ -87,6 +87,8 @@ namespace Cerberus.Logic
         /// </summary>
         public Dictionary<uint, string> HashReferences = new Dictionary<uint, string>();
 
+        public Dictionary<string, Scr_Class> Classes = new Dictionary<string, Scr_Class>();
+
         /// <summary>
         /// Initializes an instance of the Script Class
         /// </summary>
@@ -106,6 +108,7 @@ namespace Cerberus.Logic
             LoadImports();
             LoadExports();
             LoadGlobalObjects();
+            LoadClasses();
             return this;
         }
 
@@ -124,6 +127,9 @@ namespace Cerberus.Logic
         public abstract void LoadImports();
         public abstract void LoadExports();
         public abstract void LoadGlobalObjects();
+
+        public abstract void LoadClasses();
+
         public abstract List<ScriptOpSwitch> LoadEndSwitch();
         public abstract int GetJumpLocation(int from, int to);
         public abstract ScriptOp LoadOperation(int offset);
@@ -307,6 +313,58 @@ namespace Cerberus.Logic
             return output.ToString();
         }
 
+        public string CreateTabDepth(int numTabs)
+        {
+            string result = "";
+            for(int i = 0; i < numTabs; i++)
+            {
+                result += "\t";
+            }
+            return result;
+        }
+
+        public void EmitFunction(StringBuilder output, ref int lineNumber, ref string nameSpace, ScriptExport function, int numTabs, bool noNsOutput = false)
+        {
+            // Write the namspace if it differs
+            if (!string.IsNullOrWhiteSpace(function.Namespace) && function.Namespace != nameSpace)
+            {
+                nameSpace = function.Namespace;
+                if(!noNsOutput)
+                {
+                    output.AppendLine(string.Format("#namespace {0};\n", nameSpace));
+                    lineNumber += 2;
+                }    
+            }
+
+            string tabBasis = CreateTabDepth(numTabs);
+            // Spit out some info
+            output.AppendLine(tabBasis + "/*");
+            output.AppendLine(tabBasis + string.Format("\tName: {0}", function.Name));
+            output.AppendLine(tabBasis + string.Format("\tNamespace: {0}", function.Namespace));
+            output.AppendLine(tabBasis + string.Format("\tChecksum: 0x{0:X}", function.Checksum));
+            output.AppendLine(tabBasis + string.Format("\tOffset: 0x{0:X}", function.ByteCodeOffset));
+            output.AppendLine(tabBasis + string.Format("\tSize: 0x{0:X}", function.ByteCodeSize));
+            output.AppendLine(tabBasis + string.Format("\tParameters: {0}", function.ParameterCount));
+            output.AppendLine(tabBasis + string.Format("\tFlags: {0}", ExportFlagsToString((byte)function.Flags)));
+            output.AppendLine(tabBasis + "*/");
+            lineNumber += 9;
+
+            using (var decompiler = new Decompiler(function, this, numTabs))
+            {
+                function.DecompilerLine = lineNumber;
+                var result = decompiler.GetWriterOutput();
+                output.Append(tabBasis + result);
+                output.AppendLine();
+                lineNumber += Utility.GetLineCount(result);
+            }
+
+            if (function.DirtyMessage != null)
+            {
+                output.AppendLine(tabBasis + $"/*{function.DirtyMessage}*/");
+                lineNumber++;
+            }
+        }
+
         public string Decompile()
         {
             // Keep track of the line number for UI
@@ -353,42 +411,57 @@ namespace Cerberus.Logic
                 lineNumber++;
             }
 
+            HashSet<ScriptExport> ClassContainedCalls = new HashSet<ScriptExport>();
+
+            foreach(var scrClass in Classes.Values)
+            {
+                ClassContainedCalls.Add(scrClass.Autogen);
+                output.AppendLine(string.Format("class {0} {1}", scrClass.Name, (scrClass.SuperClasses.Count > 0) ? (": " + string.Join(", ", scrClass.SuperClasses.ToArray())): ""));
+                output.AppendLine("{");
+                lineNumber += 2;
+
+                foreach(var variable in scrClass.Vars)
+                {
+                    output.AppendLine("\tvar " + variable + ";");
+                    lineNumber += 1;
+                }
+
+                output.AppendLine();
+                lineNumber += 1;
+
+                if (scrClass.Constructor != null)
+                {
+                    ClassContainedCalls.Add(scrClass.Constructor);
+                    scrClass.Constructor.Name = "constructor";
+                    EmitFunction(output, ref lineNumber, ref nameSpace, scrClass.Constructor, 1, true);
+                }
+
+                if (scrClass.Destructor != null)
+                {
+                    ClassContainedCalls.Add(scrClass.Destructor);
+                    scrClass.Destructor.Name = "destructor";
+                    EmitFunction(output, ref lineNumber, ref nameSpace, scrClass.Destructor, 1, true);
+                }
+
+                foreach(var export in scrClass.IncludedExports.Values)
+                {
+                    EmitFunction(output, ref lineNumber, ref nameSpace, export, 1, true);
+                    ClassContainedCalls.Add(export);
+                }
+
+                output.AppendLine("}");
+                output.AppendLine();
+                lineNumber += 2;
+            }
+
             foreach (var function in Exports)
             {
-                // Write the namspace if it differs
-                if (!string.IsNullOrWhiteSpace(function.Namespace) && function.Namespace != nameSpace)
+                if(ClassContainedCalls.Contains(function))
                 {
-                    nameSpace = function.Namespace;
-                    output.AppendLine(string.Format("#namespace {0};\n", nameSpace));
-                    lineNumber += 2;
+                    continue;
                 }
 
-                // Spit out some info
-                output.AppendLine("/*");
-                output.AppendLine(string.Format("\tName: {0}", function.Name));
-                output.AppendLine(string.Format("\tNamespace: {0}", function.Namespace));
-                output.AppendLine(string.Format("\tChecksum: 0x{0:X}", function.Checksum));
-                output.AppendLine(string.Format("\tOffset: 0x{0:X}", function.ByteCodeOffset));
-                output.AppendLine(string.Format("\tSize: 0x{0:X}", function.ByteCodeSize));
-                output.AppendLine(string.Format("\tParameters: {0}", function.ParameterCount));
-                output.AppendLine(string.Format("\tFlags: {0}", ExportFlagsToString((byte)function.Flags)));
-                output.AppendLine("*/");
-                lineNumber += 9;
-
-                using (var decompiler = new Decompiler(function, this))
-                {
-                    function.DecompilerLine = lineNumber;
-                    var result = decompiler.GetWriterOutput();
-                    output.Append(result);
-                    output.AppendLine();
-                    lineNumber += Utility.GetLineCount(result);
-                }
-
-                if (function.DirtyMessage != null)
-                {
-                    output.AppendLine($"/*{function.DirtyMessage}*/");
-                    lineNumber++;
-                }
+                EmitFunction(output, ref lineNumber, ref nameSpace, function, 0);
             }
 
             return output.ToString();
@@ -485,6 +558,23 @@ namespace Cerberus.Logic
             return Imports.Where(x => x.References.Contains(ptr)).FirstOrDefault() ?? default_import;
         }
 
+        public ScriptExport GetExport(string ns, string fname)
+        {
+            foreach(var function in Exports)
+            {
+                if(function.Namespace != ns)
+                {
+                    continue;
+                }
+                if(function.Name != fname)
+                {
+                    continue;
+                }
+                return function;
+            }
+            return null;
+        }
+
         /// <summary>
         /// Disposes of the Reader
         /// </summary>
@@ -513,7 +603,8 @@ namespace Cerberus.Logic
         public static ScriptBase LoadScript(BinaryReader reader, Dictionary<string, Dictionary<uint, string>> hashTables = null)
         {
             // We can use the magic to determine game
-            switch(reader.ReadUInt64())
+            var magic = reader.ReadUInt64();
+            switch (magic)
             {
                 case 0x38000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
@@ -529,6 +620,7 @@ namespace Cerberus.Logic
                     var _scr = new BlackOps4Script(reader, t8_dword, t8_qword);
                     _scr.IsPS4 = true;
                     return _scr.Load();
+                case 0x1B000A0D43534780:
                 case 0x1C000A0D43534780:
                     LoadT7Hashes("t7_hash.map");
                     return new T7VM1CScript(reader, t7_dword).Load();
@@ -538,7 +630,7 @@ namespace Cerberus.Logic
                     scr.IsPS4 = true;
                     return scr.Load();
                 default:
-                    throw new ArgumentException("Invalid Script Magic Number.", "Magic");
+                    throw new ArgumentException($"Invalid Script Magic Number; {magic:X}", "Magic");
             }
         }
 
@@ -596,5 +688,15 @@ namespace Cerberus.Logic
                 t8_qword[include_id] = rawString;
             }
         }
+    }
+    public class Scr_Class
+    {
+        public string Name;
+        public Dictionary<string, ScriptExport> IncludedExports = new Dictionary<string, ScriptExport>();
+        public ScriptExport Constructor;
+        public ScriptExport Destructor;
+        public ScriptExport Autogen;
+        public HashSet<string> Vars = new HashSet<string>();
+        public HashSet<string> SuperClasses = new HashSet<string>();
     }
 }

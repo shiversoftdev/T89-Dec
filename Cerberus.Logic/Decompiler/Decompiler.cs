@@ -25,14 +25,15 @@ using System.Collections.Specialized;
 
 namespace Cerberus.Logic
 {
+    // TODO: t7 character::save (in codescripts)
     /// <summary>
     /// Handles Decompiling GSC files
     /// </summary>
     internal class Decompiler : IDisposable
     {
         private const bool DisableVerbose = true;
-        private static bool UseTernaryLogging = false, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = false,
-            UseJumpDetectionLogging = false, UseForLoopVerbose = false, UseIfStatementLogging = false;
+        private static bool UseTernaryLogging = false, UseWhileLoopDetectionLogging = false, UseElseDetectionLogging = true,
+            UseJumpDetectionLogging = true, UseForLoopVerbose = false, UseIfStatementLogging = true;
         /// <summary>
         /// Operators by Op Code
         /// </summary>
@@ -67,7 +68,7 @@ namespace Cerberus.Logic
             // Op Code                                                             "Source Name"            "Parameter Count"
             { ScriptOpCode.RealWait,                        new Tuple<string, int>("realwait",              1) },
             { ScriptOpCode.Wait,                            new Tuple<string, int>("wait",                  1) },
-            { ScriptOpCode.WaitRealTime,                    new Tuple<string, int>("waitrealtime",            1) },
+            { ScriptOpCode.WaitRealTime,                    new Tuple<string, int>("waitrealtime",          1) },
             { ScriptOpCode.GetTime,                         new Tuple<string, int>("gettime",               0) },
             { ScriptOpCode.Abs,                             new Tuple<string, int>("abs",                   1) },
             { ScriptOpCode.FirstArrayKey,                   new Tuple<string, int>("getfirstarraykey",      1) },
@@ -94,9 +95,9 @@ namespace Cerberus.Logic
             { ScriptOpCode.PixBeginEvent,                   new Tuple<string, int>("pixbeginevent",         0) },
             { ScriptOpCode.PixEndEvent,                     new Tuple<string, int>("pixendevent",           0) },
             { ScriptOpCode.EndOn,                           new Tuple<string, int>("endon",                 0) },
-            { ScriptOpCode.EndOnCallback,                   new Tuple<string, int>("endon_callback",        0) },
-            { ScriptOpCode.EndonCallbackA,                  new Tuple<string, int>("endon_callback",        0) },
-            { ScriptOpCode.WaittillTimeoutS,                new Tuple<string, int>("waittill_timeout",      0) }
+            { ScriptOpCode.EndOnCallback,                   new Tuple<string, int>("endoncallback",         0) },
+            { ScriptOpCode.EndonCallbackA,                  new Tuple<string, int>("endoncallback",         0) },
+            { ScriptOpCode.WaittillTimeoutS,                new Tuple<string, int>("waittilltimeout",       0) }
         };
 
         /// <summary>
@@ -110,6 +111,8 @@ namespace Cerberus.Logic
         private ScriptBase Script { get; set; }
 
         private HashSet<int> JumpLocations = new HashSet<int>();
+
+        private bool IsBoolReturn = false;
 
         /// <summary>
         /// List of decompiler blocks
@@ -144,23 +147,27 @@ namespace Cerberus.Logic
         /// </summary>
         private IndentedTextWriter Writer { get; set; }
 
+        private ScriptOp SCL = null;
+
         /// <summary>
         /// Initializes an instance of the Decompiler Class
         /// </summary>
         /// <param name="function"></param>
         /// <param name="script"></param>
-        public Decompiler(ScriptExport function, ScriptBase script)
+        public Decompiler(ScriptExport function, ScriptBase script, int tabs)
         {
             try
             {
                 Function = function;
                 Script = script;
+                SCL = null;
 
                 // Preprocess some operations
                 foreach (var operation in Function.Operations)
                 {
                     if (operation.Metadata.OpCode == ScriptOpCode.SafeCreateLocalVariables)
                     {
+                        SCL = operation;
                         foreach (var var in operation.Operands)
                         {
                             LocalVariables.Add((string)var.Value);
@@ -174,6 +181,20 @@ namespace Cerberus.Logic
                     {
                         throw new Exception("Function contains invalid operation code");
                     }
+                }
+
+                if(Function.Operations.Count < 1)
+                {
+                    InternalWriter = new StringWriter();
+                    Writer = new IndentedTextWriter(InternalWriter, "\t");
+                    Writer.Indent = tabs;
+                    Writer.WriteLine(BuildFunctionDefinition());
+                    Writer.WriteLine("{");
+                    Writer.Indent++;
+                    Writer.WriteLine($"// Unsupported VM revision ({Script.Header.VMRevision:X}).");
+                    Writer.Indent--;
+                    Writer.WriteLine("}");
+                    return;
                 }
 
                 // Remove end instruction if it's end,
@@ -196,8 +217,8 @@ namespace Cerberus.Logic
                 // and therefore it's NOT a for loop
                 // but we need to resolve for loops before them
                 // so this is the best way to ensure that
+                DetectBoolReturn();
                 FindSwitchCase();
-                FindDevBlocks();
                 FindTernaries(0, Function.Operations.Count);
                 FindWhileLoops();
                 FindDoWhileLoops();
@@ -209,6 +230,7 @@ namespace Cerberus.Logic
                 // to process them properly
                 Blocks.RemoveAll(x => x is BasicBlock && x.StartOffset != Function.ByteCodeOffset);
                 FindElseIfStatements();
+                FindDevBlocks();
                 ResolveParentBlocks();
                 Stack.Clear();
                 RestoreCaseOrder();
@@ -217,9 +239,10 @@ namespace Cerberus.Logic
 
                 InternalWriter = new StringWriter();
                 Writer = new IndentedTextWriter(InternalWriter, "\t");
+                Writer.Indent = tabs;
 
-                Writer?.WriteLine(BuildFunctionDefinition());
-                DecompileBlock(Blocks[0], 1);
+                Writer.WriteLine(BuildFunctionDefinition());
+                DecompileBlock(Blocks[0], tabs + 1);
             }
             catch(Exception e)
             {
@@ -238,6 +261,30 @@ namespace Cerberus.Logic
 
             Writer?.Flush();
             ClearVisitedInstructions();
+        }
+
+        private void DetectBoolReturn()
+        {
+            for(int i = 0; i < Function.Operations.Count; i++)
+            {
+                if (Function.Operations[i].Metadata.OpCode != ScriptOpCode.Return)
+                {
+                    continue;
+                }
+                if(i == 0)
+                {
+                    return;
+                }
+                if(Function.Operations[i - 1].Metadata.OpCode != ScriptOpCode.GetByte && Function.Operations[i - 1].Metadata.OpCode != ScriptOpCode.GetZero)
+                {
+                    return;
+                }
+                if(Function.Operations[i - 1].Metadata.OpCode == ScriptOpCode.GetByte && (((int)Function.Operations[i - 1].Operands[0].Value & 0x7FE) > 0))
+                {
+                    return;
+                }
+            }
+            IsBoolReturn = true;
         }
 
         private void DumpFunctionInfo()
@@ -292,7 +339,9 @@ namespace Cerberus.Logic
         {
             var result = "";
 
-            if(IsPrivate(Function.Flags))
+            result += IsEvent(Function.Flags) ? "event " : ((Function.Name == "constructor" || Function.Name == "destructor") ? "" : "function ");
+
+            if (IsPrivate(Function.Flags))
             {
                 result += "private ";
             }
@@ -301,13 +350,23 @@ namespace Cerberus.Logic
                 result += "autoexec ";
             }
 
-            result += IsEvent(Function.Flags) ? "event " : "function ";
-
             result += Function.Name + "(";
 
-            for (int i = 0; i < Function.ParameterCount; i++)
+            for (int i = 0; i < Function.ParameterCount && i < LocalVariables.Count; i++)
             {
                 var stackValue = DefaultArguments.ContainsKey(i) ? DefaultArguments[i] : LocalVariables[i];
+
+                if(SCL != null)
+                {
+                    if(SCL.Operands[i].IsByRef)
+                    {
+                        stackValue = "&" + stackValue;
+                    }
+                    else if(SCL.Operands[i].IsVarArg)
+                    {
+                        stackValue = "...";
+                    }
+                }
                 result += string.Format("{0}{1}", stackValue, (i != Function.ParameterCount - 1) ? ", " : "");
                 
             }
@@ -339,7 +398,15 @@ namespace Cerberus.Logic
             {
                 if(block is SwitchBlock caseBlock)
                 {
-                    block.ChildBlockIndices = block.ChildBlockIndices.OrderBy(x => ((CaseBlock)Blocks[x]).OriginalIndex).ToList();
+                    for(int i = 0; i < block.ChildBlockIndices.Count; i++)
+                    {
+                        if(!(Blocks[block.ChildBlockIndices[i]] is CaseBlock)) // TODO: how the fuck did this get in here and why is it in here????!
+                        {
+                            block.ChildBlockIndices.RemoveAt(i);
+                            i--;
+                        }
+                    }
+                    block.ChildBlockIndices = block.ChildBlockIndices.OrderBy(x => (Blocks[x] as CaseBlock)?.OriginalIndex ?? (Blocks.Count + x)).ToList();
                 }
             }
         }
@@ -576,7 +643,8 @@ namespace Cerberus.Logic
                     continue;
                 }
 
-                ProcessInstruction(op);
+                object refOut = null;
+                ProcessInstruction(op, ref refOut);
                 op.Visited = true;
                 op.IsTernary = true;
             }
@@ -651,46 +719,82 @@ namespace Cerberus.Logic
 
                     if(Function.Operations[index - 1].Metadata.OpCode == ScriptOpCode.Jump && !Function.Operations[index - 1].IsTernary)
                     {
-                        var op = Function.Operations[index - 1];
+                        var elseJump = Function.Operations[index - 1];
 
                         // Attempt to locate an else if, otherwise we're using this as the jump
-                        var blockIndex = GetBlockIndexAt(Blocks[i].EndOffset);
-                        var jumpLocation = Script.GetJumpLocation(
-                                op.OpCodeOffset + op.OpCodeSize,
-                                (int)op.Operands[0].Value);
+                        var endBlock = GetBlockIndexAt(Blocks[i].EndOffset); // end of top if-block
+                        var elseJumpLocation = Script.GetJumpLocation(
+                                elseJump.OpCodeOffset + elseJump.OpCodeSize,
+                                (int)elseJump.Operands[0].Value);
 
-                        bool isBreak = IsBreak(op.OpCodeOffset, jumpLocation);
-                        bool isContinue = IsContinue(op.OpCodeOffset, jumpLocation);
+                        bool isBreak = IsBreak(elseJump.OpCodeOffset, elseJumpLocation);
+                        bool isContinue = IsContinue(elseJump.OpCodeOffset, elseJumpLocation);
 
-                        VerboseCondition($"[{Function.Name}] Determining Jump Role: IsBreak(0x{op.OpCodeOffset:X4}, 0x{jumpLocation:X4}):{isBreak}, IsContinue:{isContinue}", UseElseDetectionLogging);
+                        VerboseCondition($"[{Function.Name}] Determining Jump Role: IsBreak(0x{elseJump.OpCodeOffset:X4}, 0x{elseJumpLocation:X4}):{isBreak}, IsContinue:{isContinue}", UseElseDetectionLogging);
                         if (!isContinue && !isBreak)
                         {
                             Function.Operations[index - 1].Visited = true;
+                            bool hasEndBlock = endBlock > 0;
 
-                            if (blockIndex > 0 && Blocks[blockIndex] is IfBlock elseIf && jumpLocation != Blocks[i].EndOffset)
+                            if (hasEndBlock && Blocks[endBlock] is IfBlock elseIf && elseJumpLocation != Blocks[i].EndOffset)
                             {
-                                // Mark this block
-                                Blocks[blockIndex] = new ElseIfBlock(elseIf.StartOffset, elseIf.EndOffset)
+                                ScriptOp jumpOnTrueOrFalse = null;
+                                foreach(var op in Function.Operations)
                                 {
-                                    Comparison = elseIf.Comparison
-                                };
-                            }
-                            else
-                            {
-                                var elseBlock = new ElseBlock(
-                                    op.OpCodeOffset + op.OpCodeSize,
-                                Script.GetJumpLocation(
-                                    op.OpCodeOffset + op.OpCodeSize,
-                                    (int)op.Operands[0].Value));
-
-                                if (Blocks[i] is IfBlock _ib)
-                                {
-                                    _ib.ChildElse = elseBlock;
+                                    if (op.OpCodeOffset < elseIf.StartOffset) continue;
+                                    if (op.OpCodeOffset >= elseIf.EndOffset) continue;
+                                    if (op.Metadata.OpType == ScriptOpType.JumpCondition)
+                                    {
+                                        jumpOnTrueOrFalse = op;
+                                        break;
+                                    }
                                 }
 
-                                // Mark this block
-                                Blocks.Add(elseBlock);
+                                var elseIfJumpLoc = Script.GetJumpLocation(
+                                        jumpOnTrueOrFalse.OpCodeOffset + jumpOnTrueOrFalse.OpCodeSize,
+                                        (int)jumpOnTrueOrFalse.Operands[0].Value);
+
+                                if (elseIfJumpLoc == elseJumpLocation)
+                                {
+                                    // Mark this block
+                                    Blocks[endBlock] = new ElseIfBlock(elseIf.StartOffset, elseIf.EndOffset)
+                                    {
+                                        Comparison = elseIf.Comparison
+                                    };
+
+                                    VerboseCondition($"[{Function.Name}] Determined an else-if statement starts at {elseIf.StartOffset:X4} and ends at {elseIf.EndOffset:X4}", UseIfStatementLogging);
+
+                                    if (Blocks[i] is IfBlock ifb)
+                                    {
+                                        ifb.ChildElse = Blocks[endBlock];
+                                    }
+                                    //else if (Blocks[i] is ElseIfBlock _eifb)
+                                    //{
+                                    //    _eifb.ChildElse = Blocks[endBlock];
+                                    //}
+                                    continue;
+                                }
                             }
+
+                            VerboseCondition($"[{Function.Name}] Determined an else statement starts at {(elseJump.OpCodeOffset + elseJump.OpCodeSize):X4} and ends at {(Script.GetJumpLocation(elseJump.OpCodeOffset + elseJump.OpCodeSize, (int)elseJump.Operands[0].Value)):X4}", UseIfStatementLogging);
+                            var elseBlock = new ElseBlock(
+                                elseJump.OpCodeOffset + elseJump.OpCodeSize,
+                            Script.GetJumpLocation(
+                                elseJump.OpCodeOffset + elseJump.OpCodeSize,
+                                (int)elseJump.Operands[0].Value));
+
+                            if (Blocks[i] is IfBlock _ib)
+                            {
+                                _ib.ChildElse = elseBlock;
+                            }
+
+                            //if (Blocks[i] is ElseIfBlock eifb)
+                            //{
+                            //    eifb.ChildElse = elseBlock;
+                            //}
+
+                            // Mark this block
+                            Blocks.Add(elseBlock);
                         }
                     }
                 }
@@ -792,14 +896,17 @@ namespace Cerberus.Logic
 
             for(int i = Blocks.Count - 1; i >= 0; i--) // child
             {
-                for(int j = Blocks.Count - 1; j >= 0; j--) // parent
+                // if (Blocks[i] is DevBlock db && db.ParentDetected) continue;
+                for (int j = Blocks.Count - 1; j >= 0; j--) // parent
                 {
                     if (Blocks[i] == Blocks[j]) continue;
+                    if (Blocks[j] is DevBlock _db && _db.ParentDetected) continue;
                     if (Blocks[j] is CaseBlock && !(Blocks[i] is SwitchBlock) && !(Blocks[i] is CaseBlock))
                     {
                         if (Blocks[i].StartOffset >= Blocks[j].StartOffset && Blocks[i].EndOffset <= Blocks[j].EndOffset)
                         {
                             Blocks[j].ChildBlockIndices.Add(i);
+                            Blocks[i].ParentBlockIndices.Add(j);
                             break;
                         }
                     }
@@ -812,6 +919,7 @@ namespace Cerberus.Logic
                         if (Blocks[i].StartOffset >= Blocks[j].StartOffset && Blocks[i].EndOffset <= Blocks[j].EndOffset)
                         {
                             Blocks[j].ChildBlockIndices.Add(i);
+                            Blocks[i].ParentBlockIndices.Add(j);
                             break;
                         }
                     }
@@ -995,7 +1103,13 @@ namespace Cerberus.Logic
                 Function.Operations[i].Visited = true;
 
                 // Pass to processor
-                ProcessInstruction(operation);
+                object refOut = null;
+                ProcessInstruction(operation, ref refOut);
+                if (refOut is bool && (bool)refOut && (operation.Metadata.OpCode == ScriptOpCode.ScriptFunctionCall || operation.Metadata.OpCode == ScriptOpCode.ClassFunctionCall))
+                {
+                    operation.Visited = true;
+                    Function.Operations[i + 1].Visited = true;
+                }
             }
 
             Writer.Indent = tabs - 1;
@@ -1011,8 +1125,19 @@ namespace Cerberus.Logic
             {
                 if(operation.Metadata.OpCode == ScriptOpCode.DevblockBegin)
                 {
-                    // Dev Blocks are simple, just a size
-                    Blocks.Add(new DevBlock(operation.OpCodeOffset, Script.GetJumpLocation(operation.OpCodeOffset + operation.OpCodeSize, (int)operation.Operands[0].Value)));
+                    var iblock = GetBlockIndexAt(operation.OpCodeOffset);
+
+                    if (iblock > -1)
+                    {
+                        var db = new DevBlock(operation.OpCodeOffset, Script.GetJumpLocation(operation.OpCodeOffset + operation.OpCodeSize, (int)operation.Operands[0].Value), true);
+                        var block = Blocks[iblock];
+                        block.ChildBlockIndices.Add(Blocks.Count);
+                        Blocks.Add(db);
+                    }
+                    else
+                    {
+                        Blocks.Add(new DevBlock(operation.OpCodeOffset, Script.GetJumpLocation(operation.OpCodeOffset + operation.OpCodeSize, (int)operation.Operands[0].Value), false));
+                    }
                 }
             }
         }
@@ -1044,7 +1169,6 @@ namespace Cerberus.Logic
             // resolved for loops, etc. later
             for(int i = Function.Operations.Count - 1; i >= 0; i--)
             {
-                //Debug.Assert(Function.Operations[i].OpCodeOffset != 0x25B4);
                 switch(Function.Operations[i].Metadata.OpCode)
                 {
                     case ScriptOpCode.Jump:
@@ -1178,18 +1302,17 @@ namespace Cerberus.Logic
                     requiresBraces = true;
                 }
 
-                ProcessInstruction(op);
+                object refOut = null;
+                ProcessInstruction(op, ref refOut);
                 op.Visited = true;
             }
 
-            // Debug.Assert(Stack.Count > 0);
             var result = Stack.Pop();
 
             // Determine if it needs braces (nested expressions)
             if (requiresBraces)
                 result = "(" + result + ")";
 
-            //Debug.Assert(startOp.OpCodeOffset != 0x1560);
             return result;
         }
 
@@ -1271,7 +1394,8 @@ namespace Cerberus.Logic
                     break;
                 }
 
-                ProcessInstruction(op);
+                object refOut = null;
+                ProcessInstruction(op, ref refOut);
                 op.Visited = true;
             }
 
@@ -1325,7 +1449,8 @@ namespace Cerberus.Logic
             // Process so we can obtain the real variable name
             for (int j = variableBeginIndex; j < i - 2; j++)
             {
-                ProcessInstruction(Function.Operations[j]);
+                object refOut = null;
+                ProcessInstruction(Function.Operations[j], ref refOut);
                 Function.Operations[j].Visited = true;
             }
             var ArrayName = Stack.Pop();
@@ -1402,7 +1527,8 @@ namespace Cerberus.Logic
             // Process so we can obtain the real variable name
             for (int j = variableBeginIndex; j < i - 3; j++)
             {
-                ProcessInstruction(Function.Operations[j]);
+                object refOut = null;
+                ProcessInstruction(Function.Operations[j], ref refOut);
                 Function.Operations[j].Visited = true;
             }
             var ArrayName = Stack.Pop();
@@ -1431,7 +1557,7 @@ namespace Cerberus.Logic
             // iterate the foreach body, and try to find some reference to our key
             // if we find a key ref, its a double foreach
             bool UseKey = false;
-            for (int j = i + 10; j < opIndex - 2; j++)
+            for (int j = i + 15; j < opIndex - 3; j++)
             {
                 switch (Function.Operations[j].Metadata.OpCode)
                 {
@@ -1491,14 +1617,17 @@ namespace Cerberus.Logic
             var index = GetBlockIndexAt(Function.Operations[i + 2].OpCodeOffset);
 
             if (!(Blocks[index] is WhileLoop loop))
-                throw new ArgumentException("Expecting While Loop At FirstArrayKey");
+            {
+                return;
+            }
 
             int continueOffset;
             var variableBeginIndex = FindStartIndex(i - 2);
             // Process so we can obtain the real variable name
             for (int j = variableBeginIndex; j < i - 1; j++)
             {
-                ProcessInstruction(Function.Operations[j]);
+                object refOut = null;
+                ProcessInstruction(Function.Operations[j], ref refOut);
                 Function.Operations[j].Visited = true;
             }
             var ArrayName = Stack.Pop();
@@ -1579,6 +1708,12 @@ namespace Cerberus.Logic
             {
                 var block = Blocks[i];
 
+                Dictionary<int, bool> ProcessedSnapshot = new Dictionary<int, bool>();
+                for(int k = 0; k < Function.Operations.Count; k++)
+                {
+                    ProcessedSnapshot[k] = Function.Operations[k].Visited;
+                }
+
                 if(block is WhileLoop whileLoop)
                 {
                     VerboseCondition($"[{Function.Name}] Checking potential for loop conditions {whileLoop.StartOffset:X}:{whileLoop.EndOffset:X}", UseForLoopVerbose);
@@ -1587,7 +1722,7 @@ namespace Cerberus.Logic
                         VerboseCondition($"[{Function.Name}] Failed because of references {whileLoop.StartOffset:X}:{whileLoop.EndOffset:X}", UseForLoopVerbose);
                         continue;
                     }
-
+                    
                     var index = GetInstructionAt(whileLoop.StartOffset);
                     var SetIndex = FindStartIndex(index - 1, true) - 1;
                     // For now we just check for Variable Reference + SetVariableField, a comparison, and a increment
@@ -1595,6 +1730,7 @@ namespace Cerberus.Logic
                         Function.Operations[SetIndex].Metadata.OpType == ScriptOpType.SetVariable)
                     {
                         bool isCompared = false;
+                        bool b_revert = true;
 
                         // Attempt to resolve info
                         var variableBeginIndex = FindStartIndex(SetIndex - 1, true);
@@ -1611,233 +1747,244 @@ namespace Cerberus.Logic
                             }
                         }
 
-                        // Process so we can obtain the real variable name
-                        for (int j = variableBeginIndex; j < index; j++)
+                        try
                         {
-                            if (Function.Operations[j].Visited)
-                                continue;
-                            ProcessInstruction(Function.Operations[j]);
-                        }
-
-                        bool b_revert = true;
-
-                        // First let's see if this is the variable we can use
-                        var variableName = CurrentReference;
-
-                        // Attempt to hit a comparison to this
-                        for (int j = index; j < Function.Operations.Count; j++)
-                        {
-                                
-                            var op = Function.Operations[j];
-
-                            // Check if we hit a JumpOn..etc. we're done
-                            if (op.Metadata.OpType == ScriptOpType.JumpCondition)
+                            // Process so we can obtain the real variable name
+                            for (int j = variableBeginIndex; j < index; j++)
                             {
-                                break;
+                                if (Function.Operations[j].Visited)
+                                    continue;
+
+                                object refOut = null;
+                                ProcessInstruction(Function.Operations[j], ref refOut);
                             }
 
-                            // Check if we hit a non-stack/expression operation
-                            if (!IsStackOperation(op) && op.Metadata.OpType != ScriptOpType.JumpExpression)
-                            {
-                                break;
-                            }
+                            // First let's see if this is the variable we can use
+                            var variableName = CurrentReference;
 
-                            if (op.Metadata.OperandType == ScriptOperandType.DoubleUInt8)
-                            {
-                                var pair = GetVariableNames(op);
-                                if (pair.Item1 == variableName || pair.Item2 == variableName)
-                                {
-                                    isCompared = true;
-                                    break;
-                                }
-                            }
-                            else if (op.Metadata.OpType == ScriptOpType.Variable)
-                            {
-                                var compVar = GetVariableName(op);
-
-                                // At some point, this variable is being compared
-                                // So we can try and use it
-                                if (compVar == variableName)
-                                {
-                                    isCompared = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        VerboseCondition($"[{Function.Name}] For loop isCompared {variableName}:{isCompared}", UseForLoopVerbose);
-                        // Check if we hit a valid comparison
-                        if (isCompared)
-                        {
-                            // Now let's do a backwards scan like the while, until we hit a reference to the variable, if we do
-                            // We can be fairly confident it's a for loop and can mark is as such
-                            // We can also run a jump check again to see forward jumps that match us
-                            var endIndex = GetInstructionAt(whileLoop.EndOffset) - ((Script is BlackOps4Script) ? 2 : 1);
-                            bool isModified = false;
-                            int referenceIndex = -1;
-                            int _j = endIndex;
                             // Attempt to hit a comparison to this
-                            for (_j = endIndex; _j >= 0; _j--)
+                            for (int j = index; j < Function.Operations.Count; j++)
                             {
-                                var op = Function.Operations[_j];
 
-                                if (IsInsideChildBlock(op.OpCodeOffset, whileLoop))
-                                {
-                                    break;
-                                }
+                                var op = Function.Operations[j];
 
+                                // Check if we hit a JumpOn..etc. we're done
                                 if (op.Metadata.OpType == ScriptOpType.JumpCondition)
                                 {
                                     break;
                                 }
 
-                                if (op.Metadata.OpType == ScriptOpType.SingleOperand && 
-                                    op.Metadata.OpCode != ScriptOpCode.DecCached && 
-                                    op.Metadata.OpCode != ScriptOpCode.IncCached)
-                                {
-                                    continue;
-                                }
-
-                                if (op.OpCodeOffset < whileLoop.StartOffset)
-                                {
-                                    continue;
-                                }
-
-                                if (op.Metadata.OpType == ScriptOpType.VariableReference)
-                                {
-                                    var compVar = GetVariableName(op);
-
-                                    // At some point, this variable is being compared
-                                    // So we can try and use it
-                                    if (compVar == variableName)
-                                    {
-                                        referenceIndex = _j;
-                                        isModified = true;
-                                        break;
-                                    }
-                                }
-
-                                if(op.Metadata.OpCode == ScriptOpCode.DecCached || op.Metadata.OpCode == ScriptOpCode.IncCached)
-                                {
-                                    var compVar = GetVariableName(op);
-
-                                    // At some point, this variable is being compared
-                                    // So we can try and use it
-                                    if (compVar == variableName)
-                                    {
-                                        referenceIndex = _j;
-                                        isModified = true;
-                                        break;
-                                    }
-                                }
-
-                                if (!IsStackOperation(op))
+                                // Check if we hit a non-stack/expression operation
+                                if (!IsStackOperation(op) && op.Metadata.OpType != ScriptOpType.JumpExpression)
                                 {
                                     break;
                                 }
+
+                                if (op.Metadata.OperandType == ScriptOperandType.DoubleUInt8)
+                                {
+                                    var pair = GetVariableNames(op);
+                                    if (pair.Item1 == variableName || pair.Item2 == variableName)
+                                    {
+                                        isCompared = true;
+                                        break;
+                                    }
+                                }
+                                else if (op.Metadata.OpType == ScriptOpType.Variable)
+                                {
+                                    var compVar = GetVariableName(op);
+
+                                    // At some point, this variable is being compared
+                                    // So we can try and use it
+                                    if (compVar == variableName)
+                                    {
+                                        isCompared = true;
+                                        break;
+                                    }
+                                }
                             }
 
-                            VerboseCondition($"[{Function.Name}] For loop isModified index.{referenceIndex:X3}:{isModified}:{_j:X3}", UseForLoopVerbose);
-                            // Final straw, IS SHE MODIFIED
-                            if (isModified)
+                            VerboseCondition($"[{Function.Name}] For loop isCompared {variableName}:{isCompared}", UseForLoopVerbose);
+                            // Check if we hit a valid comparison
+                            if (isCompared)
                             {
-
-                                // First let's build the intializer
-                                var initBegin = FindStartIndex(SetIndex - 1, true);
-
-                                var forLoop = new ForLoopBlock(whileLoop.StartOffset, whileLoop.EndOffset)
+                                // Now let's do a backwards scan like the while, until we hit a reference to the variable, if we do
+                                // We can be fairly confident it's a for loop and can mark is as such
+                                // We can also run a jump check again to see forward jumps that match us
+                                var endIndex = GetInstructionAt(whileLoop.EndOffset) - ((Script is BlackOps4Script) ? 2 : 1);
+                                bool isModified = false;
+                                int referenceIndex = -1;
+                                int _j = endIndex;
+                                // Attempt to hit a comparison to this
+                                for (_j = endIndex; _j >= 0; _j--)
                                 {
-                                    Comparison = whileLoop.Comparison,
-                                    BreakOffset = whileLoop.BreakOffset,
-                                };
+                                    var op = Function.Operations[_j];
 
-                                for (int j = initBegin; j < index; j++)
-                                {
-                                    // We've now visited/processed this
-                                    Function.Operations[j].Visited = true;
-                                    var op = Function.Operations[j];
-
-                                    if (op.Metadata.OpType == ScriptOpType.SetVariable)
+                                    if (IsInsideChildBlock(op.OpCodeOffset, whileLoop))
                                     {
-                                        switch (op.Metadata.OpCode)
+                                        break;
+                                    }
+
+                                    if (op.Metadata.OpType == ScriptOpType.JumpCondition)
+                                    {
+                                        break;
+                                    }
+
+                                    if (op.Metadata.OpType == ScriptOpType.SingleOperand &&
+                                        op.Metadata.OpCode != ScriptOpCode.DecCached &&
+                                        op.Metadata.OpCode != ScriptOpCode.IncCached)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (op.OpCodeOffset < whileLoop.StartOffset)
+                                    {
+                                        continue;
+                                    }
+
+                                    if (op.Metadata.OpType == ScriptOpType.VariableReference)
+                                    {
+                                        var compVar = GetVariableName(op);
+
+                                        // At some point, this variable is being compared
+                                        // So we can try and use it
+                                        if (compVar == variableName)
                                         {
-                                            case ScriptOpCode.SafeSetVariableFieldCached:
-                                                forLoop.Initializer = $"{GetLocalVariable((int)op.Operands[0].Value)}.{op.Operands[1].Value} = {Stack.Pop()}";
-                                                break;
-                                            case ScriptOpCode.SetArrayField:
-                                                forLoop.Initializer = $"{CurrentReference += "[" + Stack.Pop() + "]"} = {Stack.Pop()}";
-                                                break;
-                                            case ScriptOpCode.SetGlobalObjectFieldVariable:
-                                                forLoop.Initializer = $"{Script.GlobalObjects[op.OpCodeOffset + 2]}.{op.Operands[1].Value} = {Stack.Pop()};";
-                                                break;
-                                            case ScriptOpCode.SetLocalVariableCached:
-                                                forLoop.Initializer = string.Format("{0} = {1}", LocalVariables[LocalVariables.Count - (int)op.Operands[0].Value - 1], Stack.Pop());
-                                                break;
-                                            case ScriptOpCode.SetVariableFieldRef:
-                                                forLoop.Initializer = string.Format("{0} = {1}", $"{CurrentReference}.{op.Operands[0].Value}", Stack.Pop());
-                                                break;
-                                            default:
-                                                forLoop.Initializer = string.Format("{0} = {1}", CurrentReference, Stack.Pop());
-                                                CurrentReference = "";
-                                                break;
+                                            referenceIndex = _j;
+                                            isModified = true;
+                                            break;
                                         }
-                                        break;
                                     }
 
-                                    ProcessInstruction(op);
-                                }
+                                    if (op.Metadata.OpCode == ScriptOpCode.DecCached || op.Metadata.OpCode == ScriptOpCode.IncCached)
+                                    {
+                                        var compVar = GetVariableName(op);
 
-                                int modifierStart;
+                                        // At some point, this variable is being compared
+                                        // So we can try and use it
+                                        if (compVar == variableName)
+                                        {
+                                            referenceIndex = _j;
+                                            isModified = true;
+                                            break;
+                                        }
+                                    }
 
-                                // Last we build the modifier
-                                // First we can check if it's a simple case of op inc
-
-                                if (
-                                    Function.Operations[referenceIndex + 1].Metadata.OpCode == ScriptOpCode.Dec ||
-                                    Function.Operations[referenceIndex + 1].Metadata.OpCode == ScriptOpCode.Inc
-                                    )
-                                {
-                                    modifierStart = referenceIndex;
-                                }
-                                else if (Function.Operations[referenceIndex].Metadata.OpCode == ScriptOpCode.DecCached || Function.Operations[referenceIndex].Metadata.OpCode == ScriptOpCode.IncCached)
-                                {
-                                    modifierStart = referenceIndex;
-                                }
-                                else
-                                {
-                                    // Resolve it
-                                    modifierStart = FindStartIndex(referenceIndex) - 1;
-                                }
-
-                                forLoop.ContinueOffset = Function.Operations[modifierStart].OpCodeOffset;
-                                VerboseCondition($"[{Function.Name}] Marking for loop [Continue:0x{forLoop.ContinueOffset:X4},Start:0x{forLoop.StartOffset:X4},End:0x{forLoop.EndOffset:X4}]", UseForLoopVerbose);
-                                for (int j = modifierStart; j < Function.Operations.Count && Function.Operations[j].OpCodeOffset < whileLoop.EndOffset; j++)
-                                {
-                                    // We've now visited/processed this
-                                    Function.Operations[j].Visited = true;
-                                    var op = Function.Operations[j];
-
-                                    if (FoundForLoopModifier(op, forLoop))
+                                    if (!IsStackOperation(op))
                                     {
                                         break;
                                     }
                                 }
 
-                                for (int j = variableBeginIndex; j < index; j++)
+                                VerboseCondition($"[{Function.Name}] For loop isModified index.{referenceIndex:X3}:{isModified}:{_j:X3}", UseForLoopVerbose);
+                                // Final straw, IS SHE MODIFIED
+                                if (isModified)
                                 {
-                                    Function.Operations[j].Visited = true;
+
+                                    // First let's build the intializer
+                                    var initBegin = FindStartIndex(SetIndex - 1, true);
+
+                                    var forLoop = new ForLoopBlock(whileLoop.StartOffset, whileLoop.EndOffset)
+                                    {
+                                        Comparison = whileLoop.Comparison,
+                                        BreakOffset = whileLoop.BreakOffset,
+                                    };
+
+                                    for (int j = initBegin; j < index; j++)
+                                    {
+                                        // We've now visited/processed this
+                                        Function.Operations[j].Visited = true;
+                                        var op = Function.Operations[j];
+
+                                        if (op.Metadata.OpType == ScriptOpType.SetVariable)
+                                        {
+                                            switch (op.Metadata.OpCode)
+                                            {
+                                                case ScriptOpCode.SafeSetVariableFieldCached:
+                                                    forLoop.Initializer = $"{GetLocalVariable((int)op.Operands[0].Value)}.{op.Operands[1].Value} = {Stack.Pop()}";
+                                                    break;
+                                                case ScriptOpCode.SetArrayField:
+                                                    forLoop.Initializer = $"{CurrentReference += "[" + Stack.Pop() + "]"} = {Stack.Pop()}";
+                                                    break;
+                                                case ScriptOpCode.SetGlobalObjectFieldVariable:
+                                                    forLoop.Initializer = $"{Script.GlobalObjects[op.OpCodeOffset + 2]}.{op.Operands[1].Value} = {Stack.Pop()};";
+                                                    break;
+                                                case ScriptOpCode.SetLocalVariableCached:
+                                                    forLoop.Initializer = string.Format("{0} = {1}", LocalVariables[LocalVariables.Count - (int)op.Operands[0].Value - 1], Stack.Pop());
+                                                    break;
+                                                case ScriptOpCode.SetVariableFieldRef:
+                                                    forLoop.Initializer = string.Format("{0} = {1}", $"{CurrentReference}.{op.Operands[0].Value}", Stack.Pop());
+                                                    break;
+                                                default:
+                                                    forLoop.Initializer = string.Format("{0} = {1}", CurrentReference, Stack.Pop());
+                                                    CurrentReference = "";
+                                                    break;
+                                            }
+                                            break;
+                                        }
+
+                                        object refOut = null;
+                                        ProcessInstruction(op, ref refOut);
+                                    }
+
+                                    int modifierStart;
+
+                                    // Last we build the modifier
+                                    // First we can check if it's a simple case of op inc
+
+                                    if (
+                                        Function.Operations[referenceIndex + 1].Metadata.OpCode == ScriptOpCode.Dec ||
+                                        Function.Operations[referenceIndex + 1].Metadata.OpCode == ScriptOpCode.Inc
+                                        )
+                                    {
+                                        modifierStart = referenceIndex;
+                                    }
+                                    else if (Function.Operations[referenceIndex].Metadata.OpCode == ScriptOpCode.DecCached || Function.Operations[referenceIndex].Metadata.OpCode == ScriptOpCode.IncCached)
+                                    {
+                                        modifierStart = referenceIndex;
+                                    }
+                                    else
+                                    {
+                                        // Resolve it
+                                        modifierStart = FindStartIndex(referenceIndex) - 1;
+                                    }
+
+                                    forLoop.ContinueOffset = Function.Operations[modifierStart].OpCodeOffset;
+                                    VerboseCondition($"[{Function.Name}] Marking for loop [Continue:0x{forLoop.ContinueOffset:X4},Start:0x{forLoop.StartOffset:X4},End:0x{forLoop.EndOffset:X4}]", UseForLoopVerbose);
+                                    for (int j = modifierStart; j < Function.Operations.Count && Function.Operations[j].OpCodeOffset < whileLoop.EndOffset; j++)
+                                    {
+                                        // We've now visited/processed this
+                                        Function.Operations[j].Visited = true;
+                                        var op = Function.Operations[j];
+
+                                        if (FoundForLoopModifier(op, forLoop))
+                                        {
+                                            break;
+                                        }
+                                    }
+
+                                    for (int j = variableBeginIndex; j < index; j++)
+                                    {
+                                        Function.Operations[j].Visited = true;
+                                    }
+                                    Blocks[i] = forLoop;
+                                    b_revert = false;
                                 }
-                                Blocks[i] = forLoop;
-                                b_revert = false;
                             }
                         }
+                        catch
+                        {
 
+                        }
+                        
+
+                        // we have to revert because the for loop detection messes up so many things
                         if(b_revert)
                         {
-                            for (int j = variableBeginIndex; j < index; j++)
+                            foreach(var kvp in ProcessedSnapshot)
                             {
-                                Function.Operations[j].Visited = false;
+                                Function.Operations[kvp.Key].Visited = kvp.Value;
                             }
+                            ProcessedSnapshot.Clear();
                         }
                     }
                 }
@@ -1895,7 +2042,8 @@ namespace Cerberus.Logic
                         return false;
                     }
                 default:
-                    ProcessInstruction(op);
+                    object refOut = null;
+                    ProcessInstruction(op, ref refOut);
                     return false;
             }
         }
@@ -1976,7 +2124,8 @@ namespace Cerberus.Logic
                     continue;
                 }
 
-                ProcessInstruction(op);
+                object refOut = null;
+                ProcessInstruction(op, ref refOut);
                 VerboseCondition($"{op.Metadata.OpCode} Stack Size: {Stack.Count}", UseTernaryLogging);
                 StackBaseMap[i] = Stack.Count; // log the stack size at this instruction
             }
@@ -2172,7 +2321,11 @@ namespace Cerberus.Logic
                     return "level." + (string)op.Operands[0].Value;
                 case ScriptOpCode.EvalSelfFieldVariable:
                 case ScriptOpCode.EvalSelfFieldVariableRef:
-                    return "level." + (string)op.Operands[0].Value;
+                    if(Function.IsClassFunction)
+                    {
+                        return (string)op.Operands[0].Value;
+                    }
+                    return "self." + (string)op.Operands[0].Value;
                 case ScriptOpCode.EvalLocalVariableDefined:
                     if(bare) return LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value];
                     return $"isdefined({LocalVariables[LocalVariables.Count + ~(int)op.Operands[0].Value]})";
@@ -2232,8 +2385,10 @@ namespace Cerberus.Logic
                 op.Metadata.OpType == ScriptOpType.Object ||
                 op.Metadata.OpType == ScriptOpType.VariableReference ||
                 op.Metadata.OpType == ScriptOpType.Cast || 
-                op.Metadata.OpType == ScriptOpType.DoubleOperand
-
+                op.Metadata.OpType == ScriptOpType.DoubleOperand ||
+                op.Metadata.OpCode == ScriptOpCode.Bit_Not ||
+                op.Metadata.OpCode == ScriptOpCode.AddToArray ||
+                op.Metadata.OpCode == ScriptOpCode.AddToStruct
                 )
             {
                 if (op.Metadata.OpCode != ScriptOpCode.Wait && 
@@ -2265,11 +2420,15 @@ namespace Cerberus.Logic
             }
         }
 
+        private string ConvertReturn(string ret)
+        {
+            return IsBoolReturn ? (ret == "0" ? "false" : "true") : ret;
+        }
+
         /// <summary>
-        /// Processes the given instructions and returns if the instruction
-        /// exits the current block
+        /// Processes the given instructions and returns true if the instruction emission was canceled
         /// </summary>
-        private bool ProcessInstruction(ScriptOp operation, DecompilerBlock block = null)
+        private bool ProcessInstruction(ScriptOp operation, ref object refOut, DecompilerBlock block = null)
         {
             if(operation.Metadata.OpCode == ScriptOpCode.Invalid)
             {
@@ -2290,7 +2449,7 @@ namespace Cerberus.Logic
                         }
                         else
                         {
-                            Writer?.WriteLine("return {0};", Stack.Pop());
+                            Writer?.WriteLine("return {0};", ConvertReturn(Stack.Pop()));
                         }
 
                         return false;
@@ -2299,15 +2458,15 @@ namespace Cerberus.Logic
                     {
                         string result = Stack.Pop();
                         
-                        if(result.Contains(" new "))
-                        {
-                            string new_sub = result.Substring(result.IndexOf("new"));
-                            new_sub = new_sub.Substring(0, new_sub.IndexOf(")") + 1);
-                            Writer?.WriteLine("object = {0};", new_sub);
-                            Writer?.WriteLine("{0};", result.Replace(new_sub, "object"));
-                            Stack.Push("object");
-                            break;
-                        }
+                        //if(result.Contains(" new "))
+                        //{
+                        //    string new_sub = result.Substring(result.IndexOf("new"));
+                        //    new_sub = new_sub.Substring(0, new_sub.IndexOf(")") + 1);
+                        //    Writer?.WriteLine("object = {0};", new_sub);
+                        //    Writer?.WriteLine("{0};", result.Replace(new_sub, "object"));
+                        //    Stack.Push("object");
+                        //    break;
+                        //}
 
                         Writer?.WriteLine("{0};", result);
                         break;
@@ -2463,7 +2622,7 @@ namespace Cerberus.Logic
 
                                         if (operation.Metadata.OpCode == ScriptOpCode.GetObjectType)
                                         {
-                                            Stack.Push($"new {operation.Operands[0].Value}()");
+                                            Stack.Push($"new {operation.Operands[0].Value.ToString().Replace("var_", "class_")}()");
                                             break;
                                         }
 
@@ -2615,6 +2774,7 @@ namespace Cerberus.Logic
                         int paramCount;
                         bool threaded = false;
                         bool method = false;
+                        bool specialDoNotEmit = false;
 
                         switch (operation.Metadata.OpCode)
                         {
@@ -2663,6 +2823,12 @@ namespace Cerberus.Logic
                                     functionName = functionImport.Name;
                                     paramCount = functionImport.ParameterCount;
 
+                                    if(functionName == "__constructor" || functionName == "__destructor")
+                                    {
+                                        specialDoNotEmit = true;
+                                        break;
+                                    }
+
                                     // Check if we can omit the namespace, if it's the same as this, otherwise we need to add it
                                     if (!string.IsNullOrWhiteSpace(functionImport.Namespace) && functionImport.Namespace != Function.Namespace)
                                     {
@@ -2696,6 +2862,10 @@ namespace Cerberus.Logic
                                 {
                                     functionName = (string)operation.Operands[0].Value;
                                     paramCount = (int)operation.Operands[1].Value;
+                                    if (functionName == "__constructor")
+                                    {
+                                        specialDoNotEmit = true;
+                                    }
                                     break;
                                 }
                             default:
@@ -2704,8 +2874,19 @@ namespace Cerberus.Logic
                                     var opFunc = InstructionFunctions[operation.Metadata.OpCode];
                                     functionName = opFunc.Item1;
                                     paramCount = opFunc.Item2;
+                                    if(functionName == "getfirstarraykeycached")
+                                    {
+                                        var variableindex = (int)operation.Operands[0].Value;
+                                        Stack.Push(GetLocalVariable(variableindex));
+                                    }
                                     break;
                                 }
+                        }
+
+                        if(specialDoNotEmit)
+                        {
+                            refOut = true;
+                            return false;
                         }
 
                         paramCount = Math.Min(paramCount, Stack.Count + (method ? -1 : 0));
@@ -2779,7 +2960,7 @@ namespace Cerberus.Logic
                                     #region VM1C (T7)
                                     if (Script.Header.VMRevision == 0x1C)
                                     {
-                                        Writer.Write("{0} {1}({2}", Stack.Pop(), "waittill_match", Stack.Pop());
+                                        Writer.Write("{0} {1}({2}", Stack.Pop(), "waittillmatch", Stack.Pop());
                                         // Parse the variables created by a waittill
                                         var index = GetInstructionAt(operation.OpCodeOffset) + 1;
                                         while (Function.Operations[index].Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached || Function.Operations[index].Metadata.OpCode == ScriptOpCode.DiscardWaittillVariableField)
@@ -2793,7 +2974,7 @@ namespace Cerberus.Logic
                                     #endregion
                                     #region VM37
                                     string pushOp = "";
-                                    pushOp += $"{Stack.Pop()} waittill_match(";
+                                    pushOp += $"{Stack.Pop()} waittillmatch(";
                                     List<string> nArgs = new List<string>();
                                     for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++) nArgs.Add(Stack.Pop());
                                     pushOp += string.Join(", ", nArgs);
@@ -2809,7 +2990,7 @@ namespace Cerberus.Logic
                                     #region VM1C (T7)
                                     if (Script.Header.VMRevision == 0x1C)
                                     {
-                                        Writer.Write("{0} {1}({2}", Stack.Pop(), (operation.Metadata.OpCode == ScriptOpCode.WaitTill ? "waittill" : "waittill_timeout"), Stack.Pop());
+                                        Writer.Write("{0} {1}({2}", Stack.Pop(), (operation.Metadata.OpCode == ScriptOpCode.WaitTill ? "waittill" : "waittilltimeout"), Stack.Pop());
                                         // Parse the variables created by a waittill
                                         var index = GetInstructionAt(operation.OpCodeOffset) + 1;
                                         while (Function.Operations[index].Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached || Function.Operations[index].Metadata.OpCode == ScriptOpCode.DiscardWaittillVariableField)
@@ -2823,7 +3004,7 @@ namespace Cerberus.Logic
                                     #endregion
                                     #region VM37
                                     string pushOp = "";
-                                    pushOp += $"{Stack.Pop()} {(operation.Metadata.OpCode == ScriptOpCode.WaitTill ? "waittill" : "waittill_timeout")}(";
+                                    pushOp += $"{Stack.Pop()} {(operation.Metadata.OpCode == ScriptOpCode.WaitTill ? "waittill" : "waittilltimeout")}(";
                                     var nArgs = new List<string>();
                                     for (byte b = 0; b < byte.Parse(operation.Operands[0].Value.ToString()); b++) nArgs.Add(Stack.Pop());
                                     pushOp += string.Join(", ", nArgs);
@@ -2868,7 +3049,15 @@ namespace Cerberus.Logic
                                 }
                             case ScriptOpCode.EvalSelfFieldVariable:
                                 {
-                                    Stack.Push("self." + (string)operation.Operands[0].Value);
+                                    if(Function.IsClassFunction)
+                                    {
+                                        Stack.Push((string)operation.Operands[0].Value);
+                                    }
+                                    else
+                                    {
+                                        Stack.Push("self." + (string)operation.Operands[0].Value);
+                                    }
+                                    
                                     break;
                                 }
                             case ScriptOpCode.EvalLocalVariableDefined:
@@ -2917,7 +3106,14 @@ namespace Cerberus.Logic
                                 }
                             case ScriptOpCode.EvalSelfFieldVariableRef:
                                 {
-                                    CurrentReference = "self." + (string)operation.Operands[0].Value;
+                                    if (Function.IsClassFunction)
+                                    {
+                                        CurrentReference = (string)operation.Operands[0].Value;
+                                    }
+                                    else
+                                    {
+                                        CurrentReference = "self." + (string)operation.Operands[0].Value;
+                                    }
                                     break;
                                 }
                             case ScriptOpCode.EvalFieldVariableOnStackRef:

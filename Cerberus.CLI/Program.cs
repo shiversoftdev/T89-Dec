@@ -238,7 +238,7 @@ namespace Cerberus.CLI
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(": An error has occured while processing {0}: {1}", Path.GetFileName(arg), e.Message);
+                    Console.WriteLine(": An error has occured while processing {0}: {1}", Path.GetFileName(arg), e.ToString());
                     PrintVerbose(e);
                 }
             }

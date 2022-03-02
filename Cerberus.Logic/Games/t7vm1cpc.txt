@@ -24,7 +24,7 @@
 0x17 = op_invalid;
 0x18 = ShiftLeft; // op_sub_12CDBE0
 0x19 = ClearArray; // op_sub_12D0160
-0x1a = op_invalid;
+0x1a = Nop;
 0x1b = ScriptMethodCall; // op_sub_12CF1D0
 0x1c = GetString; // op_sub_12CD480
 0x1d = op_invalid;
