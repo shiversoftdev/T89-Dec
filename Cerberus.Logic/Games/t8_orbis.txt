@@ -102,7 +102,7 @@
 0x65 = ScriptThreadCallPointer; // op_sub_A843E0
 0x66 = JumpOnLessThan; // op_sub_A819E0
 0x67 = CastVariableName; // op_sub_A7FBF0
-0x68 = GetInteger; // op_sub_A80110
+0x68 = GetNegUnsignedInteger; // op_sub_A80110
 0x69 = op_invalid;
 0x6a = ScriptMethodThreadCallPointer; // op_sub_A84DF0
 0x6b = op_invalid;
@@ -266,7 +266,7 @@
 0x109 = op_sub_A803D0;
 0x10a = op_sub_A8C740;
 0x10b = op_invalid;
-0x10c = GetInteger; // op_sub_A80110
+0x10c = GetNegUnsignedInteger; // op_sub_A80110
 0x10d = Switch; // op_sub_A81190
 0x10e = op_invalid;
 0x10f = op_sub_A80170;
@@ -529,7 +529,7 @@
 0x210 = GetUnsignedInteger; // op_sub_A800E0
 0x211 = EvalSelfFieldVariable; // op_sub_A8FFD0
 0x212 = GetAPIFunction; // op_sub_A8A090
-0x213 = GetInteger; // op_sub_A80110
+0x213 = GetNegUnsignedInteger; // op_sub_A80110
 0x214 = op_invalid;
 0x215 = op_invalid;
 0x216 = EvalLocalVariableCached; // op_sub_A8A0F0
@@ -913,7 +913,7 @@
 0x390 = GetTime; // op_sub_A8C6D0
 0x391 = op_invalid;
 0x392 = SuperEqual; // op_sub_A7E060
-0x393 = GetInteger; // op_sub_A80110
+0x393 = GetNegUnsignedInteger; // op_sub_A80110
 0x394 = op_invalid;
 0x395 = ScriptMethodThreadCall2; // op_sub_A84C40
 0x396 = op_invalid;
@@ -1125,7 +1125,7 @@
 0x464 = ProfileStop; // op_sub_A81D40
 0x465 = op_sub_A803D0;
 0x466 = EvalGlobalObjectFieldVariable; // op_sub_A8E150
-0x467 = GetInteger; // op_sub_A80110
+0x467 = GetNegUnsignedInteger; // op_sub_A80110
 0x468 = GetNegUnsignedShort; // op_sub_A800B0
 0x469 = GetFunction; // op_sub_A8A0C0
 0x46a = ScriptMethodThreadCall; // op_sub_A84AB0
@@ -1427,7 +1427,7 @@
 0x592 = op_sub_A8B0F0;
 0x593 = op_sub_A84570;
 0x594 = op_sub_A8B3E0;
-0x595 = GetInteger; // op_sub_A80110
+0x595 = GetNegUnsignedInteger; // op_sub_A80110
 0x596 = GetGlobalObject; // op_sub_A8A030
 0x597 = EvalLocalVariableCached; // op_sub_A8A0F0
 0x598 = op_invalid;
@@ -1615,9 +1615,9 @@
 0x64e = GetFloat; // op_sub_A801A0
 0x64f = CastVariableName; // op_sub_A7FBF0
 0x650 = op_invalid;
-0x651 = GetInteger; // op_sub_A80110
+0x651 = GetNegUnsignedInteger; // op_sub_A80110
 0x652 = ClassFunctionCall; // op_sub_A837E0
-0x653 = GetInteger; // op_sub_A80110
+0x653 = GetNegUnsignedInteger; // op_sub_A80110
 0x654 = CreateStruct; // op_sub_A8D770
 0x655 = op_invalid;
 0x656 = GetFunction; // op_sub_A8A0C0
@@ -2333,7 +2333,7 @@
 0x91c = op_invalid;
 0x91d = Modulus; // op_sub_A7FB60
 0x91e = op_invalid;
-0x91f = GetInteger; // op_sub_A80110
+0x91f = GetNegUnsignedInteger; // op_sub_A80110
 0x920 = op_sub_A8C740;
 0x921 = EvalFieldVariableOnStackRef; // op_sub_A8B360
 0x922 = op_sub_A89EB0;
@@ -2869,7 +2869,7 @@
 0xb34 = EndSwitch; // op_sub_A81660
 0xb35 = DecTop; // op_sub_A8B870
 0xb36 = FirstArrayKeyCached; // op_sub_A8DD10
-0xb37 = GetInteger; // op_sub_A80110
+0xb37 = GetNegUnsignedInteger; // op_sub_A80110
 0xb38 = op_invalid;
 0xb39 = op_invalid;
 0xb3a = EvalGlobalObjectFieldVariable; // op_sub_A8E150
@@ -2900,7 +2900,7 @@
 0xb53 = op_sub_A803D0;
 0xb54 = op_invalid;
 0xb55 = SetNextArrayKeyCached; // op_sub_A8F1E0
-0xb56 = GetInteger; // op_sub_A80110
+0xb56 = GetNegUnsignedInteger; // op_sub_A80110
 0xb57 = EndOnCallback; // op_sub_A931F0
 0xb58 = op_invalid;
 0xb59 = SetNextArrayKeyCached; // op_sub_A8F1E0
@@ -3271,7 +3271,7 @@
 0xcc6 = op_invalid;
 0xcc7 = GetNegUnsignedShort; // op_sub_A800B0
 0xcc8 = Dec; // op_sub_A7DB80
-0xcc9 = GetInteger; // op_sub_A80110
+0xcc9 = GetNegUnsignedInteger; // op_sub_A80110
 0xcca = ScriptMethodThreadCall; // op_sub_A84AB0
 0xccb = EvalFieldVariableOnStack; // op_sub_A8B270
 0xccc = op_invalid;
@@ -3512,7 +3512,7 @@
 0xdb7 = JumpOnGreaterThan; // op_sub_A81690
 0xdb8 = Divide; // op_sub_A7F930
 0xdb9 = ScriptThreadCallPointer; // op_sub_A843E0
-0xdba = GetInteger; // op_sub_A80110
+0xdba = GetNegUnsignedInteger; // op_sub_A80110
 0xdbb = GetNegUnsignedShort; // op_sub_A800B0
 0xdbc = op_invalid;
 0xdbd = Bit_Not; // op_sub_A7FFB0
@@ -3520,7 +3520,7 @@
 0xdbf = JumpOnLessThan; // op_sub_A819E0
 0xdc0 = op_invalid;
 0xdc1 = EndOnCallback; // op_sub_A931F0
-0xdc2 = GetInteger; // op_sub_A80110
+0xdc2 = GetNegUnsignedInteger; // op_sub_A80110
 0xdc3 = GetEmptyArray; // op_sub_A8D990
 0xdc4 = op_sub_A8D4A0;
 0xdc5 = op_sub_A8B3E0;
@@ -3617,7 +3617,7 @@
 0xe20 = GetUnsignedShort; // op_sub_A80080
 0xe21 = op_invalid;
 0xe22 = GetString; // op_sub_A801D0
-0xe23 = GetInteger; // op_sub_A80110
+0xe23 = GetNegUnsignedInteger; // op_sub_A80110
 0xe24 = op_invalid;
 0xe25 = CastVariableName; // op_sub_A7FBF0
 0xe26 = op_invalid;
@@ -4022,13 +4022,13 @@
 0xfb5 = op_sub_A8E830;
 0xfb6 = op_invalid;
 0xfb7 = op_invalid;
-0xfb8 = GetInteger; // op_sub_A80110
+0xfb8 = GetNegUnsignedInteger; // op_sub_A80110
 0xfb9 = ProfileStart; // op_sub_A81D30
 0xfba = op_invalid;
 0xfbb = EvalFieldVariableRef; // op_sub_A8B320
 0xfbc = ScriptMethodCallPointer; // op_sub_A83AF0
 0xfbd = op_invalid;
-0xfbe = GetInteger; // op_sub_A80110
+0xfbe = GetNegUnsignedInteger; // op_sub_A80110
 0xfbf = SizeOf; // op_sub_A8BC60
 0xfc0 = JumpOnGreaterThan; // op_sub_A81690
 0xfc1 = SizeOf; // op_sub_A8BC60

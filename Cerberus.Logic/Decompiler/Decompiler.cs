@@ -97,7 +97,7 @@ namespace Cerberus.Logic
             { ScriptOpCode.EndOn,                           new Tuple<string, int>("endon",                 0) },
             { ScriptOpCode.EndOnCallback,                   new Tuple<string, int>("endoncallback",         0) },
             { ScriptOpCode.EndonCallbackA,                  new Tuple<string, int>("endoncallback",         0) },
-            { ScriptOpCode.WaittillTimeoutS,                new Tuple<string, int>("waittilltimeout",       0) }
+            { ScriptOpCode.WaittillTimeoutS,                new Tuple<string, int>("waittilltimeout",       0) },
         };
 
         /// <summary>
@@ -162,20 +162,20 @@ namespace Cerberus.Logic
                 Script = script;
                 SCL = null;
 
+                if (Function.Operations[0].Metadata.OpCode == ScriptOpCode.SafeCreateLocalVariables)
+                {
+                    SCL = Function.Operations[0];
+                    foreach (var var in Function.Operations[0].Operands)
+                    {
+                        LocalVariables.Add((string)var.Value);
+                    }
+
+                    Function.Operations[0].Visited = true;
+                }
+
                 // Preprocess some operations
                 foreach (var operation in Function.Operations)
                 {
-                    if (operation.Metadata.OpCode == ScriptOpCode.SafeCreateLocalVariables)
-                    {
-                        SCL = operation;
-                        foreach (var var in operation.Operands)
-                        {
-                            LocalVariables.Add((string)var.Value);
-                        }
-
-                        operation.Visited = true;
-                    }
-
                     // Check for invalid operations
                     if (operation.Metadata.OpCode == ScriptOpCode.Invalid)
                     {
@@ -335,7 +335,7 @@ namespace Cerberus.Logic
         /// <summary>
         /// Builds the function definition
         /// </summary>
-        private string BuildFunctionDefinition()
+        public string BuildFunctionDefinition(bool NoDefaults = false)
         {
             var result = "";
 
@@ -354,10 +354,11 @@ namespace Cerberus.Logic
 
             for (int i = 0; i < Function.ParameterCount && i < LocalVariables.Count; i++)
             {
-                var stackValue = DefaultArguments.ContainsKey(i) ? DefaultArguments[i] : LocalVariables[i];
+                var stackValue = (DefaultArguments.ContainsKey(i) && !NoDefaults) ? DefaultArguments[i] : LocalVariables[i];
 
                 if(SCL != null)
                 {
+                    Debug.Assert(SCL.Operands.Count > i);
                     if(SCL.Operands[i].IsByRef)
                     {
                         stackValue = "&" + stackValue;
@@ -932,7 +933,7 @@ namespace Cerberus.Logic
         /// 
         /// Method means we're calling on something
         /// </summary>
-        private string GenerateFunctionCall(string functionName, int paramCount, bool threaded, bool method)
+        private string GenerateFunctionCall(string functionName, int paramCount, int threaded, bool method)
         {
             string result = "";
 
@@ -941,9 +942,13 @@ namespace Cerberus.Logic
                 result += Stack.Pop() + " ";
             }
 
-            if(threaded)
+            if(threaded == 1)
             {
                 result += "thread ";
+            }
+            else if(threaded == 2)
+            {
+                result += "childthread ";
             }
 
             result += functionName + "(";
@@ -2772,12 +2777,15 @@ namespace Cerberus.Logic
                         // Store here as we'll resolve the method type
                         string functionName;
                         int paramCount;
-                        bool threaded = false;
+                        int threaded = 0;
                         bool method = false;
                         bool specialDoNotEmit = false;
 
                         switch (operation.Metadata.OpCode)
                         {
+                            case ScriptOpCode.Breakpoint:
+                                Writer?.WriteLine("__debugbreak();");
+                                return true;
                             case ScriptOpCode.ScriptFunctionCallPointer:
                             case ScriptOpCode.ScriptMethodCallPointer:
                             case ScriptOpCode.ScriptThreadCallPointer:
@@ -2796,7 +2804,7 @@ namespace Cerberus.Logic
                                         operation.Metadata.OpCode == ScriptOpCode.ScriptThreadCallPointer2 ||
                                         operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCallPointer2)
                                     {
-                                        threaded = true;
+                                        threaded = 1 + (operation.Metadata.OpCode == ScriptOpCode.ScriptThreadCallPointer2 || operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCallPointer2 ? 1 : 0);
                                     }
 
                                     // Check for method calls
@@ -2842,7 +2850,7 @@ namespace Cerberus.Logic
                                         operation.Metadata.OpCode == ScriptOpCode.ScriptThreadCall2 ||
                                         operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall2)
                                     {
-                                        threaded = true;
+                                        threaded = 1 + (operation.Metadata.OpCode == ScriptOpCode.ScriptThreadCall2 || operation.Metadata.OpCode == ScriptOpCode.ScriptMethodThreadCall2 ? 1 : 0);
                                     }
 
                                     // Check for method calls
@@ -2909,7 +2917,7 @@ namespace Cerberus.Logic
                         {
                             string caller = Stack.Pop();
                             string front_half = GenerateFunctionCall(functionName, paramCount, threaded, method);
-                            Stack.Push($"thread [[ {caller} ]]->{front_half}");
+                            Stack.Push($"{(operation.Metadata.OpCode == ScriptOpCode.ClassFunctionThreadCall2 ? "childthread" : "thread")} [[ {caller} ]]->{front_half}");
                         }
                         else
                         {

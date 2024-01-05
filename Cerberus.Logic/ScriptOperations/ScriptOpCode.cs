@@ -203,6 +203,7 @@ namespace Cerberus.Logic
         EvalLocalVariableRefCached2,
         ClearFieldVariableOnStack,
         DiscardWaittillVariableField, // t7 only
+        GetNegUnsignedInteger,
         Invalid                               = 0xFF,
     }
 }

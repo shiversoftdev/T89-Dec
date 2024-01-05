@@ -215,6 +215,8 @@ namespace Cerberus.Logic
             return results.Count > 0 ? string.Join(", ", results) : "None";
         }
 
+        public Dictionary<string, HashSet<string>> ExportCollection = new Dictionary<string, HashSet<string>>();
+
         /// <summary>
         /// Disassembles the entire script and returns a string containing the disassembly
         /// </summary>
@@ -356,6 +358,11 @@ namespace Cerberus.Logic
                 output.Append(tabBasis + result);
                 output.AppendLine();
                 lineNumber += Utility.GetLineCount(result);
+                if(!ExportCollection.ContainsKey(function.Namespace))
+                {
+                    ExportCollection[function.Namespace] = new HashSet<string>();
+                }
+                ExportCollection[function.Namespace].Add(decompiler.BuildFunctionDefinition(true));
             }
 
             if (function.DirtyMessage != null)
@@ -609,6 +616,9 @@ namespace Cerberus.Logic
                 case 0x38000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
                     return new T9_VM38Script(reader, t8_dword, t8_qword).Load();
+                case 0x37010A0D43534780:
+                    ParseHashTables("t8_hash.map", "includes.map");
+                    return new T9_VM37AScript(reader, t8_dword, t8_qword).Load();
                 case 0x37000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
                     return new T9_VM37Script(reader, t8_dword, t8_qword).Load();

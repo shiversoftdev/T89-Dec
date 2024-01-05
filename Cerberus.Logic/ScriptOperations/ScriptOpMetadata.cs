@@ -141,7 +141,7 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.EvalLocalVariableRef,             ScriptOpType.None,              ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.DevblockBegin,                    ScriptOpType.None,              ScriptOperandType.UInt16),
             new ScriptOpMetadata(ScriptOpCode.DevblockEnd,                      ScriptOpType.None,              ScriptOperandType.UInt16),
-            new ScriptOpMetadata(ScriptOpCode.Breakpoint,                       ScriptOpType.None,              ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.Breakpoint,                       ScriptOpType.Call,              ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.AutoBreakpoint,                   ScriptOpType.None,              ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.ErrorBreakpoint,                  ScriptOpType.None,              ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.WatchBreakpoint,                  ScriptOpType.None,              ScriptOperandType.None),
@@ -207,7 +207,8 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.EvalLocalVariableCached2,         ScriptOpType.Variable,          ScriptOperandType.UInt8),
             new ScriptOpMetadata(ScriptOpCode.EvalLocalVariableRefCached2,      ScriptOpType.VariableReference, ScriptOperandType.UInt8),
             new ScriptOpMetadata(ScriptOpCode.ClearFieldVariableOnStack,        ScriptOpType.ClearVariable,     ScriptOperandType.None),
-            new ScriptOpMetadata(ScriptOpCode.DiscardWaittillVariableField,     ScriptOpType.None,              ScriptOperandType.None)
+            new ScriptOpMetadata(ScriptOpCode.DiscardWaittillVariableField,     ScriptOpType.None,              ScriptOperandType.None),
+            new ScriptOpMetadata(ScriptOpCode.GetNegUnsignedInteger,            ScriptOpType.StackPush,         ScriptOperandType.UInt32),
         };
 
         /// <summary>

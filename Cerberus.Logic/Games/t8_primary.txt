@@ -223,7 +223,7 @@
 0xde = Nop; // op_sub_7FF715A384E0
 0xdf = Nop; // op_sub_7FF715A384E0
 0xe0 = Nop; // op_sub_7FF715A384E0
-0xe1 = GetInteger; // op_sub_7FF715A16720
+0xe1 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0xe2 = Nop; // op_sub_7FF715A384E0
 0xe3 = ClassFunctionThreadCall; // op_sub_7FF715A1A870
 0xe4 = VectorScale; // op_sub_7FF715A17AF0
@@ -490,7 +490,7 @@
 0x1e9 = op_sub_7FF715A1B8F0;
 0x1ea = Nop; // op_sub_7FF715A384E0
 0x1eb = CreateStruct; // op_sub_7FF715A1BA00
-0x1ec = GetInteger; // op_sub_7FF715A16720
+0x1ec = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x1ed = GetByte; //op_sub_7FF715A16560
 0x1ee = SetLocalVariableCached; //op_VM_OP_SetVariableField
 0x1ef = Nop; // op_sub_7FF715A384E0
@@ -799,7 +799,7 @@
 0x31e = Dec; //op_VM_OP_Dec
 0x31f = Nop; // op_sub_7FF715A384E0
 0x320 = SetNextArrayKeyCached; // op_sub_7FF715A1F1D0
-0x321 = GetInteger; // op_sub_7FF715A16720
+0x321 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x322 = Nop; // op_sub_7FF715A384E0
 0x323 = Plus; // op_sub_7FF715A175A0
 0x324 = Wait; // op_sub_7FF715A22030
@@ -1008,7 +1008,7 @@
 0x3ef = Nop; // op_sub_7FF715A384E0
 0x3f0 = Nop; // op_sub_7FF715A384E0
 0x3f1 = GetNegUnsignedShort; // op_sub_7FF715A16780
-0x3f2 = GetInteger; // op_sub_7FF715A16720
+0x3f2 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x3f3 = Nop; // op_sub_7FF715A384E0
 0x3f4 = Nop; // op_sub_7FF715A384E0
 0x3f5 = GetSelfObject; //op_sub_7FF715A1CF10
@@ -1135,7 +1135,7 @@
 0x46e = Nop; // op_sub_7FF715A384E0
 0x46f = EvalSelfFieldVariable; //op_sub_7FF715A1CE00
 0x470 = GetGlobalObjectRef; // op_sub_7FF715A1CC90
-0x471 = GetInteger; // op_sub_7FF715A16720
+0x471 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x472 = GetSelfObject; //op_sub_7FF715A1CF10
 0x473 = ScriptFunctionCallPointer; // op_VM_OP_ScriptFunctionCallPointer
 0x474 = Nop; // op_sub_7FF715A384E0
@@ -1223,7 +1223,7 @@
 0x4c6 = Nop; // op_sub_7FF715A384E0
 0x4c7 = ScriptMethodThreadCallPointer; // op_sub_7FF715A1A3B0
 0x4c8 = GreaterThanOrEqualTo; //op_sub_7FF715A16C50
-0x4c9 = GetInteger; // op_sub_7FF715A16720
+0x4c9 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x4ca = op_sub_7FF715A179B0;
 0x4cb = Nop; // op_sub_7FF715A384E0
 0x4cc = GetUnsignedShort; // op_sub_7FF715A169F0
@@ -1245,7 +1245,7 @@
 0x4dc = Nop; // op_sub_7FF715A384E0
 0x4dd = ScriptThreadCallPointer2; // op_sub_7FF715A18DA0
 0x4de = Nop; // op_sub_7FF715A384E0
-0x4df = GetInteger; // op_sub_7FF715A16720
+0x4df = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x4e0 = JumpOnFalse; //op_sub_7FF715A16F30
 0x4e1 = AddToArray; // op_sub_7FF715A1B460
 0x4e2 = Nop; // op_sub_7FF715A384E0
@@ -1417,7 +1417,7 @@
 0x588 = Nop; // op_sub_7FF715A384E0
 0x589 = EvalLocalVariableRefCached; // Context Inc op_sub_7FF715A1C9A0
 0x58a = op_sub_7FF715A20B30;
-0x58b = GetInteger; // op_sub_7FF715A16720
+0x58b = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x58c = GetObjectType; // op_sub_7FF715A1F020
 0x58d = GetEmptyArray; // op_sub_7FF715A1B970
 0x58e = ClassFunctionCall; // op_sub_7FF715A192A0
@@ -1587,7 +1587,7 @@
 0x632 = Nop; // op_sub_7FF715A384E0
 0x633 = Nop; // op_sub_7FF715A384E0
 0x634 = Nop; // op_sub_7FF715A384E0
-0x635 = GetInteger; // op_sub_7FF715A16720
+0x635 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x636 = Nop; // op_sub_7FF715A384E0
 0x637 = GetUnsignedInteger; // op_sub_7FF715A16990
 0x638 = ScriptMethodCallPointer; // op_sub_7FF715A199B0
@@ -1863,7 +1863,7 @@
 0x746 = EvalFieldVariable; // op_sub_7FF715A1C430
 0x747 = VectorScale; // op_sub_7FF715A17AF0
 0x748 = Nop; // op_sub_7FF715A384E0
-0x749 = GetInteger; // op_sub_7FF715A16720
+0x749 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x74a = GetFloat; // op_sub_7FF715A165B0
 0x74b = ScriptThreadCallPointer; // op_sub_7FF715A1AAC0
 0x74c = GetAPIFunction; // op_sub_7FF715A1CB80
@@ -2049,7 +2049,7 @@
 0x800 = Return; //op_sub_7FF715A18610
 0x801 = op_sub_7FF715A16670;
 0x802 = Nop; // op_sub_7FF715A384E0
-0x803 = GetInteger; // op_sub_7FF715A16720
+0x803 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x804 = op_sub_7FF715A16670;
 0x805 = op_sub_7FF715A1F8C0;
 0x806 = Nop; // op_sub_7FF715A384E0
@@ -2101,7 +2101,7 @@
 0x834 = ScriptFunctionCall; //op_VM_OP_ScriptFunctionCall
 0x835 = Nop; // op_sub_7FF715A384E0
 0x836 = Nop; // op_sub_7FF715A384E0
-0x837 = GetInteger; // op_sub_7FF715A16720
+0x837 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x838 = Nop; // op_sub_7FF715A384E0
 0x839 = op_sub_7FF715A1BC60;
 0x83a = GetSelf; //op_sub_7FF715A1CF90
@@ -2355,7 +2355,7 @@
 0x932 = EvalLocalVariableDefined; //op_sub_7FF715A1C710
 0x933 = Nop; // op_sub_7FF715A384E0
 0x934 = GetObjectType; // op_sub_7FF715A1F020
-0x935 = GetInteger; // op_sub_7FF715A16720
+0x935 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x936 = SetLocalVariableCached; //op_VM_OP_SetVariableField
 0x937 = Bit_Xor; // op_sub_7FF715A16090
 0x938 = Nop; // op_sub_7FF715A384E0
@@ -2397,7 +2397,7 @@
 0x95c = op_sub_7FF715A1B8F0;
 0x95d = JumpOnFalseExpr; //op_sub_7FF715A16E90
 0x95e = Equal; //op_sub_7FF715A16510
-0x95f = GetInteger; // op_sub_7FF715A16720
+0x95f = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x960 = Endon; // op_sub_7FF715A200D0
 0x961 = Nop; // op_sub_7FF715A384E0
 0x962 = Nop; // op_sub_7FF715A384E0
@@ -2512,7 +2512,7 @@
 0x9cf = SetNextArrayKeyCached; // op_sub_7FF715A1F1D0
 0x9d0 = Jump; // op_sub_7FF715A17180
 0x9d1 = Nop; // op_sub_7FF715A384E0
-0x9d2 = GetInteger; // op_sub_7FF715A16720
+0x9d2 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0x9d3 = CastVariableName; // op_sub_7FF715A161A0
 0x9d4 = Nop; // op_sub_7FF715A384E0
 0x9d5 = EvalFieldVariableRef; //op_sub_7FF715A1C3C0
@@ -2571,12 +2571,12 @@
 0xa0a = ScriptFunctionCallPointer; // op_VM_OP_ScriptFunctionCallPointer
 0xa0b = ScriptMethodCallPointer; // op_sub_7FF715A199B0
 0xa0c = SizeOf; // op_sub_7FF715A1FAF0
-0xa0d = GetInteger; // op_sub_7FF715A16720
+0xa0d = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0xa0e = op_sub_7FF715A1F8C0;
 0xa0f = Nop; // op_sub_7FF715A384E0
 0xa10 = Nop; // op_sub_7FF715A384E0
 0xa11 = EvalArray; // op_sub_7FF715A1C0F0
-0xa12 = GetInteger; // op_sub_7FF715A16720
+0xa12 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0xa13 = Nop; // op_sub_7FF715A384E0
 0xa14 = Nop; // op_sub_7FF715A384E0
 0xa15 = VectorScale; // op_sub_7FF715A17AF0
@@ -2712,7 +2712,7 @@
 0xa97 = Minus; // op_sub_7FF715A17400
 0xa98 = Nop; // op_sub_7FF715A384E0
 0xa99 = SuperNotEqual; // op_sub_7FF715A17760
-0xa9a = GetInteger; // op_sub_7FF715A16720
+0xa9a = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0xa9b = Nop; // op_sub_7FF715A384E0
 0xa9c = Nop; // op_sub_7FF715A384E0
 0xa9d = EvalArrayRef; // op_sub_7FF715A1BED0
@@ -3733,13 +3733,13 @@
 0xe94 = ScriptThreadCallPointer2; // op_sub_7FF715A18DA0
 0xe95 = Nop; // op_sub_7FF715A384E0
 0xe96 = EvalFieldVariableOnStackRef; // op_sub_7FF715A1C170
-0xe97 = GetInteger; // op_sub_7FF715A16720
+0xe97 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0xe98 = Nop; // op_sub_7FF715A384E0
 0xe99 = Dec; //op_VM_OP_Dec
 0xe9a = NotEqual; // op_sub_7FF715A17540
 0xe9b = ScriptMethodThreadCallPointer2; // op_sub_7FF715A19ED0
 0xe9c = VectorConstant; // op_sub_7FF715A179F0
-0xe9d = GetInteger; // op_sub_7FF715A16720
+0xe9d = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0xe9e = LessThan; //op_sub_7FF715A173A0
 0xe9f = Nop; // op_sub_7FF715A384E0
 0xea0 = Nop; // op_sub_7FF715A384E0
@@ -3762,7 +3762,7 @@
 0xeb1 = Nop; // op_sub_7FF715A384E0
 0xeb2 = WaittillTimeout; // op_sub_7FF715A21680
 0xeb3 = ScriptThreadCall2; // op_sub_7FF715A19010
-0xeb4 = GetInteger; // op_sub_7FF715A16720
+0xeb4 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0xeb5 = op_sub_7FF715A1F450;
 0xeb6 = Nop; // op_sub_7FF715A384E0
 0xeb7 = Nop; // op_sub_7FF715A384E0
@@ -3939,7 +3939,7 @@
 0xf62 = Return; //op_sub_7FF715A18610
 0xf63 = GetUnsignedShort; // op_sub_7FF715A169F0
 0xf64 = EvalFieldVariableOnStackRef; // op_sub_7FF715A1C170
-0xf65 = GetInteger; // op_sub_7FF715A16720
+0xf65 = GetNegUnsignedInteger; // op_sub_7FF715A16720
 0xf66 = SetNextArrayKeyCached; // op_sub_7FF715A1F1D0
 0xf67 = ScriptMethodCallPointer; // op_sub_7FF715A199B0
 0xf68 = Minus; // op_sub_7FF715A17400

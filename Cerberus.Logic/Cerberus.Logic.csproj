@@ -113,6 +113,8 @@
     <Compile Include="FastFile.cs" />
     <Compile Include="Games\T7VM1CScript.cs" />
     <Compile Include="Games\T7VM1Cmeta.cs" />
+    <Compile Include="Games\T9_VM37A.cs" />
+    <Compile Include="Games\T9_VM37AMeta.cs" />
     <Compile Include="Games\T9_VM38Meta.cs" />
     <Compile Include="Games\T9_VM38.cs" />
     <Compile Include="Games\T9_VM37Meta.cs" />
@@ -160,6 +162,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <Content Include="Games\t8_orbis.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Games\t9_vm37_alpha.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Games\t9_vm37_codes.txt">

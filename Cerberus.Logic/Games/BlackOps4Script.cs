@@ -215,8 +215,6 @@ namespace Cerberus.Logic
             {
                 Includes.Add(new ScriptInclude(GetHashValue(Reader.ReadUInt64(), "script_")));
             }
-
-            Includes.Sort();
         }
 
         public override ScriptOp LoadOperation(int offset)
@@ -312,8 +310,21 @@ namespace Cerberus.Logic
                     }
                 case ScriptOperandType.UInt32:
                     {
-                        Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
-                        operation.Operands.Add(new ScriptOpOperand(Reader.ReadUInt32()));
+                        switch (operation.Metadata.OpCode)
+                        {
+                            case ScriptOpCode.GetNegUnsignedInteger:
+                                Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
+                                operation.Operands.Add(new ScriptOpOperand(-(long)Reader.ReadUInt32()));
+                                break;
+                            case ScriptOpCode.GetUnsignedInteger:
+                                Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
+                                operation.Operands.Add(new ScriptOpOperand((long)Reader.ReadUInt32()));
+                                break;
+                            default:
+                                Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
+                                operation.Operands.Add(new ScriptOpOperand(Reader.ReadUInt32()));
+                                break;
+                        }
                         break;
                     }
                 case ScriptOperandType.Hash:
@@ -410,11 +421,15 @@ namespace Cerberus.Logic
                     {
                         var varCount = Reader.ReadByte();
 
-                        for(int i = 0; i < varCount; i++)
+                        for (int i = 0; i < varCount; i++)
                         {
                             Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
-                            operation.Operands.Add(new ScriptOpOperand(GetHashValue(Reader.ReadUInt32(), "var_")));
-                            Reader.BaseStream.Position += 1;
+                            string v = GetHashValue(Reader.ReadUInt32(), "var_");
+                            var b = Reader.ReadByte();
+                            var so = new ScriptOpOperand(v);
+                            so.IsByRef = b == 1;
+                            so.IsVarArg = b == 2;
+                            operation.Operands.Add(so);
                         }
 
                         break;

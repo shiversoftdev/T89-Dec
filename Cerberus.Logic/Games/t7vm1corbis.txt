@@ -225,7 +225,7 @@
 0xe0 = JumpOnTrue; // op_sub_772A30
 0xe1 = op_invalid;
 0xe2 = GetUndefined; // op_sub_7721E0
-0xe3 = op_sub_773960;
+0xe3 = CallBuiltinMethod; //op_sub_773960
 0xe4 = LessThan; // op_sub_770640
 0xe5 = Minus; // op_sub_771890
 0xe6 = GetFunction; // op_sub_7765F0
@@ -315,7 +315,7 @@
 0x13a = ScriptThreadCallPointer; // op_sub_774A30
 0x13b = op_invalid;
 0x13c = GetClassesObject; // op_sub_776380
-0x13d = op_sub_773960;
+0x13d = CallBuiltinMethod; //op_sub_773960
 0x13e = op_invalid;
 0x13f = op_invalid;
 0x140 = Bit_Xor; // op_sub_770480
@@ -332,7 +332,7 @@
 0x14b = op_invalid;
 0x14c = LessThanOrEqualTo; // op_sub_7706A0
 0x14d = Vector; // op_sub_772420
-0x14e = op_sub_773960;
+0x14e = CallBuiltinMethod; //op_sub_773960
 0x14f = DevblockBegin; // op_sub_772E00
 0x150 = Wait; // op_sub_77CA70
 0x151 = GetAnimObject; // op_sub_7763C0
@@ -511,7 +511,7 @@
 0x1fe = WaitTillMatch; // op_sub_77D460
 0x1ff = GetFunction; // op_sub_7765F0
 0x200 = EvalFieldVariableRef; // op_sub_777BB0
-0x201 = op_sub_773960;
+0x201 = CallBuiltinMethod; //op_sub_773960
 0x202 = op_invalid;
 0x203 = JumpOnFalseExpr; // op_sub_772B60
 0x204 = op_invalid;
@@ -533,7 +533,7 @@
 0x214 = op_invalid;
 0x215 = GreaterThanOrEqualTo; // op_sub_7706E0
 0x216 = op_invalid;
-0x217 = op_sub_773960;
+0x217 = CallBuiltinMethod; //op_sub_773960
 0x218 = EvalLevelFieldVariable; // op_sub_778C40
 0x219 = Wait; // op_sub_77CA70
 0x21a = JumpOnTrue; // op_sub_772A30
@@ -750,7 +750,7 @@
 0x2ed = ClassFunctionCall; // op_sub_774150
 0x2ee = FirstArrayKey; // op_sub_778E80
 0x2ef = GetLevelObject; // op_sub_7763A0
-0x2f0 = op_sub_773960;
+0x2f0 = CallBuiltinMethod; //op_sub_773960
 0x2f1 = GetSelf; // op_sub_7763E0
 0x2f2 = op_invalid;
 0x2f3 = op_invalid;
@@ -772,7 +772,7 @@
 0x303 = Minus; // op_sub_771890
 0x304 = Equal; // op_sub_770500
 0x305 = op_invalid;
-0x306 = op_sub_773960;
+0x306 = CallBuiltinMethod; //op_sub_773960
 0x307 = GreaterThan; // op_sub_770670
 0x308 = GetHash; // op_sub_7725E0
 0x309 = GetInteger; // op_sub_772310
@@ -834,7 +834,7 @@
 0x341 = op_invalid;
 0x342 = op_invalid;
 0x343 = Inc; // op_sub_7700C0
-0x344 = op_sub_773960;
+0x344 = CallBuiltinMethod; //op_sub_773960
 0x345 = op_sub_77E350;
 0x346 = FirstArrayKey; // op_sub_778E80
 0x347 = op_sub_776620;
@@ -1084,13 +1084,13 @@
 0x43b = Jump; // op_sub_772DE0
 0x43c = Jump; // op_sub_772DE0
 0x43d = op_sub_7722E0;
-0x43e = op_sub_773960;
+0x43e = CallBuiltinMethod; //op_sub_773960
 0x43f = op_sub_776230;
 0x440 = op_invalid;
 0x441 = SuperNotEqual; // op_sub_7705D0
 0x442 = JumpOnTrue; // op_sub_772A30
 0x443 = EvalArray; // op_sub_7766A0
-0x444 = op_sub_773960;
+0x444 = CallBuiltinMethod; //op_sub_773960
 0x445 = EndSwitch; // op_sub_773130
 0x446 = op_sub_776230;
 0x447 = ClearFieldVariable; // op_sub_777BF0
@@ -1230,7 +1230,7 @@
 0x4cd = op_invalid;
 0x4ce = Jump; // op_sub_772DE0
 0x4cf = JumpOnTrueExpr; // op_sub_772CA0
-0x4d0 = op_sub_773960;
+0x4d0 = CallBuiltinMethod; //op_sub_773960
 0x4d1 = EvalFieldVariableRef; // op_sub_777BB0
 0x4d2 = op_invalid;
 0x4d3 = Inc; // op_sub_7700C0
@@ -1287,7 +1287,7 @@
 0x506 = op_invalid;
 0x507 = op_sub_776470;
 0x508 = EvalLocalVariableRefCached; // op_sub_777EC0
-0x509 = op_sub_773960;
+0x509 = CallBuiltinMethod; //op_sub_773960
 0x50a = ClearFieldVariable; // op_sub_777BF0
 0x50b = GetAnim; // op_sub_776550
 0x50c = Plus; // op_sub_7707A0
@@ -1430,7 +1430,7 @@
 0x595 = op_invalid;
 0x596 = op_invalid;
 0x597 = GetString; // op_sub_772370
-0x598 = op_sub_773960;
+0x598 = CallBuiltinMethod; //op_sub_773960
 0x599 = EvalFieldVariableRef; // op_sub_777BB0
 0x59a = op_sub_770760;
 0x59b = ScriptFunctionCallPointer; // op_sub_773E10
@@ -2719,7 +2719,7 @@
 0xa9e = EndSwitch; // op_sub_773130
 0xa9f = ScriptThreadCallPointer; // op_sub_774A30
 0xaa0 = GetHash; // op_sub_7725E0
-0xaa1 = op_sub_773960;
+0xaa1 = CallBuiltinMethod; //op_sub_773960
 0xaa2 = EvalArray; // op_sub_7766A0
 0xaa3 = EvalArray; // op_sub_7766A0
 0xaa4 = ScriptThreadCall; // op_sub_7748B0
@@ -3087,7 +3087,7 @@
 0xc0e = Return; // op_sub_773B00
 0xc0f = op_invalid;
 0xc10 = op_invalid;
-0xc11 = op_sub_773960;
+0xc11 = CallBuiltinMethod; //op_sub_773960
 0xc12 = GetAnimation; // op_sub_7765A0
 0xc13 = GetInteger; // op_sub_772310
 0xc14 = EndOn; // op_sub_77C160
@@ -3342,7 +3342,7 @@
 0xd0d = op_sub_7723F0;
 0xd0e = op_invalid;
 0xd0f = op_invalid;
-0xd10 = op_sub_773960;
+0xd10 = CallBuiltinMethod; //op_sub_773960
 0xd11 = DevblockBegin; // op_sub_772E00
 0xd12 = op_invalid;
 0xd13 = op_invalid;
@@ -3620,7 +3620,7 @@
 0xe23 = Bit_Or; // op_sub_770440
 0xe24 = op_invalid;
 0xe25 = Plus; // op_sub_7707A0
-0xe26 = op_sub_773960;
+0xe26 = CallBuiltinMethod; //op_sub_773960
 0xe27 = DevblockBegin; // op_sub_772E00
 0xe28 = GetGameRef; // op_sub_7765D0
 0xe29 = op_invalid;
@@ -3663,7 +3663,7 @@
 0xe4e = GetZero; // op_sub_772200
 0xe4f = EvalSelfFieldVariable; // op_sub_7789D0
 0xe50 = GetInteger; // op_sub_772310
-0xe51 = op_sub_773960;
+0xe51 = CallBuiltinMethod; //op_sub_773960
 0xe52 = IsDefined; // op_sub_778D80
 0xe53 = op_invalid;
 0xe54 = GetZero; // op_sub_772200
@@ -3898,7 +3898,7 @@
 0xf39 = op_invalid;
 0xf3a = op_invalid;
 0xf3b = GetNegByte; // op_sub_772250
-0xf3c = op_sub_773960;
+0xf3c = CallBuiltinMethod; //op_sub_773960
 0xf3d = Bit_Or; // op_sub_770440
 0xf3e = ScriptMethodThreadCall; // op_sub_774EC0
 0xf3f = IsDefined; // op_sub_778D80
@@ -4861,7 +4861,7 @@
 0x12fc = GetEmptyArray; // op_sub_7779F0
 0x12fd = op_invalid;
 0x12fe = GetSelf; // op_sub_7763E0
-0x12ff = op_sub_773960;
+0x12ff = CallBuiltinMethod; //op_sub_773960
 0x1300 = FirstArrayKey; // op_sub_778E80
 0x1301 = op_invalid;
 0x1302 = ScriptMethodThreadCallPointer; // op_sub_7750F0
@@ -6294,7 +6294,7 @@
 0x1895 = EndOn; // op_sub_77C160
 0x1896 = EvalArray; // op_sub_7766A0
 0x1897 = GetSelf; // op_sub_7763E0
-0x1898 = op_sub_773960;
+0x1898 = CallBuiltinMethod; //op_sub_773960
 0x1899 = Bit_Or; // op_sub_770440
 0x189a = ClearArray; // op_sub_7772D0
 0x189b = op_invalid;
@@ -6628,7 +6628,7 @@
 0x19e3 = SuperNotEqual; // op_sub_7705D0
 0x19e4 = op_invalid;
 0x19e5 = SetVariableField; // op_sub_777EF0
-0x19e6 = op_sub_773960;
+0x19e6 = CallBuiltinMethod; //op_sub_773960
 0x19e7 = GetTime; // op_sub_778E10
 0x19e8 = op_invalid;
 0x19e9 = GetUnsignedShort; // op_sub_772280
@@ -6846,7 +6846,7 @@
 0x1abd = ScriptFunctionCallPointer; // op_sub_773E10
 0x1abe = op_sub_779300;
 0x1abf = ScriptMethodThreadCall; // op_sub_774EC0
-0x1ac0 = op_sub_773960;
+0x1ac0 = CallBuiltinMethod; //op_sub_773960
 0x1ac1 = op_invalid;
 0x1ac2 = op_invalid;
 0x1ac3 = EvalArrayRef; // op_sub_7766D0
@@ -7106,7 +7106,7 @@
 0x1bc1 = op_invalid;
 0x1bc2 = op_invalid;
 0x1bc3 = SizeOf; // op_sub_778240
-0x1bc4 = op_sub_773960;
+0x1bc4 = CallBuiltinMethod; //op_sub_773960
 0x1bc5 = op_invalid;
 0x1bc6 = Wait; // op_sub_77CA70
 0x1bc7 = op_invalid;
@@ -7126,7 +7126,7 @@
 0x1bd5 = op_invalid;
 0x1bd6 = EndOn; // op_sub_77C160
 0x1bd7 = op_invalid;
-0x1bd8 = op_sub_773960;
+0x1bd8 = CallBuiltinMethod; //op_sub_773960
 0x1bd9 = GetSelf; // op_sub_7763E0
 0x1bda = op_invalid;
 0x1bdb = GetGameRef; // op_sub_7765D0
@@ -7407,7 +7407,7 @@
 0x1cee = ClassFunctionCall; // op_sub_774150
 0x1cef = op_invalid;
 0x1cf0 = GetEmptyArray; // op_sub_7779F0
-0x1cf1 = op_sub_773960;
+0x1cf1 = CallBuiltinMethod; //op_sub_773960
 0x1cf2 = EvalLocalVariableCached; // op_sub_776650
 0x1cf3 = op_sub_776230;
 0x1cf4 = GetAnimObject; // op_sub_7763C0
@@ -7463,7 +7463,7 @@
 0x1d26 = op_sub_776420;
 0x1d27 = op_invalid;
 0x1d28 = GetLevel; // op_sub_7764C0
-0x1d29 = op_sub_773960;
+0x1d29 = CallBuiltinMethod; //op_sub_773960
 0x1d2a = op_invalid;
 0x1d2b = op_sub_776230;
 0x1d2c = GetEmptyArray; // op_sub_7779F0
@@ -7728,7 +7728,7 @@
 0x1e2f = op_sub_776470;
 0x1e30 = op_invalid;
 0x1e31 = Jump; // op_sub_772DE0
-0x1e32 = op_sub_773960;
+0x1e32 = CallBuiltinMethod; //op_sub_773960
 0x1e33 = EvalArray; // op_sub_7766A0
 0x1e34 = op_invalid;
 0x1e35 = GetAnim; // op_sub_776550
@@ -7859,7 +7859,7 @@
 0x1eb2 = EvalFieldVariableRef; // op_sub_777BB0
 0x1eb3 = ClassFunctionCall; // op_sub_774150
 0x1eb4 = LessThanOrEqualTo; // op_sub_7706A0
-0x1eb5 = op_sub_773960;
+0x1eb5 = CallBuiltinMethod; //op_sub_773960
 0x1eb6 = op_invalid;
 0x1eb7 = op_sub_776260;
 0x1eb8 = ClearArray; // op_sub_7772D0
@@ -8230,7 +8230,7 @@
 0x2025 = SafeCreateLocalVariables; // op_sub_775480
 0x2026 = GetFloat; // op_sub_772340
 0x2027 = op_invalid;
-0x2028 = op_sub_773960;
+0x2028 = CallBuiltinMethod; //op_sub_773960
 0x2029 = GetAnim; // op_sub_776550
 0x202a = op_invalid;
 0x202b = SetWaittillVariableFieldCached; // op_sub_777DE0
@@ -8262,7 +8262,7 @@
 0x2045 = op_sub_776470;
 0x2046 = GetGameRef; // op_sub_7765D0
 0x2047 = SetWaittillVariableFieldCached; // op_sub_777DE0
-0x2048 = op_sub_773960;
+0x2048 = CallBuiltinMethod; //op_sub_773960
 0x2049 = GetUndefined; // op_sub_7721E0
 0x204a = Return; // op_sub_773B00
 0x204b = EvalLocalVariableRefCached; // op_sub_777EC0
@@ -8552,7 +8552,7 @@
 0x2167 = SizeOf; // op_sub_778240
 0x2168 = op_sub_777D20;
 0x2169 = JumpOnFalse; // op_sub_7728F0
-0x216a = op_sub_773960;
+0x216a = CallBuiltinMethod; //op_sub_773960
 0x216b = op_invalid;
 0x216c = EvalArrayRef; // op_sub_7766D0
 0x216d = JumpOnFalse; // op_sub_7728F0
@@ -8636,7 +8636,7 @@
 0x21bb = VectorScale; // op_sub_7726D0
 0x21bc = op_invalid;
 0x21bd = GetEmptyArray; // op_sub_7779F0
-0x21be = op_sub_773960;
+0x21be = CallBuiltinMethod; //op_sub_773960
 0x21bf = CastFieldObject; // op_sub_778000
 0x21c0 = SafeCreateLocalVariables; // op_sub_775480
 0x21c1 = GreaterThan; // op_sub_770670
@@ -8717,8 +8717,8 @@
 0x220c = WaitTillFrameEnd; // op_sub_77D190
 0x220d = GetNegByte; // op_sub_772250
 0x220e = op_sub_776230;
-0x220f = op_sub_773960;
-0x2210 = op_sub_773960;
+0x220f = CallBuiltinMethod; //op_sub_773960
+0x2210 = CallBuiltinMethod; //op_sub_773960
 0x2211 = GetHash; // op_sub_7725E0
 0x2212 = EvalArray; // op_sub_7766A0
 0x2213 = GreaterThanOrEqualTo; // op_sub_7706E0
@@ -9174,9 +9174,9 @@
 0x23d5 = GetAnim; // op_sub_776550
 0x23d6 = FirstArrayKey; // op_sub_778E80
 0x23d7 = op_invalid;
-0x23d8 = op_sub_773960;
+0x23d8 = CallBuiltinMethod; //op_sub_773960
 0x23d9 = op_invalid;
-0x23da = op_sub_773960;
+0x23da = CallBuiltinMethod; //op_sub_773960
 0x23db = Wait; // op_sub_77CA70
 0x23dc = op_invalid;
 0x23dd = EvalArrayRef; // op_sub_7766D0
@@ -9210,7 +9210,7 @@
 0x23f9 = GetSelf; // op_sub_7763E0
 0x23fa = op_invalid;
 0x23fb = Divide; // op_sub_771B30
-0x23fc = op_sub_773960;
+0x23fc = CallBuiltinMethod; //op_sub_773960
 0x23fd = op_invalid;
 0x23fe = op_sub_77E350;
 0x23ff = op_invalid;
@@ -9387,7 +9387,7 @@
 0x24aa = op_invalid;
 0x24ab = ScriptThreadCallPointer; // op_sub_774A30
 0x24ac = Bit_And; // op_sub_7704C0
-0x24ad = op_sub_773960;
+0x24ad = CallBuiltinMethod; //op_sub_773960
 0x24ae = ScriptMethodCallPointer; // op_sub_7745A0
 0x24af = op_invalid;
 0x24b0 = EvalFieldVariableRef; // op_sub_777BB0
@@ -9396,7 +9396,7 @@
 0x24b3 = ClearFieldVariable; // op_sub_777BF0
 0x24b4 = op_sub_776260;
 0x24b5 = SetWaittillVariableFieldCached; // op_sub_777DE0
-0x24b6 = op_sub_773960;
+0x24b6 = CallBuiltinMethod; //op_sub_773960
 0x24b7 = op_invalid;
 0x24b8 = op_invalid;
 0x24b9 = GetHash; // op_sub_7725E0
@@ -9704,7 +9704,7 @@
 0x25e7 = GetClassesObject; // op_sub_776380
 0x25e8 = GetAnimation; // op_sub_7765A0
 0x25e9 = BoolNot; // op_sub_772000
-0x25ea = op_sub_773960;
+0x25ea = CallBuiltinMethod; //op_sub_773960
 0x25eb = Jump; // op_sub_772DE0
 0x25ec = op_sub_776230;
 0x25ed = GetString; // op_sub_772370
@@ -9759,7 +9759,7 @@
 0x261e = op_invalid;
 0x261f = op_invalid;
 0x2620 = op_invalid;
-0x2621 = op_sub_773960;
+0x2621 = CallBuiltinMethod; //op_sub_773960
 0x2622 = WaitTillMatch; // op_sub_77D460
 0x2623 = Dec; // op_sub_770280
 0x2624 = op_invalid;
@@ -10105,12 +10105,12 @@
 0x2778 = op_invalid;
 0x2779 = Switch; // op_sub_772E20
 0x277a = op_invalid;
-0x277b = op_sub_773960;
+0x277b = CallBuiltinMethod; //op_sub_773960
 0x277c = op_invalid;
 0x277d = GetClassesObject; // op_sub_776380
 0x277e = op_invalid;
 0x277f = WaitTillFrameEnd; // op_sub_77D190
-0x2780 = op_sub_773960;
+0x2780 = CallBuiltinMethod; //op_sub_773960
 0x2781 = ScriptMethodCall; // op_sub_774380
 0x2782 = op_sub_779300;
 0x2783 = op_sub_776420;
@@ -10149,7 +10149,7 @@
 0x27a4 = GetUnsignedShort; // op_sub_772280
 0x27a5 = op_invalid;
 0x27a6 = Equal; // op_sub_770500
-0x27a7 = op_sub_773960;
+0x27a7 = CallBuiltinMethod; //op_sub_773960
 0x27a8 = op_invalid;
 0x27a9 = GetHash; // op_sub_7725E0
 0x27aa = JumpOnFalseExpr; // op_sub_772B60
@@ -11516,7 +11516,7 @@
 0x2cfb = GetString; // op_sub_772370
 0x2cfc = GetUndefined; // op_sub_7721E0
 0x2cfd = op_invalid;
-0x2cfe = op_sub_773960;
+0x2cfe = CallBuiltinMethod; //op_sub_773960
 0x2cff = op_invalid;
 0x2d00 = op_invalid;
 0x2d01 = op_invalid;
@@ -11631,7 +11631,7 @@
 0x2d6e = op_invalid;
 0x2d6f = op_invalid;
 0x2d70 = ScriptFunctionCallPointer; // op_sub_773E10
-0x2d71 = op_sub_773960;
+0x2d71 = CallBuiltinMethod; //op_sub_773960
 0x2d72 = EvalFieldVariable; // op_sub_777B70
 0x2d73 = ScriptFunctionCall; // op_sub_773C80
 0x2d74 = GetInteger; // op_sub_772310
@@ -11744,7 +11744,7 @@
 0x2ddf = op_invalid;
 0x2de0 = EvalSelfFieldVariableRef; // op_sub_7788A0
 0x2de1 = op_sub_776260;
-0x2de2 = op_sub_773960;
+0x2de2 = CallBuiltinMethod; //op_sub_773960
 0x2de3 = DecTop; // op_sub_777FE0
 0x2de4 = GetWorldObject; // op_sub_776360
 0x2de5 = op_invalid;
@@ -12154,7 +12154,7 @@
 0x2f79 = Dec; // op_sub_770280
 0x2f7a = JumpOnTrue; // op_sub_772A30
 0x2f7b = op_sub_777D20;
-0x2f7c = op_sub_773960;
+0x2f7c = CallBuiltinMethod; //op_sub_773960
 0x2f7d = GetGameRef; // op_sub_7765D0
 0x2f7e = WaitTillMatch; // op_sub_77D460
 0x2f7f = GetString; // op_sub_772370
@@ -12432,7 +12432,7 @@
 0x308f = Bit_Not; // op_sub_772110
 0x3090 = GetSelfObject; // op_sub_777A70
 0x3091 = JumpOnTrue; // op_sub_772A30
-0x3092 = op_sub_773960;
+0x3092 = CallBuiltinMethod; //op_sub_773960
 0x3093 = GetLevelObject; // op_sub_7763A0
 0x3094 = op_invalid;
 0x3095 = ScriptThreadCallPointer; // op_sub_774A30
@@ -13064,7 +13064,7 @@
 0x3307 = CastFieldObject; // op_sub_778000
 0x3308 = GetNegUnsignedShort; // op_sub_7722B0
 0x3309 = op_invalid;
-0x330a = op_sub_773960;
+0x330a = CallBuiltinMethod; //op_sub_773960
 0x330b = EvalLevelFieldVariableRef; // op_sub_778B10
 0x330c = op_invalid;
 0x330d = Plus; // op_sub_7707A0
@@ -13169,7 +13169,7 @@
 0x3370 = NextArrayKey; // op_sub_779080
 0x3371 = op_invalid;
 0x3372 = Wait; // op_sub_77CA70
-0x3373 = op_sub_773960;
+0x3373 = CallBuiltinMethod; //op_sub_773960
 0x3374 = op_invalid;
 0x3375 = LessThanOrEqualTo; // op_sub_7706A0
 0x3376 = op_invalid;
@@ -13512,7 +13512,7 @@
 0x34c7 = DecTop; // op_sub_777FE0
 0x34c8 = Dec; // op_sub_770280
 0x34c9 = GetEmptyArray; // op_sub_7779F0
-0x34ca = op_sub_773960;
+0x34ca = CallBuiltinMethod; //op_sub_773960
 0x34cb = CastFieldObject; // op_sub_778000
 0x34cc = Divide; // op_sub_771B30
 0x34cd = op_invalid;
@@ -13588,7 +13588,7 @@
 0x3513 = op_invalid;
 0x3514 = op_invalid;
 0x3515 = op_invalid;
-0x3516 = op_sub_773960;
+0x3516 = CallBuiltinMethod; //op_sub_773960
 0x3517 = op_invalid;
 0x3518 = op_invalid;
 0x3519 = op_invalid;
@@ -13874,7 +13874,7 @@
 0x3631 = GreaterThanOrEqualTo; // op_sub_7706E0
 0x3632 = EvalLocalVariableRefCached; // op_sub_777EC0
 0x3633 = GetSelf; // op_sub_7763E0
-0x3634 = op_sub_773960;
+0x3634 = CallBuiltinMethod; //op_sub_773960
 0x3635 = op_invalid;
 0x3636 = op_invalid;
 0x3637 = EvalArrayRef; // op_sub_7766D0
@@ -14066,7 +14066,7 @@
 0x36f1 = CastFieldObject; // op_sub_778000
 0x36f2 = Jump; // op_sub_772DE0
 0x36f3 = EvalLevelFieldVariable; // op_sub_778C40
-0x36f4 = op_sub_773960;
+0x36f4 = CallBuiltinMethod; //op_sub_773960
 0x36f5 = op_sub_770760;
 0x36f6 = EvalArray; // op_sub_7766A0
 0x36f7 = GetIString; // op_sub_7723B0
@@ -14177,7 +14177,7 @@
 0x3760 = op_invalid;
 0x3761 = ScriptThreadCallPointer; // op_sub_774A30
 0x3762 = op_invalid;
-0x3763 = op_sub_773960;
+0x3763 = CallBuiltinMethod; //op_sub_773960
 0x3764 = EvalFieldVariable; // op_sub_777B70
 0x3765 = Wait; // op_sub_77CA70
 0x3766 = ClassFunctionThreadCall; // op_sub_774C70
@@ -14593,7 +14593,7 @@
 0x3900 = GetFunction; // op_sub_7765F0
 0x3901 = op_invalid;
 0x3902 = EvalFieldVariable; // op_sub_777B70
-0x3903 = op_sub_773960;
+0x3903 = CallBuiltinMethod; //op_sub_773960
 0x3904 = op_sub_77E350;
 0x3905 = Bit_And; // op_sub_7704C0
 0x3906 = op_invalid;
@@ -14786,7 +14786,7 @@
 0x39c1 = Plus; // op_sub_7707A0
 0x39c2 = WaitTillMatch; // op_sub_77D460
 0x39c3 = op_invalid;
-0x39c4 = op_sub_773960;
+0x39c4 = CallBuiltinMethod; //op_sub_773960
 0x39c5 = SetWaittillVariableFieldCached; // op_sub_777DE0
 0x39c6 = ScriptMethodThreadCall; // op_sub_774EC0
 0x39c7 = SizeOf; // op_sub_778240
@@ -14860,12 +14860,12 @@
 0x3a0b = JumpOnFalseExpr; // op_sub_772B60
 0x3a0c = JumpOnFalse; // op_sub_7728F0
 0x3a0d = op_invalid;
-0x3a0e = op_sub_773960;
+0x3a0e = CallBuiltinMethod; //op_sub_773960
 0x3a0f = op_invalid;
 0x3a10 = op_invalid;
 0x3a11 = Notify; // op_sub_77DE60
 0x3a12 = NotEqual; // op_sub_770530
-0x3a13 = op_sub_773960;
+0x3a13 = CallBuiltinMethod; //op_sub_773960
 0x3a14 = op_invalid;
 0x3a15 = op_invalid;
 0x3a16 = JumpOnTrue; // op_sub_772A30
@@ -15028,7 +15028,7 @@
 0x3ab3 = Multiply; // op_sub_7719E0
 0x3ab4 = op_invalid;
 0x3ab5 = GetIString; // op_sub_7723B0
-0x3ab6 = op_sub_773960;
+0x3ab6 = CallBuiltinMethod; //op_sub_773960
 0x3ab7 = VectorScale; // op_sub_7726D0
 0x3ab8 = ScriptMethodThreadCallPointer; // op_sub_7750F0
 0x3ab9 = Divide; // op_sub_771B30
@@ -15176,7 +15176,7 @@
 0x3b47 = op_invalid;
 0x3b48 = GetInteger; // op_sub_772310
 0x3b49 = op_invalid;
-0x3b4a = op_sub_773960;
+0x3b4a = CallBuiltinMethod; //op_sub_773960
 0x3b4b = ShiftLeft; // op_sub_770720
 0x3b4c = op_invalid;
 0x3b4d = op_invalid;
@@ -15187,7 +15187,7 @@
 0x3b52 = op_invalid;
 0x3b53 = Dec; // op_sub_770280
 0x3b54 = BoolNot; // op_sub_772000
-0x3b55 = op_sub_773960;
+0x3b55 = CallBuiltinMethod; //op_sub_773960
 0x3b56 = SizeOf; // op_sub_778240
 0x3b57 = op_invalid;
 0x3b58 = op_invalid;
@@ -15199,7 +15199,7 @@
 0x3b5e = EvalFieldVariableRef; // op_sub_777BB0
 0x3b5f = BoolNot; // op_sub_772000
 0x3b60 = op_invalid;
-0x3b61 = op_sub_773960;
+0x3b61 = CallBuiltinMethod; //op_sub_773960
 0x3b62 = op_invalid;
 0x3b63 = op_invalid;
 0x3b64 = op_invalid;
@@ -15311,7 +15311,7 @@
 0x3bce = ClassFunctionCall; // op_sub_774150
 0x3bcf = JumpOnTrue; // op_sub_772A30
 0x3bd0 = op_sub_7723F0;
-0x3bd1 = op_sub_773960;
+0x3bd1 = CallBuiltinMethod; //op_sub_773960
 0x3bd2 = op_invalid;
 0x3bd3 = GreaterThanOrEqualTo; // op_sub_7706E0
 0x3bd4 = NotEqual; // op_sub_770530
@@ -16009,7 +16009,7 @@
 0x3e88 = op_invalid;
 0x3e89 = Return; // op_sub_773B00
 0x3e8a = ScriptThreadCallPointer; // op_sub_774A30
-0x3e8b = op_sub_773960;
+0x3e8b = CallBuiltinMethod; //op_sub_773960
 0x3e8c = op_invalid;
 0x3e8d = op_invalid;
 0x3e8e = EvalArrayRef; // op_sub_7766D0
@@ -16067,7 +16067,7 @@
 0x3ec2 = op_invalid;
 0x3ec3 = Bit_Or; // op_sub_770440
 0x3ec4 = Return; // op_sub_773B00
-0x3ec5 = op_sub_773960;
+0x3ec5 = CallBuiltinMethod; //op_sub_773960
 0x3ec6 = op_invalid;
 0x3ec7 = op_sub_776420;
 0x3ec8 = op_invalid;
@@ -16370,7 +16370,7 @@
 0x3ff1 = op_invalid;
 0x3ff2 = Dec; // op_sub_770280
 0x3ff3 = Bit_Not; // op_sub_772110
-0x3ff4 = op_sub_773960;
+0x3ff4 = CallBuiltinMethod; //op_sub_773960
 0x3ff5 = op_invalid;
 0x3ff6 = GetIString; // op_sub_7723B0
 0x3ff7 = GetAnimation; // op_sub_7765A0

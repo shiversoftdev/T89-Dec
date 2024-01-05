@@ -32,8 +32,8 @@ namespace Cerberus.Logic
             Header = new ScriptHeader()
             {
                 VMRevision = Reader.ReadByte(),
-                SourceChecksum = Reader.ReadUInt32(),
-                IncludeTableOffset = Reader.ReadInt32(),
+                SourceChecksum = Reader.ReadUInt32(), // 0x8
+                IncludeTableOffset = Reader.ReadInt32(), // 0xim cuc
                 AnimTreeTableOffset = Reader.ReadInt32(),
                 ByteCodeOffset = Reader.ReadInt32(),
                 StringTableOffset = Reader.ReadInt32(),
@@ -116,6 +116,8 @@ namespace Cerberus.Logic
                     Offset = Reader.ReadInt32(),
                     References = new List<int>()
                 };
+
+                scriptString.Value = $"dev_{scriptString.Offset:X8}";
 
                 var referenceCount = Reader.ReadByte();
                 Reader.BaseStream.Position += 3;
@@ -208,8 +210,6 @@ namespace Cerberus.Logic
             {
                 Includes.Add(new ScriptInclude(Reader.PeekNullTerminatedString(Reader.ReadInt32())));
             }
-
-            Includes.Sort();
         }
 
         public override ScriptOp LoadOperation(int offset)

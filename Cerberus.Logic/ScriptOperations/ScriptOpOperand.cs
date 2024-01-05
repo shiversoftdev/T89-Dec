@@ -36,6 +36,14 @@ namespace Cerberus.Logic
         /// <summary>
         /// Creates a Script Operand with the given value
         /// </summary>
+        public ScriptOpOperand(long val)
+        {
+            Value = val;
+        }
+
+        /// <summary>
+        /// Creates a Script Operand with the given value
+        /// </summary>
         public ScriptOpOperand(int val)
         {
             Value = val;

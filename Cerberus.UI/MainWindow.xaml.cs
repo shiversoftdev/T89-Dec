@@ -526,7 +526,7 @@ namespace Cerberus.UI
             List<byte> tdata = new List<byte>();
             byte[] VM_36_PC = Logic.BlackOps4Script.GetTableData(false);
             byte[] VM_36_PS4 = Logic.BlackOps4Script.GetTableData(true);
-            byte[] VM_37 = Logic.T9_VM37Script.GetTableData();
+            byte[] VM_37 = Logic.T9_VM37AScript.GetTableData();
             byte[] VM_38 = Logic.T9_VM38Script.GetTableData();
             byte[] VM_1C_PS4 = Logic.T7VM1CScript.GetTableData(true);
             byte[] VM_1C_PC = Logic.T7VM1CScript.GetTableData(false);
@@ -558,20 +558,20 @@ namespace Cerberus.UI
             tdata.AddRange(BitConverter.GetBytes((ushort)VM_36_PC.Length));
             tdata.AddRange(VM_36_PC);
 
-            tdata.Add(0x36);
-            tdata.Add(0x01);
-            tdata.AddRange(BitConverter.GetBytes((ushort)VM_36_PC.Length));
-            tdata.AddRange(VM_36_PS4);
+            //tdata.Add(0x36);
+            //tdata.Add(0x01);
+            //tdata.AddRange(BitConverter.GetBytes((ushort)VM_36_PC.Length));
+            //tdata.AddRange(VM_36_PS4);
 
-            tdata.Add(0x37);
-            tdata.Add(0x00);
-            tdata.AddRange(BitConverter.GetBytes((ushort)VM_37.Length));
-            tdata.AddRange(VM_37);
+            //tdata.Add(0x37);
+            //tdata.Add(0x00);
+            //tdata.AddRange(BitConverter.GetBytes((ushort)VM_37.Length));
+            //tdata.AddRange(VM_37);
 
-            tdata.Add(0x38);
-            tdata.Add(0x00);
-            tdata.AddRange(BitConverter.GetBytes((ushort)VM_38.Length));
-            tdata.AddRange(VM_38);
+            //tdata.Add(0x38);
+            //tdata.Add(0x00);
+            //tdata.AddRange(BitConverter.GetBytes((ushort)VM_38.Length));
+            //tdata.AddRange(VM_38);
             File.WriteAllBytes("vm_codes.db2", tdata.ToArray());
         }
     }

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Cerberus.Logic;
 using CommandLine;
@@ -84,6 +85,13 @@ namespace Cerberus.CLI
             }
         }
 
+        private class ExportCollection
+        {
+            public Dictionary<string, HashSet<string>> Functions;
+            public string ScriptPath;
+        }
+
+        static Dictionary<string, ExportCollection> ExportMappings = new Dictionary<string, ExportCollection>();
         /// <summary>
         /// Processes a script file
         /// </summary>
@@ -108,8 +116,90 @@ namespace Cerberus.CLI
 
                     PrintVerbose(": Decompiling script..");
                     File.WriteAllText(outputPath, script.Decompile());
+                    ExportMappings[script.FilePath] = new ExportCollection();
+                    ExportMappings[script.FilePath].Functions = script.ExportCollection;
+                    ExportMappings[script.FilePath].ScriptPath = script.FilePath;
                 }
             }
+        }
+
+        static bool EmitExportDef = true;
+        static void EmitExportsCollection()
+        {
+            if(!EmitExportDef)
+            {
+                return;
+            }
+            StringBuilder result = new StringBuilder();
+            foreach(var kvp in ExportMappings)
+            {
+                foreach(var namespaceCollection in kvp.Value.Functions)
+                {
+                    foreach(var export in namespaceCollection.Value)
+                    {
+                        if(export.Contains("autoexec ") || export.Contains("private ") || export.Contains("event "))
+                        {
+                            continue;
+                        }
+
+                        string fullHeader = export;
+                        string _export = export.Replace("function ", "");
+                        string funcName = _export.Substring(0, _export.IndexOf("("));
+
+                        if(funcName.StartsWith("__"))
+                        {
+                            continue;
+                        }
+
+                        string insertDef = funcName + "(";
+                        List<string> parameters = new List<string>();
+
+                        for(int i = export.IndexOf("(") + 1; i < fullHeader.Length && export[i] != ')'; i++)
+                        {
+                            int endIndex = export.IndexOf(",", i);
+                            if(endIndex < 0)
+                            {
+                                endIndex = export.LastIndexOf(")");
+                            }
+                            int paramLength = endIndex - i;
+
+                            string paramValue = export.Substring(i, paramLength).Trim();
+                            i += paramLength + 1; // skip for spaces
+                            parameters.Add(paramValue);
+                        }
+
+                        for(int i = 0; i < parameters.Count; i++)
+                        {
+                            if (parameters[i] == "...")
+                            {
+                                insertDef += $"${{0:params}}";
+                            }
+                            else
+                            {
+                                insertDef += $"${{{i + 1}:{parameters[i].Replace("&", "")}}}";
+                            }
+                            
+                            if (i + 1 < parameters.Count)
+                            {
+                                insertDef += ", ";
+                            }
+                        }
+
+                        insertDef += ")";
+
+                        result.AppendLine("importDef = new DefImport;");
+                        result.AppendLine($"importDef._namespace = `{namespaceCollection.Key}`;");
+                        result.AppendLine($"importDef.header = `{export}`;");
+                        result.AppendLine($"importDef.script = `{kvp.Key}`;");
+                        result.AppendLine($"importDef.name = `{funcName}`;");
+                        result.AppendLine($"importDef.insert = \"{insertDef}\";");
+                        result.AppendLine("defImports.push(importDef);");
+                        result.AppendLine();
+                    }
+                }
+            }
+
+            File.WriteAllText("export_def.txt", result.ToString());
         }
 
         /// <summary>
@@ -252,6 +342,7 @@ namespace Cerberus.CLI
 
             if (Options.Close == false)
             {
+                EmitExportsCollection();
                 Console.WriteLine(": Execution completed successfully, press Enter to exit.");
                 Console.ReadLine();
             }

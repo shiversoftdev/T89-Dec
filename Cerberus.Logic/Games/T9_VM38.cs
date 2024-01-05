@@ -206,8 +206,6 @@ namespace Cerberus.Logic
             {
                 Includes.Add(new ScriptInclude(GetHashValue(Reader.ReadUInt64(), "script_")));
             }
-
-            Includes.Sort();
         }
 
         public override ScriptOp LoadOperation(int offset)
@@ -309,8 +307,21 @@ namespace Cerberus.Logic
                     }
                 case ScriptOperandType.UInt32:
                     {
-                        Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
-                        operation.Operands.Add(new ScriptOpOperand(Reader.ReadUInt32()));
+                        switch (operation.Metadata.OpCode)
+                        {
+                            case ScriptOpCode.GetNegUnsignedInteger:
+                                Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
+                                operation.Operands.Add(new ScriptOpOperand(-(long)Reader.ReadUInt32()));
+                                break;
+                            case ScriptOpCode.GetUnsignedInteger:
+                                Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
+                                operation.Operands.Add(new ScriptOpOperand((long)Reader.ReadUInt32()));
+                                break;
+                            default:
+                                Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
+                                operation.Operands.Add(new ScriptOpOperand(Reader.ReadUInt32()));
+                                break;
+                        }
                         break;
                     }
                 case ScriptOperandType.Hash:
