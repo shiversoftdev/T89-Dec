@@ -276,6 +276,7 @@ namespace Cerberus.CLI
 
                             switch (Path.GetExtension(arg).ToLower())
                             {
+                                case ".gsic":
                                 case ".gsc":
                                 case ".csc":
                                 case ".gscc":

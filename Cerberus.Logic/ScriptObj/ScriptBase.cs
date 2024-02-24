@@ -19,6 +19,8 @@ namespace Cerberus.Logic
         /// </summary>
         public string FilePath { get; set; }
 
+        public GSIInfo GSI { get; set; }
+
         /// <summary>
         /// Gets the Script File Name
         /// </summary>
@@ -68,7 +70,7 @@ namespace Cerberus.Logic
         /// <summary>
         /// Gets or Sets the list of Script Exports
         /// </summary>
-        public List<ScriptImport> Imports { get; set; }
+        public Dictionary<int, ScriptImport> Imports { get; set; }
 
         /// <summary>
         /// Gets or Sets the list of Script Exports
@@ -99,8 +101,9 @@ namespace Cerberus.Logic
             QWORDHashTable = qword_hashTable;
         }
 
-        public ScriptBase Load()
+        public ScriptBase Load(GSIInfo inf)
         {
+            GSI = inf;
             LoadHeader();
             LoadIncludes();
             LoadAnimTrees();
@@ -166,7 +169,24 @@ namespace Cerberus.Logic
                     {
                         OperationOffsets.Push(GetJumpLocation(op.OpCodeOffset + op.OpCodeSize, int.Parse(op.Operands[0].Value.ToString())));
                     }
-                    if(op.Metadata.OpType == ScriptOpType.Return)
+
+                    if (op.Metadata.OpCode == ScriptOpCode.GetLocalFunction)
+                    {
+                        function.LocalFunctions[op] = new ScriptExport()
+                        {
+                            Checksum = 0xFFFFFFFF,
+                            ByteCodeOffset = int.Parse(op.Operands[0].Value.ToString()),
+                            Name = "anonymous",
+                            Namespace = "anonymous",
+                            Namespace2 = "anonymous",
+                            ParameterCount = 0,
+                            Flags = 0,
+                            IsLocal = true
+                        };
+                        LoadFunction(function.LocalFunctions[op]);
+                    }
+
+                    if (op.Metadata.OpType == ScriptOpType.Return || op.Metadata.OpType == ScriptOpType.Jump)
                     {
                         endOffset = Math.Max(endOffset, eip + op.OpCodeSize);
                         if (UnclosedSwitches > 0)
@@ -562,7 +582,7 @@ namespace Cerberus.Logic
         /// </summary>
         public ScriptImport GetImport(int ptr)
         {
-            return Imports.Where(x => x.References.Contains(ptr)).FirstOrDefault() ?? default_import;
+            return Imports.ContainsKey(ptr) ? Imports[ptr] : default_import;
         }
 
         public ScriptExport GetExport(string ns, string fname)
@@ -611,34 +631,57 @@ namespace Cerberus.Logic
         {
             // We can use the magic to determine game
             var magic = reader.ReadUInt64();
+
+            GSIInfo GSI = null;
+            if ((magic & 0xFFFFFFFF) == 0x43495347)
+            {
+                GSI = new GSIInfo();
+                GSI.NumFields = (int)(magic >> 32);
+
+                for(int i = 0; i < GSI.NumFields; i++)
+                {
+                    var current = reader.ReadInt32();
+                    var numEntries = reader.ReadInt32();
+
+                    switch((GSIFields)current)
+                    {
+                        case GSIFields.Detours:
+                            for(int j = 0; j < numEntries; j++)
+                            {
+                                GSI.Detours.Add(new ScriptDetour().Deserialize(reader));
+                            }
+                            break;
+                    }
+                }
+
+                reader = new BinaryReader(new MemoryStream(reader.ReadBytes((int)(reader.BaseStream.Length - reader.BaseStream.Position))));
+                magic = reader.ReadUInt64();
+            }
+
             switch (magic)
             {
                 case 0x38000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
-                    return new T9_VM38Script(reader, t8_dword, t8_qword).Load();
+                    return new T9_VM38Script(reader, t8_dword, t8_qword).Load(GSI);
                 case 0x37010A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
-                    return new T9_VM37AScript(reader, t8_dword, t8_qword).Load();
+                    return new T9_VM37AScript(reader, t8_dword, t8_qword).Load(GSI);
                 case 0x37000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
-                    return new T9_VM37Script(reader, t8_dword, t8_qword).Load();
+                    return new T9_VM37Script(reader, t8_dword, t8_qword).Load(GSI);
                 case 0x36000A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
-                    return new BlackOps4Script(reader, t8_dword, t8_qword).Load();
+                    return new BlackOps4Script(reader, t8_dword, t8_qword).Load(GSI);
                 case 0x36FF0A0D43534780:
                     ParseHashTables("t8_hash.map", "includes.map");
-                    var _scr = new BlackOps4Script(reader, t8_dword, t8_qword);
-                    _scr.IsPS4 = true;
-                    return _scr.Load();
+                    return new BlackOps4Script(reader, t8_dword, t8_qword).SetPS4(true).Load(GSI);
                 case 0x1B000A0D43534780:
                 case 0x1C000A0D43534780:
                     LoadT7Hashes("t7_hash.map");
-                    return new T7VM1CScript(reader, t7_dword).Load();
+                    return new T7VM1CScript(reader, t7_dword).Load(GSI);
                 case 0x1CFF0A0D43534780:
                     LoadT7Hashes("t7_hash.map");
-                    var scr =  new T7VM1CScript(reader, t7_dword);
-                    scr.IsPS4 = true;
-                    return scr.Load();
+                    return new T7VM1CScript(reader, t7_dword).SetPS4(true).Load(GSI);
                 default:
                     throw new ArgumentException($"Invalid Script Magic Number; {magic:X}", "Magic");
             }
@@ -708,5 +751,66 @@ namespace Cerberus.Logic
         public ScriptExport Autogen;
         public HashSet<string> Vars = new HashSet<string>();
         public HashSet<string> SuperClasses = new HashSet<string>();
+    }
+
+    public class GSIInfo
+    {
+        public int NumFields = 0;
+        public List<ScriptDetour> Detours = new List<ScriptDetour>();
+    }
+
+    public enum GSIFields
+    {
+        Detours = 0
+    }
+
+    public class ScriptDetour
+    {
+        private const int DetourNameMaxLength = 256 - 1 - (5 * 4);
+        public uint FixupName;
+        public uint ReplaceNamespace;
+        public uint ReplaceFunction;
+        public uint FixupOffset;
+        public uint FixupSize;
+        public string ReplaceScript;
+
+        public override string ToString()
+        {
+            return $"{ReplaceNamespace:X}:{ReplaceFunction}:{ReplaceScript ?? "system"}";
+        }
+
+        public byte[] Serialize()
+        {
+            List<byte> toReturn = new List<byte>();
+            toReturn.AddRange(BitConverter.GetBytes(FixupName));
+            toReturn.AddRange(BitConverter.GetBytes(ReplaceNamespace));
+            toReturn.AddRange(BitConverter.GetBytes(ReplaceFunction));
+            toReturn.AddRange(BitConverter.GetBytes(FixupOffset));
+            toReturn.AddRange(BitConverter.GetBytes(FixupSize));
+
+            byte[] scriptPathBytes = new byte[DetourNameMaxLength + 1];
+            if (ReplaceScript != null)
+            {
+                Encoding.ASCII.GetBytes(ReplaceScript.Substring(0, Math.Min(ReplaceScript.Length, DetourNameMaxLength))).CopyTo(scriptPathBytes, 0);
+            }
+            toReturn.AddRange(scriptPathBytes);
+            return toReturn.ToArray();
+        }
+
+        public ScriptDetour Deserialize(BinaryReader reader)
+        {
+            FixupName = reader.ReadUInt32();
+            ReplaceNamespace = reader.ReadUInt32();
+            ReplaceFunction = reader.ReadUInt32();
+            FixupOffset = reader.ReadUInt32();
+            FixupSize = reader.ReadUInt32();
+            byte[] scriptPathBytes = reader.ReadBytes(DetourNameMaxLength + 1);
+            string res = Encoding.ASCII.GetString(scriptPathBytes).Replace("\x00", "").Trim();
+            if (scriptPathBytes[0] != 0)
+            {
+                ReplaceScript = res;
+            }
+            return this;
+        }
     }
 }

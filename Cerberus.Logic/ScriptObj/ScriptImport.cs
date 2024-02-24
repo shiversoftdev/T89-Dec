@@ -27,6 +27,7 @@ namespace Cerberus.Logic
         public int ParameterCount { get; set; }
 
         public string Flags { get; set; }
+        public byte FlagsValue { get; set; }
 
         /// <summary>
         /// Gets or Sets the list of references within the byte code

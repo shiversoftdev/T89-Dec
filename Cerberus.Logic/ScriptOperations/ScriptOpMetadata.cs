@@ -209,6 +209,8 @@ namespace Cerberus.Logic
             new ScriptOpMetadata(ScriptOpCode.ClearFieldVariableOnStack,        ScriptOpType.ClearVariable,     ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.DiscardWaittillVariableField,     ScriptOpType.None,              ScriptOperandType.None),
             new ScriptOpMetadata(ScriptOpCode.GetNegUnsignedInteger,            ScriptOpType.StackPush,         ScriptOperandType.UInt32),
+            new ScriptOpMetadata(ScriptOpCode.LazyGetFunction,                  ScriptOpType.StackPush,         ScriptOperandType.LazyFunction),
+            new ScriptOpMetadata(ScriptOpCode.GetLocalFunction,                 ScriptOpType.StackPush,         ScriptOperandType.Int32),
         };
 
         /// <summary>

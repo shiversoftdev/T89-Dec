@@ -23,6 +23,8 @@ namespace Cerberus.Logic
         public bool IsClassFunction = false;
         public byte Flags { get; set; }
         public List<ScriptOp> Operations = new List<ScriptOp>();
+        public Dictionary<ScriptOp, ScriptExport> LocalFunctions = new Dictionary<ScriptOp, ScriptExport>();
         public string DirtyMessage;
+        public bool IsLocal;
     }
 }

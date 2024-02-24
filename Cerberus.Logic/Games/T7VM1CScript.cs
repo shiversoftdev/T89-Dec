@@ -21,6 +21,12 @@ namespace Cerberus.Logic
 
         public T7VM1CScript(Stream stream, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(stream, hashTable, qword_hashTable) { }
         public T7VM1CScript(BinaryReader reader, Dictionary<uint, string> hashTable) : base(reader, hashTable, null) { }
+        public T7VM1CScript SetPS4(bool isPs4)
+        {
+            IsPS4 = isPs4;
+            return this;
+        }
+
 
         public override void LoadHeader()
         {
@@ -176,7 +182,7 @@ namespace Cerberus.Logic
         {
             Reader.BaseStream.Position = Header.ImportTableOffset;
 
-            Imports = new List<ScriptImport>(Header.ImportsCount);
+            Imports = new Dictionary<int, ScriptImport>();
 
             for (int i = 0; i < Header.ImportsCount; i++)
             {
@@ -189,14 +195,15 @@ namespace Cerberus.Logic
 
                 var referenceCount = Reader.ReadInt16();
                 import.ParameterCount = Reader.ReadByte();
-                import.Flags = $"{Reader.ReadByte():X2}";
+                import.FlagsValue = Reader.ReadByte();
+                import.Flags = $"{import.FlagsValue:X2}";
 
                 for (int j = 0; j < referenceCount; j++)
                 {
-                    import.References.Add(Reader.ReadInt32());
+                    var impref = Reader.ReadInt32();
+                    import.References.Add(impref);
+                    Imports[impref] = import;
                 }
-
-                Imports.Add(import);
             }
         }
 
@@ -215,28 +222,62 @@ namespace Cerberus.Logic
         public override ScriptOp LoadOperation(int offset)
         {
             Reader.BaseStream.Position = offset;
+
+            if(offset == 0x1b4cc)
+            {
+                int test = 0;
+            }
+
             var opCodeIndex = Reader.ReadUInt16();
+            ScriptOpCode overrideCode = ScriptOpCode.Invalid;
+            if (Imports.ContainsKey(offset))
+            {
+                var import = Imports[offset];
+                var flags = (import.FlagsValue & 0xF);
+                if ((flags & 0x1) > 0)
+                {
+                    flags &= ~1;
+                    if (flags == 0)
+                        overrideCode = ScriptOpCode.GetFunction;
+                    else if (flags == 2)
+                        overrideCode = ScriptOpCode.ScriptThreadCall;
+                    else if(flags == 4)
+                        overrideCode = ScriptOpCode.ScriptMethodThreadCall;
+                }
+                else
+                {
+                    if (flags == 2)
+                        overrideCode = ScriptOpCode.ScriptFunctionCall;
+                    else if (flags == 4)
+                        overrideCode = ScriptOpCode.ScriptMethodCall;
+                }
+            }
+
             ScriptOp operation;
             ScriptAnimTree atr_ref = null;
-            if (opCodeIndex == 0)
+            if ((overrideCode == ScriptOpCode.Invalid) && opCodeIndex == 0)
                 return null;
 
-            if (opCodeIndex < 0x4000)
+            if ((overrideCode != ScriptOpCode.Invalid) || opCodeIndex < 0x4000)
             {
                 ScriptOpCode[] Table = null;
+                ScriptOpCode opCode = overrideCode;
 
-                if((opCodeIndex & 0x2000) > 0 && !IsPS4)
+                if (overrideCode == ScriptOpCode.Invalid)
                 {
-                    IsCustoms = true;
+                    if ((opCodeIndex & 0x2000) > 0 && !IsPS4)
+                    {
+                        IsCustoms = true;
+                    }
+
+                    Table = IsPS4 ? SecondaryTable : PrimaryTable;
+
+                    if (Table.Length <= opCodeIndex) throw new ArgumentException($"Unknown Op Code (0x{opCodeIndex:X4})");
+
+                    opCode = Table[opCodeIndex];
+
+                    if (opCode == ScriptOpCode.Invalid) throw new ArgumentException($"Unknown Op Code (0x{opCodeIndex:X4})");
                 }
-
-                Table = IsPS4 ? SecondaryTable : PrimaryTable;
-
-                if (Table.Length <= opCodeIndex) throw new ArgumentException($"Unknown Op Code (0x{opCodeIndex:X4})");
-
-                var opCode = Table[opCodeIndex];
-
-                if (opCode == ScriptOpCode.Invalid) throw new ArgumentException($"Unknown Op Code (0x{opCodeIndex:X4})");
 
                 operation = new ScriptOp()
                 {
@@ -300,9 +341,19 @@ namespace Cerberus.Logic
                 case ScriptOperandType.Int32:
                     {
                         Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
-                        if(operation.Metadata.OpCode != ScriptOpCode.GetInteger || (atr_ref = ResolveTreeForGetint((int)Reader.BaseStream.Position)) == null)
+                        var basepos = Reader.BaseStream.Position;
+                        if (operation.Metadata.OpCode != ScriptOpCode.GetInteger || (atr_ref = ResolveTreeForGetint((int)Reader.BaseStream.Position)) == null)
                         {
-                            operation.Operands.Add(new ScriptOpOperand(Reader.ReadInt32()));
+                            var data = Reader.ReadInt32();
+
+                            if(operation.Metadata.OpCode == ScriptOpCode.GetLocalFunction)
+                            {
+                                operation.Operands.Add(new ScriptOpOperand(basepos + data + 4));
+                            }
+                            else
+                            {
+                                operation.Operands.Add(new ScriptOpOperand(data));
+                            }
                             break;
                         }
                         var skip = Reader.ReadInt32();
@@ -421,6 +472,10 @@ namespace Cerberus.Logic
                         {
                             Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
                             string v = GetHashValue(Reader.ReadUInt32(), "var_");
+                            if(v == "")
+                            {
+                                v = $"v{i}";
+                            }
                             var b = Reader.ReadByte();
                             var so = new ScriptOpOperand(v);
                             so.IsByRef = b == 1;
@@ -446,6 +501,19 @@ namespace Cerberus.Logic
                         Reader.BaseStream.Position += 1;
                         Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
                         operation.Operands.Add(new ScriptOpOperand(GetHashValue(Reader.ReadUInt32(), "var_")));
+                        break;
+                    }
+                case ScriptOperandType.LazyFunction:
+                    {
+                        Reader.BaseStream.Position += Utility.ComputePadding((int)Reader.BaseStream.Position, 4);
+                        var pos = Reader.BaseStream.Position;
+                        var space = GetHashValue(Reader.ReadUInt32(), "namespace_");
+                        var func = GetHashValue(Reader.ReadUInt32(), "function_");
+                        var newpos = pos + Reader.ReadInt32();
+                        Reader.BaseStream.Position = newpos;
+                        string path = Reader.ReadNullTerminatedString();
+                        Reader.BaseStream.Position = pos + 0xC;
+                        operation.Operands.Add(new ScriptOpOperand($"@{space}<{path}>::{func}"));
                         break;
                     }
                 default:

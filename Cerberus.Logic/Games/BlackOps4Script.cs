@@ -20,6 +20,12 @@ namespace Cerberus.Logic
         public BlackOps4Script(Stream stream, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(stream, hashTable, qword_hashTable) { }
         public BlackOps4Script(BinaryReader reader, Dictionary<uint, string> hashTable, Dictionary<ulong, string> qword_hashTable) : base(reader, hashTable, qword_hashTable) { }
 
+        public BlackOps4Script SetPS4(bool isPs4)
+        {
+            IsPS4 = isPs4;
+            return this;
+        }
+
         public override void LoadHeader()
         {
             LoadTable();
@@ -181,7 +187,7 @@ namespace Cerberus.Logic
         {
             Reader.BaseStream.Position = Header.ImportTableOffset;
 
-            Imports = new List<ScriptImport>(Header.ImportsCount);
+            Imports = new Dictionary<int, ScriptImport>();
 
             for (int i = 0; i < Header.ImportsCount; i++)
             {
@@ -194,14 +200,15 @@ namespace Cerberus.Logic
 
                 var referenceCount = Reader.ReadInt16();
                 import.ParameterCount = Reader.ReadByte();
-                import.Flags = $"{Reader.ReadByte():X2}";
+                import.FlagsValue = Reader.ReadByte();
+                import.Flags = $"{import.FlagsValue:X2}";
 
                 for (int j = 0; j < referenceCount; j++)
                 {
-                    import.References.Add(Reader.ReadInt32());
+                    int impref = Reader.ReadInt32();
+                    import.References.Add(impref);
+                    Imports[impref] = import;
                 }
-
-                Imports.Add(import);
             }
         }
 

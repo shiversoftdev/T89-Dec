@@ -203,7 +203,9 @@ namespace Cerberus.Logic
         EvalLocalVariableRefCached2,
         ClearFieldVariableOnStack,
         DiscardWaittillVariableField, // t7 only
-        GetNegUnsignedInteger,
+        GetNegUnsignedInteger = 192,
+        LazyGetFunction,
+        GetLocalFunction,
         Invalid                               = 0xFF,
     }
 }

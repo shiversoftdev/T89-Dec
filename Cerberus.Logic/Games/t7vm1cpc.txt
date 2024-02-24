@@ -20,8 +20,8 @@
 0x13 = GetNegByte; // op_sub_12CD3F0
 0x14 = op_invalid;
 0x15 = EndSwitch; // op_sub_12CD1B0
-0x16 = op_invalid;
-0x17 = op_invalid;
+0x16 = LazyGetFunction;
+0x17 = GetLocalFunction;
 0x18 = ShiftLeft; // op_sub_12CDBE0
 0x19 = ClearArray; // op_sub_12D0160
 0x1a = Nop;

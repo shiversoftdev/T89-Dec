@@ -31,5 +31,6 @@ namespace Cerberus.Logic
         SwitchEnd,
         GlobalFieldVariable,
         DoubleUInt8,
+        LazyFunction
     }
 }

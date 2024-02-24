@@ -162,15 +162,24 @@ namespace Cerberus.Logic
                 Script = script;
                 SCL = null;
 
-                if (Function.Operations[0].Metadata.OpCode == ScriptOpCode.SafeCreateLocalVariables)
+                var firstCode = Function.Operations[0];
+                int fcindex = 0;
+
+                while(firstCode.Metadata.OpCode == ScriptOpCode.Nop)
                 {
-                    SCL = Function.Operations[0];
-                    foreach (var var in Function.Operations[0].Operands)
+                    firstCode.Visited = true;
+                    firstCode = Function.Operations[++fcindex];
+                }
+
+                if (firstCode.Metadata.OpCode == ScriptOpCode.SafeCreateLocalVariables)
+                {
+                    SCL = firstCode;
+                    foreach (var var in firstCode.Operands)
                     {
                         LocalVariables.Add((string)var.Value);
                     }
 
-                    Function.Operations[0].Visited = true;
+                    firstCode.Visited = true;
                 }
 
                 // Preprocess some operations
@@ -339,18 +348,38 @@ namespace Cerberus.Logic
         {
             var result = "";
 
-            result += IsEvent(Function.Flags) ? "event " : ((Function.Name == "constructor" || Function.Name == "destructor") ? "" : "function ");
-
-            if (IsPrivate(Function.Flags))
+            if(Function.IsLocal)
             {
-                result += "private ";
+                result = "function(";
+                HashSet<int> locals = new HashSet<int>();
+                foreach (var op in Function.Operations)
+                {
+                    if (op.Metadata.OpCode == ScriptOpCode.SetLocalVariableCached)
+                    {
+                        locals.Add((int)op.Operands[0].Value);
+                    }
+                    else if (op.Metadata.OpCode == ScriptOpCode.SetWaittillVariableFieldCached)
+                    {
+                        locals.Add((int)op.Operands[0].Value);
+                    }
+                }
+                Function.ParameterCount = LocalVariables.Count - locals.Count;
             }
-            if (IsAutoExec(Function.Flags))
+            else
             {
-                result += "autoexec ";
-            }
+                result += IsEvent(Function.Flags) ? "event " : ((Function.Name == "constructor" || Function.Name == "destructor") ? "" : "function ");
 
-            result += Function.Name + "(";
+                if (IsPrivate(Function.Flags))
+                {
+                    result += "private ";
+                }
+                if (IsAutoExec(Function.Flags))
+                {
+                    result += "autoexec ";
+                }
+
+                result += Function.Name + "(";
+            }
 
             for (int i = 0; i < Function.ParameterCount && i < LocalVariables.Count; i++)
             {
@@ -370,6 +399,11 @@ namespace Cerberus.Logic
                 }
                 result += string.Format("{0}{1}", stackValue, (i != Function.ParameterCount - 1) ? ", " : "");
                 
+            }
+
+            if(Function.IsLocal)
+            {
+                return result + ") => ";
             }
 
             return result + ")";
@@ -2631,7 +2665,22 @@ namespace Cerberus.Logic
                                             break;
                                         }
 
-                                            // We have a value
+                                        if(operation.Metadata.OpCode == ScriptOpCode.LazyGetFunction)
+                                        {
+                                            Stack.Push(operation.Operands[0].Value.ToString());
+                                            break;
+                                        }
+
+                                        if(operation.Metadata.OpCode == ScriptOpCode.GetLocalFunction)
+                                        {
+                                            using (var decompiler = new Decompiler(Function.LocalFunctions[operation], Script, Writer.Indent))
+                                            {
+                                                Stack.Push(decompiler.GetWriterOutput().Trim());
+                                            }
+                                            break;
+                                        }
+
+                                        // We have a value
                                         Stack.Push(operation.Operands[0].Value.ToString());
                                         break;
                                     }

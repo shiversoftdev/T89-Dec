@@ -178,7 +178,7 @@ namespace Cerberus.Logic
         {
             Reader.BaseStream.Position = Header.ImportTableOffset;
 
-            Imports = new List<ScriptImport>(Header.ImportsCount);
+            Imports = new Dictionary<int, ScriptImport>();
 
             for (int i = 0; i < Header.ImportsCount; i++)
             {
@@ -191,14 +191,15 @@ namespace Cerberus.Logic
 
                 var referenceCount = Reader.ReadInt16();
                 import.ParameterCount = Reader.ReadByte();
-                import.Flags = $"{Reader.ReadByte():X2}";
+                import.FlagsValue = Reader.ReadByte();
+                import.Flags = $"{import.FlagsValue:X2}";
 
                 for (int j = 0; j < referenceCount; j++)
                 {
-                    import.References.Add(Reader.ReadInt32());
+                    var impref = Reader.ReadInt32();
+                    import.References.Add(impref);
+                    Imports[impref] = import;
                 }
-
-                Imports.Add(import);
             }
         }
 
